@@ -1,0 +1,73 @@
+<% notifications.forEach((noti, index) => { %>
+  <tr>
+    <td>
+      <%= index + 1 %>
+      <% if (!noti.is_read && noti.action_link) { %>
+        <span class="notif-unread-dot" style="display:inline-block; width:8px; height:8px; background:red; border-radius:50%; margin-left:5px;" title="Unread"></span>
+      <% } %>
+    </td>
+    
+    <td><%= maskValue(noti.email) || '-' %></td>
+    
+    <td><%= noti.content %></td>
+    
+    <td>
+      <% if (noti.action_link && noti.request_method === 'POST') { %>
+        <button 
+          class="btn btn-sm btn-primary notif-item"
+          data-link="<%= noti.action_link %>"
+          data-email="<%= noti.email %>"
+          data-method="POST"
+          data-id="<%= noti.id %>"
+        >
+          <i class="fas fa-paper-plane"></i> Take Action
+        </button>
+
+      <% } else if (noti.action_link && noti.request_method === 'GET') { %>
+        <button 
+          class="btn btn-sm btn-success notif-item"
+          data-link="<%= noti.action_link %>"
+          data-method="GET"
+          data-id="<%= noti.id %>"
+        >
+          <i class="fas fa-eye"></i> View
+        </button>
+
+      <% } else { %>
+        <button 
+          type="button"
+          class="btn btn-sm btn-secondary notif-item"
+          data-method="NONE"
+          data-id="<%= noti.id %>"
+        >
+          <i class="fas fa-ban"></i> No Action
+        </button>
+      <% } %>
+    </td>
+  </tr>
+<% }) %>
+
+
+
+          <%
+/**
+ * Smart mask: show 2 chars at start and 2 at end if possible.
+ * If too short, just show the first and mask the rest, or just mask.
+ */
+function maskValue(str, maskChar = '*') {
+  str = (str == null) ? '' : String(str);
+  const len = str.length;
+  if (len === 0) return '';
+  if (len === 1) return maskChar;
+  if (len === 2) return str[0] + maskChar;
+  if (len <= 4) return str[0] + maskChar.repeat(len - 2) + str[len - 1];
+  // For emails, keep domain visible
+  if (str.includes('@')) {
+    const at = str.indexOf('@');
+    if (at <= 2) return maskChar.repeat(at) + str.substring(at);
+    return str[0] + maskChar.repeat(at - 2) + str[at - 1] + str.substring(at);
+  }
+  // For other strings (phones, etc): 2 start, 2 end
+  return str.slice(0, 2) + maskChar.repeat(len - 4) + str.slice(-2);
+}
+%>

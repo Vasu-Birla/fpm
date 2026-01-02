@@ -1,0 +1,82 @@
+//
+// modal.scss
+//
+
+.modal-content {
+    box-shadow: $card-box-shadow;
+}
+
+// Title text within header
+.modal-title {
+    color: var(--#{$prefix}gray-900);;
+}
+
+// Modal full width
+.modal-full-width {
+    width: 95%;
+    max-width: none;
+}
+
+// Modal Positions
+.modal-top {
+    margin: 0 auto;
+}
+
+.modal {
+    &.show {
+        .modal-right,
+        .modal-left {
+            transform: translate(0, 0) !important;
+        }
+    }
+}
+
+// Bottom modal
+.modal-bottom {
+    display: flex;
+    flex-flow: column nowrap;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+    height: 100%;
+    margin: 0 auto;
+    align-content: center;
+}
+
+// Full filled modals
+.modal-filled {
+    color: $white;
+    
+    .modal-header {
+        background-color: rgba($white, 0.1);
+    }
+    
+    .modal-title {
+        color: $white;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border: none;
+    }
+}
+
+.modal-backdrop {
+    backdrop-filter: blur(10px);
+}
+.btn-close-modal {
+	width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin: 0;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+	&:hover {
+		transition: all 0.5s;
+	}
+}
+.offcanvas.offcanvas-large {
+    width: 800px;
+}

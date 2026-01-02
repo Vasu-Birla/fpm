@@ -1,0 +1,1045 @@
+<!-- views/client/login.ejs -->
+
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Banner Start -->
+<section class="main-inner-banner">
+    <!-- <span class="bg-icon"></span>
+    <div class="inner-banner-shape"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="inner-banner-content">
+                    <h1 class="h1-title">Login</h1>
+                </div>
+            </div>
+        </div>
+    </div> -->
+</section>
+<!-- Banner End -->
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+    <ul>
+        <li><a href="/home" title="HOME">HOME</a></li>
+        <li>LOGIN</li>
+    </ul>
+</div><br>
+<!-- Breadcrumb End -->
+
+<!-- Login Form Start -->
+<section class="page-login">
+    <div class="container">
+        <div class="row justify-content-center">
+
+
+                <div class="col-lg-6">
+        <div class="contact-us-item-2">
+          <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 520px; margin: auto;">
+            
+            <div class="text-center mb-3">
+              <h4 class="fw-bold text-primary">Welcome back</h4>
+              <p class="text-muted mb-0">Choose how you want to sign in</p>
+            </div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-pills justify-content-center gap-2 mb-4" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="otp-tab" data-bs-toggle="pill" data-bs-target="#otpPane" type="button" role="tab" aria-controls="otpPane" aria-selected="true">
+                  <i class="ti ti-message-2 me-1"></i> OTP Login
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pw-tab" data-bs-toggle="pill" data-bs-target="#pwPane" type="button" role="tab" aria-controls="pwPane" aria-selected="false">
+                  <i class="ti ti-lock me-1"></i> Password Login
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <!-- ================= OTP LOGIN PANE ================= -->
+              <div class="tab-pane fade show active" id="otpPane" role="tabpanel" aria-labelledby="otp-tab" tabindex="0">
+                <form id="loginFormOtp" action="/login" method="POST" novalidate>
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <input type="hidden" name="timezone" data-ignore-kilvish="Yes" id="timezoneOtp">
+                  <input type="hidden" name="otp_id" id="otp_id">
+
+                  <div id="enterEmailStep" class="mb-3">
+                    <label for="emailInput" class="form-label fw-medium">Email</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-mail text-primary"></i></span>
+                      <input type="email" data-ignore-kilvish="Yes" id="emailInput" name="email" class="form-control" placeholder="Enter your email" required autofocus>
+                    </div>
+                    <div class="d-grid mt-3">
+                      <button type="button" id="loginSendOtp" class="btn btn-primary btn-outline-warning fw-bold">
+                        <i class="ti ti-send me-2"></i> Send OTP
+                      </button>
+                      <div class="text-danger mt-2" id="loginError"></div>
+                    </div>
+                  </div>
+
+                  <div id="enterOtpStep" class="mb-3" style="display:none;">
+                    <label for="loginOtpInput" class="form-label fw-medium">Enter OTP</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+                      <input type="text" id="loginOtpInput" data-ignore-kilvish="Yes" name="otp" class="form-control" placeholder="Enter OTP" required>
+                    </div>
+                    <div class="d-grid mt-3">
+                      <button type="submit" id="loginVerifyOtp" class="btn btn-primary fw-bold">
+                        <i class="ti ti-login me-2"></i> Login
+                      </button>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-link px-0" id="loginResendOtp">Resend OTP</button>
+
+                        <!-- Trigger forgot password modal right here for convenience -->
+                        <!-- <button type="button" class="btn btn-link px-0" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                          Forgot password?
+                        </button> -->
+                      </div>
+                      <div class="text-danger mt-2" id="loginOtpError"></div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- ================= PASSWORD LOGIN PANE ================= -->
+              <div class="tab-pane fade" id="pwPane" role="tabpanel" aria-labelledby="pw-tab" tabindex="0">
+                <form id="loginFormPw" action="/login_password" method="POST" novalidate>
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <input type="hidden" name="timezone" id="timezonePw" data-ignore-kilvish="Yes">
+
+                  <div class="mb-3">
+                    <label for="pwEmail" class="form-label fw-medium">Email</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-mail text-primary"></i></span>
+                      <input type="email" id="pwEmail" name="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                  </div>
+
+                  <div class="mb-2">
+                    <label for="pwPass" class="form-label fw-medium">Password</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-key text-primary"></i></span>
+                      <input type="password" data-ignore-kilvish data-kileye-color="#001489" id="pwPass" name="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+                  </div>
+                  <div class="text-end mb-3">
+                    <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot password?</button>
+                  </div>
+
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary fw-bold">
+                      <i class="ti ti-login me-2"></i> Login
+                    </button>
+                    <div class="text-danger mt-2" id="pwError"></div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="text-center mt-4">
+              <h6 class="fw-normal fs-14 text-dark mb-0">
+                Don’t have an account yet?
+                <a href="/signup" class="text-primary fw-bold hover-a">Register now!</a>
+              </h6>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+
+        
+        </div>
+    </div>
+</section><br>
+<!-- Login Form End -->
+
+
+
+
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->
+
+
+<!-- ========= Forgot Password Modal (no page reload) ========= -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title" id="forgotPasswordLabel"><i class="ti ti-key me-2"></i> Reset Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="forgotPwForm" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" id="fp_otp_id" name="otp_id">
+          <input type="hidden" id="fp_timezone" name="timezone" data-ignore-kilvish="Yes">
+
+          <div class="mb-3">
+            <label for="fp_email" class="form-label">Email</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="ti ti-mail text-primary"></i></span>
+              <input type="email" id="fp_email" name="email" class="form-control" placeholder="Enter your registered email" required>
+            </div>
+          </div>
+
+          <div class="d-grid mb-2">
+            <button type="button" id="fp_send_otp" class="btn btn-outline-primary">
+              <i class="ti ti-send me-1"></i> Send OTP
+            </button>
+            <button type="button" id="fp_resend_otp" class="btn btn-link mt-1" disabled>Resend OTP</button>
+          </div>
+
+          <div id="fp_after_send" style="display:none;">
+            <div class="mb-3">
+              <label for="fp_otp" class="form-label">Enter OTP</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+                <input type="text" id="fp_otp" name="otp" class="form-control" placeholder="Enter OTP" required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="fp_new" class="form-label">New Password</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-key"></i></span>
+                  <input type="password" data-kileye-color="#001489" id="fp_new" name="new_password" class="form-control" placeholder="New password" required>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="fp_confirm" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="ti ti-key"></i></span>
+                  <input data-ignore-kilvish data-kileye-color="#001489" type="password" id="fp_confirm" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" id="fp_submit" class="btn btn-primary">
+                <i class="ti ti-check me-1"></i> Reset & Login
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="text-danger mt-2" id="fp_error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ========= /Forgot Password Modal ========= -->
+ 
+<!-- ========= Password 2FA Modal ========= -->
+<div class="modal fade" id="pw2faModal" tabindex="-1" aria-labelledby="pw2faLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pw2faLabel"><i class="ti ti-shield-lock me-2"></i> Two-Step Verification</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="pw2faForm" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" id="pw2fa_email">
+          <input type="hidden" id="pw2fa_otp_id">
+          <input type="hidden" id="pw2fa_timezone" data-ignore-kilvish="Yes">
+
+          <div class="mb-2 text-muted small">We emailed you a verification code. Enter it to finish signing in.</div>
+
+          <div class="mb-3">
+            <label for="pw2fa_otp" class="form-label">OTP</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+              <input type="text" id="pw2fa_otp" name="otp" class="form-control" placeholder="Enter OTP" required autocomplete="one-time-code">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <small class="text-muted">Didn’t get it?</small>
+            <button type="button" id="pw2fa_resend" class="btn btn-link px-0">Resend OTP</button>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" id="pw2fa_submit" class="btn btn-primary">
+              <i class="ti ti-check me-1"></i> Verify & Login
+            </button>
+          </div>
+
+          <div class="text-danger mt-2" id="pw2fa_error"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ========= /Password 2FA Modal ========= -->
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const z1 = document.getElementById("timezoneOtp");
+      const z2 = document.getElementById("timezonePw");
+      const z3 = document.getElementById("fp_timezone");
+      const z4 = document.getElementById("pw2fa_timezone");
+      if (z1) z1.value = tz;
+      if (z2) z2.value = tz;
+      if (z3) z3.value = tz;
+      if (z4) z4.value = tz;
+    } catch {}
+  });
+</script>
+
+<!-- ===== RSA PUBLIC KEY + helper (same style as admin) ===== -->
+<script>
+  const RSA_PUBLIC_KEY = `<%- (RSA_PUBLIC_KEY || '').replace(/\r?\n/g, '\\n') %>`;
+
+  function pemToArrayBuffer(pem) {
+    if (!pem) return null;
+    const b64 = pem
+      .replace(/-----BEGIN [^-]+-----/g, '')
+      .replace(/-----END [^-]+-----/g, '')
+      .replace(/\s+/g, '');
+    const raw = atob(b64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+    return buf.buffer;
+  }
+
+  let rsaPubKeyPromise = null;
+
+  async function getRsaPubKey() {
+    if (!window.crypto || !crypto.subtle) {
+      throw new Error('WebCrypto is not available in this browser.');
+    }
+    if (!rsaPubKeyPromise) {
+      rsaPubKeyPromise = (async () => {
+        const keyData = pemToArrayBuffer(RSA_PUBLIC_KEY);
+        if (!keyData) throw new Error('Missing RSA public key');
+        return await crypto.subtle.importKey(
+          'spki',
+          keyData,
+          { name: 'RSA-OAEP', hash: 'SHA-256' },
+          false,
+          ['encrypt']
+        );
+      })().catch(err => {
+        console.error('RSA public key import error:', err);
+        rsaPubKeyPromise = null;
+        throw err;
+      });
+    }
+    return rsaPubKeyPromise;
+  }
+
+  // 🔐 Encrypt plain text → base64 ciphertext using RSA-OAEP (SHA-256)
+  async function rsaEncrypt(plain) {
+    if (!plain) return '';
+    try {
+      const key = await getRsaPubKey();
+      const data = new TextEncoder().encode(plain);
+      const enc = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, data);
+      const bytes = new Uint8Array(enc);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    } catch (e) {
+      console.error('RSA-OAEP encrypt error:', e);
+      return '';
+    }
+  }
+</script>
+
+<script>
+/* ==========================
+   SHARED helpers (fetch/axios, disable)
+========================== */
+(function(){
+  // choose HTTP client (axiosElaw preferred for CSRF auto headers)
+  const httpPost = async (url, data) => {
+    if (window.axiosElaw?.post) {
+      const { data: json } = await window.axiosElaw.post(url, data, {
+        headers: { 'Accept': 'application/json' },
+        timeout: 20000
+      });
+      return json;
+    }
+    const res = await (window.kFetch || window.fetch)(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json',
+        'Accept':'application/json',
+        'CSRF-Token': (window.getCsrf?.() || '')
+      },
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  };
+
+  function disable(el, yes){
+    if (!el) return;
+    el.disabled = !!yes;
+    if (yes) el.setAttribute('aria-busy','true'); else el.removeAttribute('aria-busy');
+  }
+
+  /* =======================
+     OTP LOGIN
+  ======================= */
+  (function(){
+    const form        = document.getElementById('loginFormOtp');
+    const emailInp    = document.getElementById('emailInput');
+    const otpInp      = document.getElementById('loginOtpInput');
+    const emailStep   = document.getElementById('enterEmailStep');
+    const otpStep     = document.getElementById('enterOtpStep');
+    const sendBtn     = document.getElementById('loginSendOtp');
+    const resendBtn   = document.getElementById('loginResendOtp');
+    const emailErr    = document.getElementById('loginError');
+    const otpErr      = document.getElementById('loginOtpError');
+    const otpIdInput  = document.getElementById('otp_id');
+    const timezoneInp = document.getElementById('timezoneOtp');
+
+    try { timezoneInp.value = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch {}
+
+    function disableX(el, yes){ disable(el, yes); }
+
+    let resendTimerId = null;
+    function countdownResend(btn, seconds){
+      if (!btn) return;
+      let t = seconds;
+      disableX(btn, true);
+      btn.textContent = `Resend OTP (${t}s)`;
+      clearInterval(resendTimerId);
+      resendTimerId = setInterval(() => {
+        t--;
+        if (t <= 0) {
+          clearInterval(resendTimerId);
+          btn.textContent = 'Resend OTP';
+          disableX(btn, false);
+        } else {
+          btn.textContent = `Resend OTP (${t}s)`;
+        }
+      }, 1000);
+    }
+
+    const http = httpPost;
+
+    function resetOtpUI(){
+      sendBtn.style.display = '';
+      otpStep.style.display = 'none';
+      otpInp.value = '';
+      otpIdInput.value = '';
+      emailErr.textContent = '';
+      otpErr.textContent = '';
+      clearInterval(resendTimerId);
+      if (resendBtn) { resendBtn.textContent = 'Resend OTP'; disableX(resendBtn, false); }
+    }
+
+    let lastEmailSentForOtp = '';
+    emailInp.addEventListener('input', () => {
+      if (emailInp.value.trim() !== lastEmailSentForOtp) resetOtpUI();
+    });
+
+    if (sendBtn) sendBtn.addEventListener('click', async () => {
+      emailErr.textContent = '';
+      otpErr.textContent = '';
+      const email = (emailInp?.value || '').trim();
+      if (!email) { kilToast.warning('Enter your email.'); return; }
+
+      try{
+        disableX(sendBtn, true);
+        kilToast('Sending OTP', { id: 'login_otp', type:'info', duration:0, position:'bottom-center', showProgress:true, close:true });
+
+        const json = await http('/send_login_otp', { type: 'Client', purpose:'login', email });
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Failed to send OTP.', { replaceId:'login_otp', duration:4000, position:'bottom-center' });
+          return;
+        }
+        lastEmailSentForOtp = email;
+        if (json.otp_id) otpIdInput.value = json.otp_id;
+
+        kilToast.success(json.message || 'OTP sent successfully.', { replaceId:'login_otp', duration:0, position:'bottom-center' });
+
+        otpStep.style.display = '';
+        otpInp?.focus();
+        countdownResend(resendBtn, 30);
+        sendBtn.style.display = 'none';
+
+      } catch (e){
+        kilToast.danger(`Failed to send OTP. ${e}`, { replaceId:'login_otp', duration:4000, position:'bottom-center' });
+      } finally {
+        disableX(sendBtn, false);
+      }
+    });
+
+    if (resendBtn) resendBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      otpErr.textContent = '';
+      emailErr.textContent = '';
+
+      const email = (emailInp?.value || '').trim();
+      if (!email) { kilToast.warning('Enter your email.'); return; }
+      if (lastEmailSentForOtp && email !== lastEmailSentForOtp) {
+        kilToast.warning('Email changed. Please send OTP again.');
+        resetOtpUI();
+        return;
+      }
+
+      try{
+        disableX(resendBtn, true);
+        kilToast('Re-sending OTP', { id:'login_resend_otp', type:'info', duration:0, position:'bottom-center', showProgress:true, close:true });
+
+        const json = await http('/send_login_otp', { type:'Client', purpose:'login', email });
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Failed to resend OTP.', { replaceId:'login_resend_otp', duration:4000, position:'bottom-center' });
+          return;
+        }
+
+        if (json.otp_id) otpIdInput.value = json.otp_id;
+        kilToast.success(json.message || 'OTP re-sent successfully.', { replaceId:'login_resend_otp', duration:0, position:'bottom-center' });
+        countdownResend(resendBtn, 30);
+
+      } catch (e) {
+        kilToast.danger(`Failed to resend OTP. ${e}`, { replaceId:'login_resend_otp', duration:4000, position:'bottom-center' });
+      } finally {
+        disableX(resendBtn, false);
+      }
+    });
+
+    if (form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      otpErr.textContent = '';
+      emailErr.textContent = '';
+
+      const email    = (emailInp?.value || '').trim();
+      const otp      = (otpInp?.value || '').trim();
+      const otp_id   = (otpIdInput?.value || '').trim();
+      const timezone = (timezoneInp?.value || '').trim();
+
+      if (!email || !otp) { kilToast.warning('Please enter email and OTP.'); return; }
+
+      let encEmail, encOtp;
+      try{
+        encEmail = await rsaEncrypt(email);
+        encOtp   = await rsaEncrypt(otp);
+        if (!encEmail || !encOtp) throw new Error('empty ciphertext');
+      } catch {
+        kilToast.danger('Encryption failed. Try again.');
+        return;
+      }
+
+      const payload = {
+        _csrf: document.querySelector('input[name="_csrf"]')?.value || '',
+        email: encEmail,
+        otp: encOtp,
+        otp_id,
+        timezone
+      };
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      try{
+        disableX(submitBtn, true);
+        const json = await http('/login', payload);
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Login failed.');
+          return;
+        }
+        kilToast.success('Login successful.');
+        location.assign(json.redirect || '/');
+      } catch (err){
+        const msg = err?.response?.data?.message
+          || (typeof err?.response?.data === 'string' ? err.response.data : null)
+          || err?.message
+          || 'Login failed.';
+        kilToast.danger(msg);
+      } finally {
+        disableX(submitBtn, false);
+      }
+    });
+  })();
+
+  /* =======================
+     PASSWORD LOGIN + 2FA
+  ======================= */
+  (function(){
+    const form = document.getElementById('loginFormPw');
+    const emailInp = document.getElementById('pwEmail');
+    const passInp  = document.getElementById('pwPass');
+    const tzInp    = document.getElementById('timezonePw');
+    const errDiv   = document.getElementById('pwError');
+
+    const http = async (url, data) => {
+      if (window.axiosElaw?.post) {
+        const { data: json } = await window.axiosElaw.post(url, data, {
+          headers:{'Accept':'application/json'},
+          timeout:20000
+        });
+        return json;
+      }
+      const res = await (window.kFetch || window.fetch)(url, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Accept':'application/json',
+          'CSRF-Token': (window.getCsrf?.() || '')
+        },
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    };
+
+    // 2FA modal bits
+    const modalEl   = document.getElementById('pw2faModal');
+    const modal     = modalEl ? new bootstrap.Modal(modalEl) : null;
+    const otpIdInp  = document.getElementById('pw2fa_otp_id');
+    const otpInp    = document.getElementById('pw2fa_otp');
+    const emailHid  = document.getElementById('pw2fa_email');
+    const tzHid     = document.getElementById('pw2fa_timezone');
+    const resendBtn = document.getElementById('pw2fa_resend');
+    const err2fa    = document.getElementById('pw2fa_error');
+
+    try { if (tzHid) tzHid.value = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch {}
+
+    function disableBtn(el, yes){
+      if (!el) return;
+      el.disabled = !!yes;
+      if (yes) el.setAttribute('aria-busy','true'); else el.removeAttribute('aria-busy');
+    }
+
+    // resend countdown
+    let timerId = null;
+    function countdown(btn, sec){
+      let t = sec;
+      disableBtn(btn, true);
+      btn.textContent = `Resend OTP (${t}s)`;
+      clearInterval(timerId);
+      timerId = setInterval(()=>{
+        t--;
+        if (t<=0){
+          clearInterval(timerId);
+          btn.textContent='Resend OTP';
+          disableBtn(btn,false);
+        } else {
+          btn.textContent = `Resend OTP (${t}s)`;
+        }
+      }, 1000);
+    }
+
+    // RESEND handler (purpose = login_2fa)
+    if (resendBtn) resendBtn.addEventListener('click', async ()=>{
+      const email = (emailHid?.value || '').trim();
+      if (!email){
+        window.kilToast?.warning?.('Missing email');
+        return;
+      }
+      try{
+        disableBtn(resendBtn, true);
+        const j = await http('/send_login_otp', { type:'Client', purpose:'login_2fa', email });
+        if (!j?.success){
+          window.kilToast?.danger?.(j?.message || 'Resend failed');
+          return;
+        }
+        if (j.otp_id) otpIdInp.value = j.otp_id;
+        window.kilToast?.success?.(j.message || 'OTP resent');
+        countdown(resendBtn, 30);
+      } finally {
+        disableBtn(resendBtn, false);
+      }
+    });
+
+    // VERIFY handler
+    const form2 = document.getElementById('pw2faForm');
+    if (form2) form2.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      err2fa.textContent = '';
+
+      const email = (emailHid?.value || '').trim();
+      const otp   = (otpInp?.value || '').trim();
+      const otp_id= (otpIdInp?.value || '').trim();
+      const tz    = (tzHid?.value || '').trim();
+
+      if (!email || !otp){
+        window.kilToast?.warning?.('Enter OTP');
+        return;
+      }
+
+      let encEmail, encOtp;
+      try{
+        encEmail = await rsaEncrypt(email);
+        encOtp   = await rsaEncrypt(otp);
+        if (!encEmail || !encOtp) throw new Error('empty ciphertext');
+      } catch {
+        window.kilToast?.danger?.('Encryption failed');
+        return;
+      }
+
+      const btn = document.getElementById('pw2fa_submit');
+      try{
+        disableBtn(btn, true);
+        const j = await http('/login_password_2fa_verify', {
+          email: encEmail,
+          otp: encOtp,
+          otp_id,
+          timezone: tz,
+          _csrf: form2.querySelector('[name="_csrf"]')?.value || ''
+        });
+        if (!j?.success){
+          err2fa.textContent = j?.message || 'Verification failed';
+          window.kilToast?.danger?.(j?.message || 'Verification failed');
+          return;
+        }
+        window.kilToast?.success?.('Login successful');
+        location.assign(j.redirect || '/');
+      }
+      catch (e) {
+  let msg =
+    e?.response?.data?.message ||
+    (typeof e?.response?.data === 'string' ? e.response.data : '') ||
+    e?.message ||
+    'Verification failed';
+
+  err2fa.textContent = msg;
+  window.kilToast?.danger?.(msg);
+} finally {
+  disableBtn(btn, false);
+} 
+      
+      
+
+    });
+
+    // MAIN password submit
+    if (form) form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      errDiv.textContent = '';
+
+      const email = (emailInp.value || '').trim();
+      const password = (passInp.value || '').trim();
+      const timezone = (tzInp?.value || '').trim();
+      if (!email || !password) {
+        kilToast.warning('Enter email and password.');
+        return;
+      }
+
+      let encEmail, encPass;
+      try{
+        encEmail = await rsaEncrypt(email);
+        encPass  = await rsaEncrypt(password);
+        if (!encEmail || !encPass) throw new Error('empty ciphertext');
+      } catch {
+        kilToast.danger('Encryption failed. Try again.');
+        return;
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      try{
+        disableBtn(submitBtn, true);
+        const json = await http('/login_password', {
+          email: encEmail,
+          password: encPass,
+          timezone,
+          _csrf: document.querySelector('#loginFormPw [name="_csrf"]')?.value || ''
+        });
+
+        // 2SV branch
+        if (json?.success && json?.two_step){
+          if (emailHid) emailHid.value = email;
+          if (otpIdInp) otpIdInp.value = json.otp_id || '';
+          if (otpInp)   otpInp.value = '';
+          if (modal)    modal.show();
+          countdown(resendBtn, 30);
+          kilToast.info(json.message || 'Enter OTP to finish login.');
+          return;
+        }
+
+        // normal branch
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Login failed.');
+          return;
+        }
+        kilToast.success('Login successful.');
+        location.assign(json.redirect || '/');
+
+      } catch (err) {
+        const msg = err?.response?.data?.message
+          || (typeof err?.response?.data === 'string' ? err.response.data : null)
+          || err?.message
+          || 'Login failed.';
+        kilToast.danger(msg);
+      } finally {
+        disableBtn(submitBtn, false);
+      }
+    });
+  })();
+
+  /* =======================
+     FORGOT PASSWORD (Modal)
+  ======================= */
+  (function(){
+    const form    = document.getElementById('forgotPwForm');
+    const email   = document.getElementById('fp_email');
+    const otpId   = document.getElementById('fp_otp_id');
+    const otp     = document.getElementById('fp_otp');
+    const p1      = document.getElementById('fp_new');
+    const p2      = document.getElementById('fp_confirm');
+    const tzInp   = document.getElementById('fp_timezone');
+
+    const sendBtn   = document.getElementById('fp_send_otp');
+    const resendBtn = document.getElementById('fp_resend_otp');
+    const afterSend = document.getElementById('fp_after_send');
+    const errDiv    = document.getElementById('fp_error');
+
+    const http = async (url, data) => {
+      if (window.axiosElaw?.post) {
+        const { data: json } = await window.axiosElaw.post(url, data, {
+          headers:{'Accept':'application/json'},
+          timeout:20000
+        });
+        return json;
+      }
+      const res = await (window.kFetch || window.fetch)(url, {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Accept':'application/json',
+          'CSRF-Token': (window.getCsrf?.() || '')
+        },
+        body: JSON.stringify(data),
+      });
+      return await res.json();
+    };
+
+    function disableX(el, yes){ disable(el, yes); }
+
+    let timerId = null;
+    function startCountdown(btn, sec) {
+      let t = sec;
+      disableX(btn, true);
+      btn.textContent = `Resend OTP (${t}s)`;
+      clearInterval(timerId);
+      timerId = setInterval(()=> {
+        t--;
+        if (t <= 0) {
+          clearInterval(timerId);
+          btn.textContent = 'Resend OTP';
+          disableX(btn, false);
+        } else {
+          btn.textContent = `Resend OTP (${t}s)`;
+        }
+      }, 1000);
+    }
+
+    // Pre-fill email from active tab if available
+    document.getElementById('forgotPasswordModal').addEventListener('show.bs.modal', () => {
+      errDiv.textContent = '';
+      if (email && !email.value) {
+        const e1 = document.getElementById('pwEmail')?.value?.trim();
+        const e2 = document.getElementById('emailInput')?.value?.trim();
+        email.value = e1 || e2 || '';
+      }
+      afterSend.style.display = 'none';
+      otp.value = '';
+      p1.value  = '';
+      p2.value  = '';
+      otpId.value = '';
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Resend OTP';
+      clearInterval(timerId);
+    });
+
+    // Send OTP (purpose: reset_password)
+    if (sendBtn) sendBtn.addEventListener('click', async ()=>{
+      errDiv.textContent = '';
+      const v = (email.value || '').trim();
+      if (!v) { kilToast.warning('Enter your email.'); return; }
+
+      try{
+        disableX(sendBtn, true);
+        kilToast('Sending OTP', {
+          id:'fp_send',
+          type:'info',
+          duration:0,
+          position:'bottom-center',
+          showProgress:true,
+          close:true
+        });
+
+        const json = await http('/send_login_otp', {
+          type:'Client',
+          purpose:'reset_password',
+          email: v
+        });
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Failed to send OTP.', {
+            replaceId:'fp_send',
+            duration:4000,
+            position:'bottom-center'
+          });
+          return;
+        }
+        if (json.otp_id) otpId.value = json.otp_id;
+
+        kilToast.success(json.message || 'OTP sent to your email.', {
+          replaceId:'fp_send',
+          duration:3000,
+          position:'bottom-center'
+        });
+
+        afterSend.style.display = '';
+        startCountdown(resendBtn, 30);
+
+      } catch (e){
+        kilToast.danger(`Failed to send OTP. ${e}`, {
+          replaceId:'fp_send',
+          duration:4000,
+          position:'bottom-center'
+        });
+      } finally {
+        disableX(sendBtn, false);
+      }
+    });
+
+    // Resend OTP
+    if (resendBtn) resendBtn.addEventListener('click', async ()=>{
+      errDiv.textContent = '';
+      const v = (email.value || '').trim();
+      if (!v) { kilToast.warning('Enter your email.'); return; }
+      try{
+        disableX(resendBtn, true);
+        kilToast('Re-sending OTP', {
+          id:'fp_resend',
+          type:'info',
+          duration:0,
+          position:'bottom-center',
+          showProgress:true,
+          close:true
+        });
+
+        const json = await http('/send_login_otp', {
+          type:'Client',
+          purpose:'reset_password',
+          email: v
+        });
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Failed to resend OTP.', {
+            replaceId:'fp_resend',
+            duration:4000,
+            position:'bottom-center'
+          });
+          return;
+        }
+        if (json.otp_id) otpId.value = json.otp_id;
+        kilToast.success(json.message || 'OTP resent.', {
+          replaceId:'fp_resend',
+          duration:2000,
+          position:'bottom-center'
+        });
+        startCountdown(resendBtn, 30);
+
+      } catch (e){
+        kilToast.danger(`Failed to resend OTP. ${e}`, {
+          replaceId:'fp_resend',
+          duration:4000,
+          position:'bottom-center'
+        });
+      } finally {
+        disableX(resendBtn, false);
+      }
+    });
+
+    // Submit Reset
+    if (form) form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      errDiv.textContent = '';
+
+      const vEmail = (email.value || '').trim();
+      const vOtp   = (otp.value || '').trim();
+      const vOtpId = (otpId.value || '').trim();
+      const vTz    = (tzInp?.value || '').trim();
+      const vP1    = (p1.value || '').trim();
+      const vP2    = (p2.value || '').trim();
+
+      if (!vEmail || !vOtp || !vP1 || !vP2) {
+        kilToast.warning('Please fill all fields.');
+        return;
+      }
+      if (vP1 !== vP2) {
+        kilToast.warning('Passwords do not match.');
+        return;
+      }
+
+      let encEmail, encOtp, encP1, encP2;
+      try{
+        encEmail = await rsaEncrypt(vEmail);
+        encOtp   = await rsaEncrypt(vOtp);
+        encP1    = await rsaEncrypt(vP1);
+        encP2    = await rsaEncrypt(vP2);
+        if (!encEmail || !encOtp || !encP1 || !encP2) throw new Error('empty ciphertext');
+      } catch {
+        kilToast.danger('Encryption failed. Try again.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('fp_submit');
+      try{
+        disableX(submitBtn, true);
+        kilToast('Resetting password…', {
+          id:'fp_do',
+          type:'info',
+          duration:0,
+          position:'bottom-center',
+          showProgress:true,
+          close:true
+        });
+
+        const json = await http('/reset_password', {
+          email: encEmail,
+          otp: encOtp,
+          otp_id: vOtpId,
+          new_password: encP1,
+          confirm_password: encP2,
+          timezone: vTz,
+          _csrf: document.querySelector('#forgotPwForm [name="_csrf"]')?.value || ''
+        });
+
+        if (!json?.success) {
+          kilToast.danger(json?.message || 'Reset failed.', {
+            replaceId:'fp_do',
+            duration:4000,
+            position:'bottom-center'
+          });
+          return;
+        }
+
+        kilToast.success('Password reset successful. Logging you in…', {
+          replaceId:'fp_do',
+          duration:1500,
+          position:'bottom-center'
+        });
+        setTimeout(()=>location.assign(json.redirect || '/'), 500);
+
+      } catch (err) {
+        const msg = err?.response?.data?.message
+          || (typeof err?.response?.data === 'string' ? err.response.data : null)
+          || err?.message
+          || 'Reset failed.';
+        kilToast.danger(msg, {
+          replaceId:'fp_do',
+          duration:4000,
+          position:'bottom-center'
+        });
+      } finally {
+        disableX(submitBtn, false);
+      }
+    });
+  })();
+})();
+</script>

@@ -1,0 +1,298 @@
+        <!-- Footer Start -->
+        <div class="footer text-center bg-white p-2 border-top">
+            <p class="text-dark mb-0">Copyright &copy; 2025 <a href="#" class="text-info">eLaw</a>. All Rights Reserved | Design by <a href="https://myambergroup.com/" target="_blank" class="text-info">Amber Group</a></p>
+        </div>
+        <!-- Footer End -->
+        
+    </div>         
+    <!-- End Wrapper -->            
+
+    <!-- jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Simplebar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@6.3.2/dist/simplebar.min.js"></script>
+
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.53.0/dist/apexcharts.min.js"></script>
+    
+	<!-- Daterangepikcer JS -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.30.1/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-4@5.39.0/build/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.print.min.js"></script>
+
+    <!-- Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- summernote -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- FullCalendar v6 -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+
+ 
+    <!-- Main JS -->
+    <script src="../superadminassets/plugins/apexchart/chart-data.js"></script>
+    <script src="../superadminassets/js/doctors.js"></script>
+    <script src="../superadminassets/js/script.js"></script>
+    <script src="../superadminassets/js/theme-script.js"></script>
+
+
+
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.11.0/axios.min.js"></script>
+       <!-- CryptoJS AES -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+              <!-- --- KilvishCropper ---  -->
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+          
+            <!-- Kiltel Phone Input -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/kiltel@1.0.61/kiltel.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/kiltel@1.0.61/kiltel.min.js"></script>
+            <!-- Kiltel Phone Input -->
+
+           <!-- KilLoader  -->
+           <script defer src="https://cdn.jsdelivr.net/npm/kil-loader@1.0.3/kil-loader.min.js"></script>
+
+            <!-- KilToast  -->
+          <script src="https://cdn.jsdelivr.net/npm/kiltoast@1.0.16/kiltoast.min.js"></script>
+
+            <!-- KilValidation  -->
+          <script src="https://cdn.jsdelivr.net/npm/kilvalidate@1.0.71/kilvish.min.js"></script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+<script>
+    // Summernotes
+    $(document).ready(function () {
+
+
+         kilToast.configure({
+                position: 'top-right',
+                duration: 3500,
+                gap: 12,
+                offset: 18,
+                mode: 'simple'
+              });
+
+
+        // Terms & Conditions
+        $('#tc_content').summernote({
+            placeholder: 'Type your message...',
+            tabsize: 2,
+            height: 200,
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen']] // Removed 'codeview'
+            ]
+        });
+
+        // Privacy Policy
+        $('#summernote').summernote({
+            placeholder: 'Type your message...',
+            tabsize: 2,
+            height: 200,
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen']] // Removed 'codeview'
+            ]
+        });
+
+    });
+</script>
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const trnInputs = document.querySelectorAll('[data-kil-trn1]');
+
+  trnInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      // Remove all non-numeric characters
+      let value = input.value.replace(/\D/g, '');
+      if (value.length > 3 && value.length <= 6) {
+        input.value = value.slice(0, 3) + '-' + value.slice(3);
+      } else if (value.length > 6) {
+        input.value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 9);
+      } else {
+        input.value = value;
+      }
+    });
+  });
+});
+
+  document.addEventListener('DOMContentLoaded', () => {
+  const trnInputs = document.querySelectorAll('[data-kil-trn]');
+
+  trnInputs.forEach(input => {
+    input.addEventListener('input', () => {
+      let value = input.value.slice(0, 9);
+      input.value = value;
+    });
+  });
+});
+</script>
+
+
+
+
+
+
+<script>
+(function(){
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && !document.cookie.includes('tz=')) {
+      document.cookie = 'tz=' + encodeURIComponent(tz) + '; path=/; max-age=31536000; SameSite=Lax';
+    }
+  } catch(e) {}
+})();
+
+</script>
+
+
+
+
+
+<script>
+  function showLoader(){ document.getElementById('globalLoader').style.display = 'flex'; }
+  function hideLoader(){ document.getElementById('globalLoader').style.display = 'none'; }
+    
+let csrfToken = 
+  (document.querySelector('input[name="_csrf"]')?.value) ||
+  (document.querySelector('meta[name="csrf-token"]')?.content) ||
+  null;
+
+if (!csrfToken) console.error("❌ CSRF token not found!");
+
+
+
+
+    let axiosElaw;
+
+/* ---------- CSRF + fetch wrapper (uses current token every time) ---------- */
+(function () {
+  function readCookie(name){
+    return document.cookie.split('; ').find(r => r.startsWith(name+'='))?.split('=').slice(1).join('=');
+  }
+
+  // Update token in <meta> and the first hidden input[name="_csrf"], if present
+  window.setCsrf = function(token){
+    if(!token) return;
+    let m = document.querySelector('meta[name="csrf-token"]');
+    if(!m){
+      m = document.createElement('meta');
+      m.setAttribute('name', 'csrf-token');
+      document.head.appendChild(m);
+    }
+    m.setAttribute('content', token);
+    const hidden = document.querySelector('input[name="_csrf"]');
+    if (hidden) hidden.value = token;
+  };
+
+  // Read token from meta → hidden input → cookie (common names)
+  window.getCsrf = function(){
+    const meta = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (meta) return meta;
+    const hidden = document.querySelector('input[name="_csrf"]')?.value;
+    if (hidden) return hidden;
+    for (const key of ['XSRF-TOKEN','_csrf','csrfToken']) {
+      const v = readCookie(key);
+      if (v) return decodeURIComponent(v);
+    }
+    return '';
+  };
+
+  // fetch() wrapper that injects CSRF and refreshes it if server rotates
+  const _fetch = window.fetch;
+  window.kFetch = function(url, opts = {}) {
+    const headers = new Headers(opts.headers || {});
+    const t = getCsrf();
+    if (t) {
+      headers.set('X-CSRF-Token', t);
+      headers.set('CSRF-Token', t);       // compatibility
+      headers.set('X-XSRF-TOKEN', t);     // compatibility
+    }
+    opts.headers = headers;
+
+    // if (typeof showLoader === 'function') showLoader();
+
+    return _fetch(url, opts).then(res => {
+      const newT = res.headers.get('x-csrf-token')
+              || res.headers.get('csrf-token')
+              || res.headers.get('x-xsrf-token');
+      if (newT) setCsrf(newT);
+      return res;
+    }).finally(() => {
+      // if (typeof hideLoader === 'function') hideLoader();
+    });
+  };
+
+  // axios (optional) – keep token fresh too
+  if (window.axios) {
+  const instance = axios.create();
+
+  instance.interceptors.request.use(cfg => {
+    const t = getCsrf();
+    if (t) {
+      cfg.headers['X-CSRF-Token'] = t;
+      cfg.headers['CSRF-Token'] = t;
+      cfg.headers['X-XSRF-TOKEN'] = t;
+    }
+    return cfg;
+  });
+
+  instance.interceptors.response.use(res => {
+    const nt = res.headers['x-csrf-token'] || res.headers['csrf-token'] || res.headers['x-xsrf-token'];
+    if (nt) setCsrf(nt);
+    return res;
+  });
+
+  // Freeze it so no other script can overwrite accidentally
+  window.axiosElaw = Object.freeze(instance);
+}
+
+
+
+})();
+</script>
+

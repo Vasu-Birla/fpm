@@ -1,0 +1,3787 @@
+<!-- ----------  firmstaff/manage_case.ejs---------------- -->
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<style>
+    .case-tabs-wrapper .nav-tabs {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid #dee2e6;
+    }
+
+    .case-tabs-wrapper .nav-item {
+    flex: 1;
+    text-align: center;
+    }
+
+    .case-tabs-wrapper .nav-link {
+    width: 100%;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #495057;
+    font-weight: 500;
+    padding: 12px 0;
+    transition: all 0.2s ease-in-out;
+    }
+
+    .case-tabs-wrapper .nav-link:hover {
+    color: #2E37A4;
+    background-color: #f8f9fa;
+    }
+
+    .case-tabs-wrapper .nav-link.active {
+    border-bottom: 3px solid #2E37A4;
+    color: #2E37A4;
+    font-weight: 600;
+    }
+</style>
+
+<!-- ========================
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center"> 
+                        <a href="#" class="text-dark"> 
+                            <i class="ti ti-chevron-left me-1"></i>Case Management
+                        </a>
+                    </h5>
+                </div>
+                <!-- page header end -->
+
+
+                <div class="mb-3">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <div>
+      <h4 class="mb-1">
+        <span class="text-muted">Case #</span>
+        <span class="fw-bold"><%= caseData.case_number || caseData.case_id %></span> —
+        <span><%= caseData.title %></span>
+      </h4>
+      <div class="text-muted small">
+        Client:
+        <% if (caseData.primary_client) { %>
+          <% if (caseData.primary_client.type === 'Business') { %>
+            <strong><%= caseData.primary_client.business_name || (caseData.primary_client.first_name + ' ' + caseData.primary_client.last_name) %></strong>
+          <% } else { %>
+            <strong><%= caseData.primary_client.first_name %> <%= caseData.primary_client.last_name %></strong>
+          <% } %>
+          — <%= caseData.primary_client.email %> — <%= (caseData.primary_client.country_code || '') + ' ' + (caseData.primary_client.contact || '') %>
+        <% } else { %>
+          <span class="text-warning">No primary client linked</span>
+        <% } %>
+      </div>
+    </div>
+    <div class="text-md-end small">
+      <div>Status: <span class="badge bg-info-subtle text-info"><%= caseData.status %></span></div>
+      <div>Priority: <span class="badge bg-secondary-subtle text-secondary"><%= caseData.priority %></span></div>
+      <div>Opened: <%= caseData.opened_at ? caseData.opened_at.toISOString().slice(0,10) : '—' %></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- -------- Common CSRF for all form  axiosElaw auto handle -------- -->
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                <div class="case-tabs-wrapper mb-3">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#case" role="tab">Case</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#research-log" role="tab">Research Log</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#court-filing-tracker" role="tab">Court Filing Tracker</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cpr-timelines" role="tab">CPR Timelines</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#evidence" role="tab">Evidence</a></li>
+                       
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#document-drafting" role="tab">Document</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#e-signature" role="tab">E-Signature</a></li>
+                    </ul>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="tab-content" id="invoiceTabContent">
+
+                    <!-- Case  TAB 1 START -->
+
+
+                    <!-- Case -->
+<div class="tab-pane fade show active" id="case" role="tabpanel">
+
+  <!-- card start -->
+  <form id="caseBasicForm" method="POST" enctype="multipart/form-data">
+      
+      <input type="hidden" name="case_id" value="<%= caseData.case_id %>">
+
+      <div class="card">
+          <div class="card-body pb-0">
+              <div class="form">
+                  <div class="row">
+                      <!-- Case Type from PracticeArea -->
+                      <div class="col-md-4">
+                          <div class="mb-3">
+                              <label for="case_type_practice_area_id" class="form-label mb-1 fw-medium">
+                                Case Type (Practice Area)
+                                <span class="text-danger ms-1">*</span>
+                              </label>
+                              <select class="form-select select2" id="case_type_practice_area_id" name="case_type_practice_area_id" required>
+                                  <option value="">Select any one</option>
+                                  <% 
+                                    const currentPAId = (caseData.practiceAreas && caseData.practiceAreas.length)
+                                      ? caseData.practiceAreas[0].practice_area_id
+                                      : null;
+                                    practiceAreas.forEach(pa => { 
+                                  %>
+                                      <option value="<%= pa.practice_area_id %>" 
+                                        <%= (currentPAId === pa.practice_area_id) ? 'selected' : '' %>>
+                                          <%= pa.name %>
+                                      </option>
+                                  <% }); %>
+                              </select>
+                          </div>
+                      </div>
+
+                      <!-- Jurisdiction -->
+                      <div class="col-md-4">
+                          <div class="mb-3">
+                              <label for="jurisdiction" class="form-label mb-1 fw-medium">
+                                Jurisdiction (Court) <span class="text-danger ms-1">*</span>
+                              </label>
+                              <input type="text"
+                                     id="jurisdiction"
+                                     name="jurisdiction"
+                                     class="form-control"
+                                     placeholder="Enter the court / jurisdiction"
+                                     value="<%= caseData.jurisdiction || '' %>"
+                                     required>
+                          </div>
+                      </div>
+
+                      <!-- Case Priority -->
+                      <div class="col-md-4">
+                          <div class="mb-3">
+                              <label for="priority" class="form-label mb-1 fw-medium">
+                                Case Priority <span class="text-danger ms-1">*</span>
+                              </label>
+                              <select class="form-select" id="priority" name="priority" required>
+                                  <option value="">Choose any one</option>
+                                  <option value="Low"      <%= caseData.priority === 'Low' ? 'selected' : '' %>>Low</option>
+                                  <option value="Normal"   <%= caseData.priority === 'Normal' ? 'selected' : '' %>>Normal</option>
+                                  <option value="High"     <%= caseData.priority === 'High' ? 'selected' : '' %>>High</option>
+                                  <option value="Critical" <%= caseData.priority === 'Critical' ? 'selected' : '' %>>Critical</option>
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+
+        <!-- ====================== Case-Level Limitation Claims ====================== -->
+        <div class="card mb-3">
+          <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+              <span class="fw-semibold">
+                <i class="ti ti-hourglass-low me-1"></i>
+                Case Limitation Claims
+              </span>
+              <div class="small text-muted">
+                Track limitation deadlines for this case. Rows you add here save with the main "Save Case" button.
+              </div>
+            </div>
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#limitationCatalogueModal">
+              <i class="ti ti-book me-1"></i> View full catalogue
+            </button>
+          </div>
+
+          <div class="card-body">
+            <!-- <div class="alert alert-info mb-3 py-2 px-3 small">
+              Add one or more limitation claims below, then click <strong>Save Case</strong>.
+            </div> -->
+
+            <input type="hidden" id="case_claims_json" name="case_claims_json" value="">
+
+            <div id="caseClaimRows" class="mb-2"></div>
+
+            <template id="caseClaimRowTpl">
+              <div class="row g-2 align-items-end case-claim-row mb-2">
+                <div class="col-md-4">
+                  <label class="form-label mb-1 small fw-medium">
+                    Limitation Type <span class="text-danger">*</span>
+                  </label>
+                  <select class="form-select form-select-sm claim-key" data-ignore-kilvish="Yes">
+                    <option value="">Select limitation</option>
+                    <% if (limitationView && limitationView.categories) { %>
+                      <% limitationView.categories.forEach(function(cat) { %>
+                        <optgroup label="<%= cat.categoryLabel %>">
+                          <% cat.claims.forEach(function(claim) {
+                               const label = claim.custom_label || claim.title;
+                          %>
+                            <option value="<%= claim.claimKey %>">
+                              <%= label %> - <%= claim.timeLimitText || (claim.timeLimitYears ? (claim.timeLimitYears + ' years') : '') %>
+                            </option>
+                          <% }); %>
+                        </optgroup>
+                      <% }); %>
+                    <% } %>
+                  </select>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label mb-1 small fw-medium">
+                    Trigger Date <span class="text-danger">*</span>
+                  </label>
+                  <input type="date" class="form-control form-control-sm claim-trigger" >
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label mb-1 small fw-medium">
+                    Notes (optional)
+                  </label>
+                  <input type="text" class="form-control form-control-sm claim-notes" placeholder="Short note..." data-ignore-kilvish="Yes">
+                </div>
+
+                <div class="col-md-2 d-flex align-items-center gap-2">
+                  <div class="form-check mt-3">
+                    <input class="form-check-input claim-primary" data-ignore-kilvish="Yes" type="checkbox">
+                    <label class="form-check-label small">
+                      Primary
+                    </label>
+                  </div>
+                  <button type="button" class="btn btn-outline-danger btn-sm mt-3 remove-claim-row">
+                    <i class="ti ti-x"></i>
+                  </button>
+                </div>
+
+              </div>
+            </template>
+
+            <hr class="my-3">
+
+         
+
+            <div id="caseClaimsEmpty"
+                 class="text-muted small"
+                 style="<%= caseClaims && caseClaims.length ? 'display:none;' : '' %>">
+              No limitation claims added yet. Use the section above to queue new ones.
+            </div>
+          </div>
+        </div>
+        <!-- ====================== /Case-Level Limitation Claims ====================== -->
+
+                  <!-- Assignments -->
+                  <div class="row">
+                    <%
+                      const staffOptions = firmStaff || [];
+
+                      const pbRole = (typeof participantByRole !== 'undefined' && participantByRole)
+                        ? participantByRole
+                        : {};
+
+                      const toArr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
+
+                      const lawyers    = staffOptions.filter(s => s.role?.name === 'Lawyer'    || s.role?.name === 'FirmAdmin');
+                      const paralegals = staffOptions.filter(s => s.role?.name === 'Paralegal');
+                      const finances   = staffOptions.filter(s => s.role?.name === 'Finance');
+                      const intakes    = staffOptions.filter(s => s.role?.name === 'Intake');
+
+                      const selectedLawyers    = toArr(pbRole.LeadLawyer);
+                      const selectedParalegals = toArr(pbRole.Paralegal);
+                      const selectedFinances   = toArr(pbRole.Finance);
+                      const selectedIntakes    = toArr(pbRole.Intake);
+
+                      const selLawyerObjs    = lawyers.filter(s => selectedLawyers.includes(s.staff_id));
+                      const selParalegalObjs = paralegals.filter(s => selectedParalegals.includes(s.staff_id));
+                      const selFinanceObjs   = finances.filter(s => selectedFinances.includes(s.staff_id));
+                      const selIntakeObjs    = intakes.filter(s => selectedIntakes.includes(s.staff_id));
+                    %>
+
+                    <!-- Assigned Lawyer(s) -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label mb-1 fw-medium">
+                          Assigned Lawyer(s)
+                        </label>
+                        <select
+                          class="form-select select2"
+                          id="assigned_lawyer_ids"
+                          name="assigned_lawyer_ids[]"
+                          multiple
+                          data-placeholder="Select lawyer(s)"
+                        >
+                          <% lawyers.forEach(s => { 
+                              const label = `${s.first_name} ${s.last_name} (${s.role?.name || 'Staff'})`;
+                              const isSelected = selectedLawyers.includes(s.staff_id);
+                          %>
+                            <option value="<%= s.staff_id %>" <%= isSelected ? 'selected' : '' %>>
+                              <%= label %>
+                            </option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Paralegal(s) -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label mb-1 fw-medium">
+                          Assigned Paralegal(s)
+                        </label>
+                        <select
+                          class="form-select select2"
+                          id="assigned_paralegal_ids"
+                          name="assigned_paralegal_ids[]"
+                          multiple
+                          data-placeholder="Select paralegal(s)"
+                        >
+                          <% paralegals.forEach(s => { 
+                              const label = `${s.first_name} ${s.last_name} (${s.role?.name || 'Staff'})`;
+                              const isSelected = selectedParalegals.includes(s.staff_id);
+                          %>
+                            <option value="<%= s.staff_id %>" <%= isSelected ? 'selected' : '' %>>
+                              <%= label %>
+                            </option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Finance(s) -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label mb-1 fw-medium">
+                          Assigned Finance(s)
+                        </label>
+                        <select
+                          class="form-select select2"
+                          id="assigned_finance_ids"
+                          name="assigned_finance_ids[]"
+                          multiple
+                          data-placeholder="Select finance user(s)"
+                        >
+                          <% finances.forEach(s => { 
+                              const label = `${s.first_name} ${s.last_name} (${s.role?.name || 'Staff'})`;
+                              const isSelected = selectedFinances.includes(s.staff_id);
+                          %>
+                            <option value="<%= s.staff_id %>" <%= isSelected ? 'selected' : '' %>>
+                              <%= label %>
+                            </option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Intake(s) -->
+                    <div class="col-md-3">
+                      <div class="mb-3">
+                        <label class="form-label mb-1 fw-medium">
+                          Assigned Intake(s)
+                        </label>
+                        <select
+                          class="form-select select2"
+                          id="assigned_intake_ids"
+                          name="assigned_intake_ids[]"
+                          multiple
+                          data-placeholder="Select intake user(s)"
+                        >
+                          <% intakes.forEach(s => { 
+                              const label = `${s.first_name} ${s.last_name} (${s.role?.name || 'Staff'})`;
+                              const isSelected = selectedIntakes.includes(s.staff_id);
+                          %>
+                            <option value="<%= s.staff_id %>" <%= isSelected ? 'selected' : '' %>>
+                              <%= label %>
+                            </option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Case Description + Documents -->
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="mb-3">
+                        <label for="case_description" class="form-label mb-1 fw-medium">
+                          Case Description
+                          <span class="text-danger ms-1">*</span>
+                        </label>
+                        <textarea data-ignore-kilvish="Yes"
+                          class="form-control"
+                          id="case_description"
+                          name="case_description"
+                          rows="3"
+                          placeholder="Enter the descriptions....."
+                        ><%= caseData.description || '' %></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="documentContainer">
+                    <div class="row document-row align-items-end mb-3">
+                      <div class="col-md-5">
+                        <label class="form-label fw-medium">Document Title <span class="text-danger">*</span></label>
+                        <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-medium">Attach Documents (PDF, DOCX, Images) <span class="text-danger">*</span></label>
+                        <input type="file" data-kilvish-file="only_doc_image" name="documents" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png">
+                      </div>
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-primary ms-2 fs-13 btn-md addMore w-100">
+                          <i class="ti ti-plus"></i> Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+              </div>
+          </div>
+      </div>
+      <!-- card end -->
+
+      <div class="d-flex align-items-center justify-content-center mt-3">
+          <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">
+            Save Case
+          </button>
+      </div>
+  </form>
+
+  <!-- ====================== Case Overview / Read-Only Info ====================== -->
+  <div class="mt-4">
+
+    <!-- Case Snapshot -->
+
+    <div class="card mb-3">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">
+      <i class="ti ti-briefcase me-1"></i> Case Snapshot
+    </span>
+    <span class="small text-muted">
+      Opened:
+      <%= caseData.opened_at ? caseData.opened_at.toISOString().slice(0,10) : '—' %>
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="row gy-2">
+      <div class="col-md-4">
+        <div class="small text-muted">Case Number</div>
+        <div class="fw-semibold">
+          <%= caseData.case_number || caseData.case_id %>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Practice Area</div>
+        <div class="fw-semibold" id="snapshotPracticeArea">
+          <% if (caseData.practiceAreas && caseData.practiceAreas.length) { %>
+            <%= caseData.practiceAreas[0].name %>
+          <% } else { %>
+            <span class="text-muted">Not selected</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Jurisdiction</div>
+        <div class="fw-semibold" id="snapshotJurisdiction">
+          <%= caseData.jurisdiction || '—' %>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Status</div>
+        <span class="badge bg-info-subtle text-info" id="snapshotStatus">
+          <%= caseData.status || 'Open' %>
+        </span>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Priority</div>
+        <span class="badge bg-secondary-subtle text-secondary" id="snapshotPriority">
+          <%= caseData.priority || 'Normal' %>
+        </span>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Primary Client</div>
+        <% if (caseData.primary_client) { %>
+          <div class="fw-semibold">
+            <% if (caseData.primary_client.type === 'Business') { %>
+              <%= caseData.primary_client.business_name || (caseData.primary_client.first_name + ' ' + caseData.primary_client.last_name) %>
+            <% } else { %>
+              <%= caseData.primary_client.first_name %> <%= caseData.primary_client.last_name %>
+            <% } %>
+          </div>
+          <div class="small text-muted">
+            <%= caseData.primary_client.email %>
+          </div>
+        <% } else { %>
+          <span class="text-muted">Not linked</span>
+        <% } %>
+      </div>
+
+      <div class="col-12 mt-2">
+        <div class="small text-muted mb-1">Case Description</div>
+        <div id="snapshotDescription">
+          <% if (caseData.description) { %>
+            <div class="border rounded p-2 bg-light-subtle small">
+              <%= caseData.description.replace(/\n/g, '<br>') %>
+            </div>
+          <% } else { %>
+            <div class="text-muted small">No Case description added yet.</div>
+          <% } %>
+        </div>
+      </div>
+
+
+
+      <!-- ------------ CASE LEVEL claims  ---------------- -->
+      <div class="col-12 mt-2">
+        <div class="small text-muted mb-1">Limitation Claims</div>
+        <div id="snapshotCaseClaims">
+          <% if (caseClaims && caseClaims.length) { %>
+            <ul class="list-unstyled mb-0 small">
+              <% caseClaims.forEach(function(cc) {
+                   const meta = cc.meta || {};
+                   const label = meta.title || cc.claim_key;
+              %>
+              <li class="mb-1 d-flex flex-wrap align-items-center">
+                <% if (cc.is_primary) { %>
+                  <span class="badge bg-primary-subtle text-primary me-2">Primary</span>
+                <% } %>
+                <span class="fw-semibold me-2"><%= label %></span>
+                <% if (meta.timeLimitText) { %>
+                  <span class="text-muted me-2">(<%= meta.timeLimitText %>)</span>
+                <% } %>
+                <% if (cc.limitation_deadline) { %>
+                  <span class="badge bg-light text-dark me-2">
+                    Deadline: <%= cc.limitation_deadline %>
+                  </span>
+                <% } %>
+                <% if (cc.status === 'expired') { %>
+                  <span class="badge bg-danger-subtle text-danger">Expired</span>
+                <% } else if (cc.status === 'warning') { %>
+                  <span class="badge bg-warning-subtle text-warning">Warning</span>
+                <% } else { %>
+                  <span class="badge bg-success-subtle text-success">Open</span>
+                <% } %>
+              </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <div class="text-muted small">No limitation claims tracked yet.</div>
+          <% } %>
+        </div>
+      </div>
+      <!-- ------------------- Case Level Claims End ---------------- -->
+
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+    <div class="card">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">
+      <i class="ti ti-folder me-1"></i> Case Claims
+    </span>
+  </div>
+  <div class="card-body">
+
+
+
+       <div id="caseClaimsTableWrapper" style="<%= caseClaims && caseClaims.length ? '' : 'display:none;' %>">
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 4%;">#</th>
+                      <th style="width: 30%;">Claim</th>
+                      <th style="width: 20%;">Trigger Date</th>
+                      <th style="width: 20%;">Deadline</th>
+                      <th style="width: 10%;">Status</th>
+                      <th style="width: 16%;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="caseClaimsTbody">
+                    <% (caseClaims || []).forEach(function(cc, idx) {
+                         const meta  = cc.meta || {};
+                         const label = meta.title || cc.claim_key;
+                    %>
+                    <tr data-case-claim-id="<%= cc.case_claim_id %>">
+                      <td><%= idx + 1 %></td>
+                      <td>
+                        <div class="fw-semibold">
+                          <% if (cc.is_primary) { %>
+                            <span class="badge bg-primary-subtle text-primary me-1">Primary</span>
+                          <% } %>
+                          <%= label %>
+                        </div>
+                        <% if (meta.timeLimitText) { %>
+                          <div class="small text-muted"><%= meta.timeLimitText %></div>
+                        <% } %>
+                        <% if (cc.notes) { %>
+                          <div class="small mt-1"><strong>Note:</strong> <%= cc.notes %></div>
+                        <% } %>
+                      </td>
+                      <td class="small"><%= cc.trigger_date || '--' %></td>
+                      <td class="small"><%= cc.limitation_deadline || '--' %></td>
+                      <td>
+                        <% if (cc.status === 'expired') { %>
+                          <span class="badge bg-danger-subtle text-danger">Expired</span>
+                        <% } else if (cc.status === 'warning') { %>
+                          <span class="badge bg-warning-subtle text-warning">Warning</span>
+                        <% } else { %>
+                          <span class="badge bg-success-subtle text-success">Open</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm case-claim-delete"
+                                data-case-claim-id="<%= cc.case_claim_id %>"
+                                data-case-id="<%= caseData.case_id %>">
+                          <i class="ti ti-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+
+  </div>
+</div>
+
+
+
+
+    <!-- Assigned Team -->
+
+    <div class="card mb-3">
+  <div class="card-header bg-light">
+    <span class="fw-semibold">
+      <i class="ti ti-users me-1"></i> Assigned Team
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="row gy-3">
+      <div class="col-md-3">
+        <div class="small text-muted mb-1">Lead Lawyer(s)</div>
+        <div id="assignedLawyersBox">
+          <% if (selLawyerObjs.length) { %>
+            <ul class="list-unstyled mb-0 small">
+              <% selLawyerObjs.forEach(s => { %>
+                <li class="d-flex align-items-center mb-1">
+                  <i class="ti ti-user-circle me-2 text-primary"></i>
+                  <span><%= s.first_name %> <%= s.last_name %></span>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <div class="text-muted small">No lawyer assigned.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="small text-muted mb-1">Paralegal(s)</div>
+        <div id="assignedParalegalsBox">
+          <% if (selParalegalObjs.length) { %>
+            <ul class="list-unstyled mb-0 small">
+              <% selParalegalObjs.forEach(s => { %>
+                <li class="d-flex align-items-center mb-1">
+                  <i class="ti ti-user-circle me-2 text-primary"></i>
+                  <span><%= s.first_name %> <%= s.last_name %></span>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <div class="text-muted small">No paralegal assigned.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="small text-muted mb-1">Finance</div>
+        <div id="assignedFinancesBox">
+          <% if (selFinanceObjs.length) { %>
+            <ul class="list-unstyled mb-0 small">
+              <% selFinanceObjs.forEach(s => { %>
+                <li class="d-flex align-items-center mb-1">
+                  <i class="ti ti-user-circle me-2 text-primary"></i>
+                  <span><%= s.first_name %> <%= s.last_name %></span>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <div class="text-muted small">No finance staff assigned.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="small text-muted mb-1">Intake</div>
+        <div id="assignedIntakesBox">
+          <% if (selIntakeObjs.length) { %>
+            <ul class="list-unstyled mb-0 small">
+              <% selIntakeObjs.forEach(s => { %>
+                <li class="d-flex align-items-center mb-1">
+                  <i class="ti ti-user-circle me-2 text-primary"></i>
+                  <span><%= s.first_name %> <%= s.last_name %></span>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <div class="text-muted small">No intake staff assigned.</div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- general & Documents -->
+
+    <div class="card">
+  <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">
+      <i class="ti ti-folder me-1"></i> General Documents
+    </span>
+  </div>
+  <div class="card-body">
+
+    <div id="generalDocsTableWrapper" style="<%= generalDocs && generalDocs.length ? '' : 'display:none;' %>">
+      <div class="table-responsive">
+        <table id="generalDocsTable" class="table table-sm table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 4%;">#</th>
+              <th>Title</th>
+              <th>File</th>
+              <th>Uploaded At</th>
+              <th style="width: 8%;">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="generalDocsTbody">
+          <% (generalDocs || []).forEach((d, idx) => { 
+              const fname = (d.s3_key || '').split('/').pop();
+          %>
+            <tr data-doc-id="<%= d.document_id %>">
+              <td><%= idx + 1 %></td>
+              <td><%= d.title %></td>
+              <td>
+                <% if (d.s3_key) { %>
+                  <a class="btn btn-outline-primary btn-sm"
+                     href="/secure/file_stream?s3key=<%= encodeURIComponent(d.s3_key) %>"
+                     target="_blank">
+                    <i class="ti ti-external-link me-1"></i>
+                    <%= fname || 'View' %>
+                  </a>
+                <% } else { %>
+                  <span class="text-muted small">No file</span>
+                <% } %>
+              </td>
+              <td class="small text-muted">
+                <%= d.created_at ? d.created_at.toISOString().slice(0,16).replace('T',' ') : '—' %>
+              </td>
+              <td>
+                <button type="button"
+                        class="btn btn-outline-danger btn-sm case-doc-delete"
+                        data-doc-id="<%= d.document_id %>"
+                        data-case-id="<%= caseData.case_id %>">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </td>
+            </tr>
+          <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="generalDocsEmpty"
+         class="text-muted small"
+         style="<%= generalDocs && generalDocs.length ? 'display:none;' : '' %>">
+      No general documents uploaded yet. Use the form above to add.
+    </div>
+
+  </div>
+</div>
+
+
+  </div>
+  <!-- ====================== /Case Overview ====================== -->
+
+</div>
+               <!-- Case  TAB 1 END -->
+
+
+
+
+              <!-- Research Log  TAB 2 START -->
+<div class="tab-pane fade" id="research-log" role="tabpanel">
+
+  <!-- Form Start -->
+  <form id="researchForm" method="POST" enctype="multipart/form-data">
+  
+    <input type="hidden" name="case_id" value="<%= caseData.case_id %>">
+
+    <div class="card">
+      <div class="card-body pb-0">
+        <div class="form">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="research_title" class="form-label mb-1 fw-medium">
+                  Research Title <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="research_title"
+                       name="research_title"
+                       class="form-control"
+                       placeholder="Enter research title"
+                       required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="case_citation" class="form-label mb-1 fw-medium">
+                  Case Citation <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="case_citation"
+                       name="case_citation"
+                       class="form-control"
+                       placeholder="Enter Case Citation" data-ignore-kilvish="Yes"
+                       required>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="statute_reference" class="form-label mb-1 fw-medium">
+                  Statute Reference <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="statute_reference"
+                       name="statute_reference"
+                       class="form-control"
+                       placeholder="Enter statute reference" data-ignore-kilvish="Yes"
+                       required>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="summary" class="form-label mb-1 fw-medium">
+                  Summary <span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control"
+                          id="summary"
+                          name="summary"
+                          rows="4"
+                          placeholder="Research summary..." data-ignore-kilvish="Yes"
+                          required></textarea>
+              </div>
+            </div>
+
+            <!-- Research documents -->
+            <div id="documentContainerResearch">
+              <div class="row document-row-new align-items-end mb-3">
+                <div class="col-md-5">
+                  <label class="form-label fw-medium">
+                    Research Document Title <span class="text-danger">*</span>
+                  </label>
+                  <input type="text"
+                         name="document_title[]"
+                         class="form-control"
+                         placeholder="Enter Document Title" data-ignore-kilvish="yes"
+                         required>
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label fw-medium">
+                    Upload File (PDF/DOCX/Image; Max 10 MB) <span class="text-danger">*</span>
+                  </label>
+                  <input type="file" data-kilvish-file="only_doc_image"
+                         name="documents"
+                         class="form-control"
+                         accept=".pdf,.doc,.docx,.jpg,.png"
+                         required>
+                </div>
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-success addMoreNew w-100">
+                    <i class="ti ti-plus"></i> Add More
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="d-flex align-items-center justify-content-end mt-3">
+      <button type="submit"
+              name="submit"
+              class="btn btn-primary btn-md fs-13 fw-medium rounded">
+        Save Research Log
+      </button>
+    </div>
+  </form>
+  <!-- Form End -->
+
+  <hr/>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table id="researchlogTable"
+           class="table table-striped table-bordered table-nowrap align-middle"
+           style="width: 100%;">
+      <thead class="table-light">
+        <tr>
+          <th>Sr. No.</th>
+          <th>Research Title</th>
+          <th>Case Citation / Statute</th>
+          <th>Summary</th>
+          <th>References</th>
+          <th>Created By</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="researchTbody">
+        <% (researchLogs || []).forEach((r, idx) => { 
+             const docs = r.documents || [];
+        %>
+          <tr data-research-id="<%= r.research_id %>">
+            <td><%= idx + 1 %></td>
+            <td class="fw-semibold"><%= r.research_title %></td>
+            <td>
+              <% if (r.case_citation) { %>
+                <div><span class="small text-muted">Citation:</span> <%= r.case_citation %></div>
+              <% } %>
+              <% if (r.statute_reference) { %>
+                <div><span class="small text-muted">Statute:</span> <%= r.statute_reference %></div>
+              <% } %>
+            </td>
+            <td class="small">
+              <% if (r.summary) {
+                   const s = r.summary;
+                   const short = s.length > 160 ? s.slice(0,160) + '…' : s;
+              %>
+                <%= short %>
+              <% } else { %>
+                <span class="text-muted">—</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (docs.length) { %>
+                <div class="small mb-1">
+                  <span class="badge bg-info-subtle text-info border border-info">
+                    <%= docs.length %> file(s)
+                  </span>
+                </div>
+                <% docs.forEach(function(d, di) {
+                     const fname = (d.s3_key || '').split('/').pop();
+                %>
+                  <a href="/secure/file_stream?s3key=<%= encodeURIComponent(d.s3_key || '') %>"
+                     target="_blank"
+                     class="btn btn-outline-primary btn-xs mb-1">
+                    <i class="ti ti-file-text me-1"></i>
+                    <%= fname || ('File ' + (di + 1)) %>
+                  </a><br/>
+                <% }) %>
+              <% } else { %>
+                <span class="text-muted small">No files</span>
+              <% } %>
+            </td>
+            <td class="small">
+              <% if (r.created_by_staff) { %>
+                <div><%= r.created_by_staff.first_name %> <%= r.created_by_staff.last_name %></div>
+                <div class="text-muted"><%= r.created_by_staff.email %></div>
+              <% } else { %>
+                <span class="text-muted">—</span>
+              <% } %>
+            </td>
+            <td class="small text-muted">
+              <% if (r.created_at) { %>
+                <%= r.created_at.toISOString().slice(0,16).replace('T',' ') %>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td>
+              <div class="dropdown">
+                <a href="javascript:void(0);"
+                   class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1"
+                   data-bs-toggle="dropdown">
+                  <i class="ti ti-dots-vertical"></i>
+                </a>
+                <ul class="dropdown-menu p-2">
+                  <li>
+                    <a href="javascript:void(0);"
+                       class="dropdown-item text-danger delete-research-btn"
+                       data-id="<%= r.research_id %>">
+                      <i class="ti ti-trash me-2"></i>Delete
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <!-- End Table -->
+
+</div>
+<!-- Research Log TAB 2 END -->
+
+
+                    <!-- Court Filing Tracker  TAB 3 START -->
+                    <div class="tab-pane fade" id="court-filing-tracker" role="tabpanel">
+
+                        <!-- Form Start -->
+                        <form id="courtFilingForm" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="case_id" value="<%= caseData.case_id %>">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="court_type" class="form-label fw-medium">Court Type</label>
+                                            <select id="court_type" name="court_type" class="form-select select2" required>
+                                                <option value="">Select Court Type</option>
+                                                <option>Supreme Court</option>
+                                                <option>Parish Court</option>
+                                                <option>Appeal Court</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="filing_type" class="form-label fw-medium">Filing Type</label>
+                                            <select id="filing_type" name="filing_type" class="form-select select2" required>
+                                                <option value="">Select Filing Type</option>
+                                                <option>Statement</option>
+                                                <option>Motion</option>
+                                                <option>Appeal</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="filing_date" class="form-label fw-medium">Filing Date</label>
+                                            <input type="date" id="filing_date" name="filing_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="reference_no"  class="form-label fw-medium">Reference Number</label>
+                                            <input type="text" id="reference_no" name="reference_no" class="form-control" placeholder="Enter Reference Number" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="receipt_upload"  class="form-label fw-medium">Receipt Upload (PDF)</label>
+                                            <input type="file" data-kilvish-file="pdf" id="receipt_upload" name="receipt_upload" accept=".pdf" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="statuss" class="form-label fw-medium">Status</label>
+                                            <select id="statuss" name="statuss" class="form-select select2" required>
+                                                <option value="">Select Status</option>
+                                                <option>Filed</option>
+                                                <option>Pending</option>
+                                                <option>Returned</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="notes" class="form-label fw-medium">Notes</label>
+                                            <textarea data-ignore-kilvish="Yes" id="notes" name="notes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-4">
+                                        <button type="submit" class="btn btn-primary">Save Filing</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+
+                        <hr/>
+                        
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="courtfilingTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Court Type</th>
+                                        <th>Filing Type</th>
+                                        <th>Filing Date</th>
+                                        <th>Reference No.</th>
+                                        <th>Status</th>
+                                        <th>Receipt</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="courtFilingTbody">
+                                    <% if (Array.isArray(courtFilings) && courtFilings.length) { %>
+                                        <% courtFilings.forEach((f, idx) => { %>
+                                            <tr data-filing-id="<%= f.filing_id %>">
+                                                <td><%= idx + 1 %></td>
+                                                <td><%= f.court_type %></td>
+                                                <td><%= f.filing_type %></td>
+                                                <td><%= f.filing_date ? new Date(f.filing_date).toISOString().slice(0,10) : '—' %></td>
+                                                <td><%= f.reference_no || '—' %></td>
+                                                <td>
+                                                    <% if (f.status === 'Filed') { %>
+                                                        <span class="badge bg-success-subtle text-success border border-success"><%= f.status %></span>
+                                                    <% } else if (f.status === 'Returned') { %>
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger"><%= f.status %></span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning"><%= f.status %></span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if (f.receipt_s3_key) { %>
+                                                        <a href="/secure/file_stream?s3key=<%= encodeURIComponent(f.receipt_s3_key) %>" target="_blank">
+                                                            <i class="ti ti-file-text"></i> View
+                                                        </a>
+                                                    <% } else { %>
+                                                        <span class="text-muted small">No receipt</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <a href="javascript:void(0);" class="shadow-sm border rounded-2 p-1 d-inline-flex" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                        <ul class="dropdown-menu p-2">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="dropdown-item text-danger delete-court-btn" data-id="<%= f.filing_id %>">
+                                                                    <i class="ti ti-trash me-2"></i>Delete
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr class="court-filing-empty-row">
+                                            <td colspan="8" class="text-center text-muted">No filings yet.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                        <hr class="my-4"/>
+
+                        <!-- ===================== CPR Timelines / Deadlines ===================== -->
+                        <div class="card" id="cprDeadlinesCard">
+                          <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                              <span class="fw-semibold">
+                                <i class="ti ti-calendar-time me-1"></i> CPR Timelines
+                              </span>
+                              <div class="small text-muted">
+                                Procedural deadlines under the Civil Procedure Rules (JM).
+                              </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                              <button type="button" id="cprRefreshBtn" class="btn btn-outline-secondary btn-sm">
+                                Refresh
+                              </button>
+                              <button type="button" id="cprGenerateBtn" class="btn btn-primary btn-sm">
+                                Generate / Update
+                              </button>
+                            </div>
+                          </div>
+
+                          <div class="card-body">
+                            <div class="small text-muted mb-2">
+                              Enter base dates (issue/service/hearing/trial/etc.) then click Generate.
+                            </div>
+
+                            <form id="cprBaseDatesForm" class="mb-3" onsubmit="return false;">
+                              <div class="row g-2" id="cprBaseDatesFields"></div>
+                            </form>
+
+                            <details class="mb-3">
+                              <summary class="small fw-semibold">Add manual deadline</summary>
+                              <div class="row g-2 mt-2">
+                                <div class="col-md-4">
+                                  <input type="text" id="cprManualTitle" class="form-control form-control-sm" placeholder="Title">
+                                </div>
+                                <div class="col-md-3">
+                                  <input type="date" id="cprManualDueDate" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-md-3">
+                                  <input type="text" id="cprManualRule" class="form-control form-control-sm" placeholder="Rule ref (optional)">
+                                </div>
+                                <div class="col-md-2">
+                                  <button type="button" id="cprManualAddBtn" class="btn btn-success btn-sm w-100">Add</button>
+                                </div>
+                                <div class="col-12">
+                                  <input type="text" id="cprManualNotes" class="form-control form-control-sm" placeholder="Notes (optional)">
+                                </div>
+                              </div>
+                            </details>
+
+                            <div class="table-responsive">
+                              <table class="table table-sm table-bordered align-middle" id="cprDeadlinesTable">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th style="width: 4%;">#</th>
+                                    <th style="width: 34%;">Event</th>
+                                    <th style="width: 18%;">Base Date</th>
+                                    <th style="width: 16%;">Due Date</th>
+                                    <th style="width: 12%;">Status</th>
+                                    <th style="width: 16%;">Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="cprDeadlinesTbody">
+                                  <tr><td colspan="6" class="text-center text-muted">Loading…</td></tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- ===================== /CPR Timelines / Deadlines ===================== -->
+
+                    </div>
+                    <!-- Court Filing Tracker  TAB 3 END -->
+
+                    <!-- CPR Timelines TAB START -->
+                    <div class="tab-pane fade" id="cpr-timelines" role="tabpanel">
+                      <div id="cprTimelinesMount"></div>
+                    </div>
+                    <!-- CPR Timelines TAB END -->
+
+                    <!-- Evidence   TAB 4 START -->
+                    <div class="tab-pane fade" id="evidence" role="tabpanel">
+
+                        <!-- Form Start -->
+                        <form id="evidenceForm" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="case_id" value="<%= caseData.case_id %>">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="exhibit_no" class="form-label">Exhibit No. <span class="text-danger">*</span></label>
+                                            <input type="text" data-kilvish-char='mix' id="exhibit_no" name="exhibit_no" class="form-control" placeholder="Enter Exhibit Number" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="date_collected" class="form-label">Date Collected <span class="text-danger">*</span></label>
+                                            <input type="date" id="date_collected" name="date_collected" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                            <textarea data-ignore-kilvish="Yes" id="description" name="description" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="source" class="form-label">Source <span class="text-danger">*</span></label>
+                                            <select id="source" name="source" class="form-select select2" required>
+                                                <option value="" disabled selected>Select Source</option>
+                                                <option value="Client">Client</option>
+                                                <option value="Witness">Witness</option>
+                                                <option value="Police">Police</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="stored_location" class="form-label">Stored Location <span class="text-danger">*</span></label>
+                                            <input data-kilvish-char='mix_ _' type="text" id="stored_location" name="stored_location" class="form-control" placeholder="Enter Storage Location">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="linked_case" class="form-label">Linked Case <span class="text-danger">*</span></label>
+                                            <input data-kilvish-char='mix_ _' type="text" id="linked_case" name="linked_case" class="form-control" placeholder="Enter Linked Case (optional)">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="chain_upload" class="form-label">Chain of Custody Upload (PDF)</label>
+                                            <input data-kilvish-file="pdf" type="file" id="chain_upload" name="chain_upload" class="form-control" accept=".pdf">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-end">
+                                <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Evidence</button>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+
+                        <hr/>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="evidenceTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Exhibit No.</th>
+                                        <th>Description</th>
+                                        <th>Source</th>
+                                        <th>Date Collected</th>
+                                        <th>Linked Case</th>
+                                        <th>Stored Location</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evidenceTbody">
+                                    <% if (Array.isArray(evidences) && evidences.length) { %>
+                                        <% evidences.forEach((ev, idx) => { 
+                                          const doc = (ev.documents || [])[0];
+                                        %>
+                                            <tr data-evidence-id="<%= ev.evidence_id %>">
+                                                <td><%= idx + 1 %></td>
+                                                <td><%= ev.exhibit_no %></td>
+                                                <td class="small"><%= ev.description || '—' %></td>
+                                                <td><%= ev.source %></td>
+                                                <td><%= ev.date_collected ? (ev.date_collected.toISOString ? ev.date_collected.toISOString().slice(0,10) : ev.date_collected) : '—' %></td>
+                                                <td><%= ev.linked_case_ref || '—' %></td>
+                                                <td><%= ev.stored_location || '—' %></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <% if (doc && doc.s3_key) { %>
+                                                            <a href="/secure/file_stream?s3key=<%= encodeURIComponent(doc.s3_key) %>" target="_blank" class="btn btn-outline-primary btn-xs">
+                                                                <i class="ti ti-file-text me-1"></i>View
+                                                            </a>
+                                                        <% } else { %>
+                                                            <span class="text-muted small">No file</span>
+                                                        <% } %>
+                                                        <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                            <i class="ti ti-dots-vertical"></i>
+                                                        </a>
+                                                        <ul class="dropdown-menu p-2">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="dropdown-item text-danger delete-evidence-btn" data-id="<%= ev.evidence_id %>">
+                                                                    <i class="ti ti-trash me-2"></i> Delete
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr class="evidence-empty-row">
+                                            <td colspan="8" class="text-center text-muted">No evidence captured yet.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                    </div>
+                    <!-- Evidence  TAB 4 END -->
+
+            
+                    <!-- Document Drafting TAB 5 START -->
+                    <div class="tab-pane fade" id="document-drafting" role="tabpanel">
+                        
+                        <!-- Form Start -->
+                        <form id="draftingForm" method="post" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body pb-0">
+
+                                    <!-- Case Select -->
+                                    <div class="mb-3">
+                                        <label for="doc_case_id" class="form-label">Case</label>
+                                        <select id="doc_case_id" name="case_id" class="form-select" readonly disabled>
+                                            <option value="<%= caseData.case_id %>" selected><%= caseData.case_number || caseData.case_id %> - <%= caseData.title %></option>
+                                        </select>
+                                    </div>
+
+                               
+                                    <!-- Kind -->
+                                    <div class="mb-3">
+                                        <label for="doc_kind" class="form-label fw-medium">Kind</label>
+                                        <select id="doc_kind" name="doc_kind" class="form-select select2" required>
+                                            <option value="">Select Kind</option>
+                                            <option value="general">General</option>
+                                            <option value="research">Research</option>
+                                            <option value="evidence">Evidence</option>
+                                            <option value="contract">Contract</option>
+                                            <option value="pleading">Pleading</option>
+                                            <option value="order">Order</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="documentContainerDrafting">
+                                        <div class="row document-row-new align-items-end mb-3">
+                                            <div class="col-md-5">
+                                                <label class="form-label fw-medium">Document Title <span class="text-danger">*</span></label>
+                                                <input type="text" data-kilvish-char="mix_ _" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="form-label fw-medium">Upload File (PDF/DOCX/Image; Max 10 MB) <span class="text-danger">*</span></label>
+                                                <input type="file" data-kilvish-file="only_doc_image" name="documents" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-success addMoreNew w-100">
+                                                    <i class="ti ti-plus"></i> Add More
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    
+
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Upload</button>
+                                    </div>
+                        
+                         
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+                        
+                        <hr/>
+
+                        <!-- Table Start -->
+                        <div class="table-responsive">
+                            <table id="documentsTable" class="table table-striped table-bordered table-nowrap" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No.</th>
+                                        <th>Title</th>
+                                        <th>Case</th>
+                                        <th>Kind</th>
+                                        <th>Filename</th>
+                                        <th>Access Level</th>
+                                        <th>Uploaded By</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="draftingDocsTbody">
+                                    <% if (Array.isArray(draftingDocs) && draftingDocs.length) { %>
+                                        <% draftingDocs.forEach((d, idx) => { %>
+                                            <tr data-doc-id="<%= d.document_id %>" data-case-id="<%= d.case_id %>">
+                                                <td><%= idx + 1 %></td>
+                                                <td class="fw-semibold"><%= d.title %></td>
+                                                <td><%= d.case_id %></td>
+                                                <td><%= d.kind %></td>
+                                                <td>
+                                                    <% if (d.s3_key) { %>
+                                                        <a href="/secure/file_stream?s3key=<%= encodeURIComponent(d.s3_key) %>" target="_blank">
+                                                            <i class="ti ti-file-text me-1"></i><%= (d.s3_key || '').split('/').pop() %>
+                                                        </a>
+                                                    <% } else { %>
+                                                        <span class="text-muted small">No file</span>
+                                                    <% } %>
+                                                </td>
+                                                <td><span class="badge bg-secondary-subtle text-secondary">Case Team</span></td>
+                                                <td class="small">
+                                                    <% if (d.FirmStaff) { %>
+                                                        <div><%= d.FirmStaff.first_name %> <%= d.FirmStaff.last_name %></div>
+                                                        <div class="text-muted"><%= d.FirmStaff.email %></div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">—</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="small text-muted"><%= d.created_at ? (d.created_at.toISOString ? d.created_at.toISOString().slice(0,16).replace('T',' ') : d.created_at) : '—' %></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                            <i class="ti ti-dots-vertical"></i>
+                                                        </a>
+                                                        <ul class="dropdown-menu p-2">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="dropdown-item text-danger delete-drafting-btn" data-id="<%= d.document_id %>" data-case-id="<%= d.case_id %>">
+                                                                    <i class="ti ti-trash me-2"></i> Delete
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr class="drafting-empty-row">
+                                            <td colspan="9" class="text-center text-muted">No documents uploaded yet.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Table End -->
+                        
+                    </div>
+                    <!-- Document Drafting TAB 5 END -->
+
+                    <!-- E-Signature TAB 6 START -->
+                    <div class="tab-pane fade" id="e-signature" role="tabpanel">
+
+                        <!-- card start -->
+                        <form id="esignForm" method="POST">
+                            <input type="hidden" name="case_id" value="<%= caseData.case_id %>">
+                            <div class="card">
+                                <div class="card-body pb-0">
+                                    <div class="mb-3">
+                                        <label for="provider" class="form-label fw-medium">Provider</label>
+                                        <select id="provider" name="provider" class="form-select select2" required>
+                                            <option value="docusign">DocuSign</option>
+                                            <option value="hellosign">HelloSign</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="es_doc_id" class="form-label fw-medium">Document</label>
+                                        <select data-ignore-kilvish="Yes" id="es_doc_id" name="document_id" class="form-select select2" required>
+                                            <option value="">Select Document</option>
+                                            <% (draftingDocs || []).forEach(d => { %>
+                                                <option  value="<%= d.document_id %>">
+                                                    <%= d.title %> (Case <%= d.case_id %>)
+                                                </option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+
+                                    <!-- Recipients Repeater -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-medium">Recipients</label>
+                                        <div id="recipients-container"></div>
+                                        <button type="button" class="btn btn-primary btn-sm" id="addRecipientBtn">Add Recipient</button>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="es_message" class="form-label">Message</label>
+                                        <textarea data-ignore-kilvish="Yes" id="es_message" name="message" class="form-control" placeholder="E-Sign request message"></textarea>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input data-ignore-kilvish="Yes" class="form-check-input" type="checkbox" id="send_now" name="send_now">
+                                        <label class="form-check-label" for="send_now">Send Now</label>
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                            <!-- card end -->
+
+                            <div class="d-flex align-items-center justify-content-end">
+                                <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Send Envelope</button>
+                            </div>
+                        </form>
+                        <!-- card start -->
+
+                        <hr/>
+
+                        <div class="table-responsive">
+                            <table id="esignTable" class="table table-striped table-bordered table-nowrap" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Document</th>
+                                        <th>Provider</th>
+                                        <th>Recipients</th>
+                                        <th>Status</th>
+                                        <th>Sender</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="esignTbody">
+                                    <% if (Array.isArray(esignEnvelopes) && esignEnvelopes.length) { %>
+                                        <% esignEnvelopes.forEach((env, idx) => { %>
+                                            <tr data-envelope-id="<%= env.envelope_id %>">
+                                                <td><%= idx + 1 %></td>
+                                                <td>
+                                                    <% if (env.Document) { %>
+                                                        <div class="fw-semibold"><%= env.Document.title %></div>
+                                                        <div class="text-muted small">Case <%= env.Document.case_id %></div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">—</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-capitalize"><%= env.provider %></td>
+                                                <td class="small">
+                                                    <% const recs = env.recipients || []; %>
+                                                    <% if (recs.length) { %>
+                                                        <div class="badge bg-info-subtle text-info border border-info"><%= recs.length %> recipient(s)</div>
+                                                        <div class="mt-1">
+                                                            <% recs.slice(0,3).forEach(r => { %>
+                                                                <div><%= r.name || r.id_email %> (<%= r.role || 'signer' %>)</div>
+                                                            <% }) %>
+                                                            <% if (recs.length > 3) { %>
+                                                                <div class="text-muted">+<%= recs.length - 3 %> more</div>
+                                                            <% } %>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">—</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if (env.status === 'completed') { %>
+                                                        <span class="badge bg-success-subtle text-success border border-success">Completed</span>
+                                                    <% } else if (env.status === 'sent') { %>
+                                                        <span class="badge bg-primary-subtle text-primary border border-primary">Sent</span>
+                                                    <% } else if (env.status === 'voided' || env.status === 'declined' || env.status === 'error') { %>
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger"><%= env.status %></span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary"><%= env.status %></span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="small">
+                                                    <% if (env.sender) { %>
+                                                        <div><%= env.sender.first_name %> <%= env.sender.last_name %></div>
+                                                        <div class="text-muted"><%= env.sender.email %></div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">—</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="small text-muted">
+                                                    <%= env.createdAt ? (env.createdAt.toISOString ? env.createdAt.toISOString().slice(0,16).replace('T',' ') : env.createdAt) : '—' %>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                            <i class="ti ti-dots-vertical"></i>
+                                                        </a>
+                                                        <ul class="dropdown-menu p-2">
+                                                            <li>
+                                                                <a href="javascript:void(0);" class="dropdown-item text-danger delete-esign-btn" data-id="<%= env.envelope_id %>">
+                                                                    <i class="ti ti-trash me-2"></i> Delete
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr class="esign-empty-row">
+                                            <td colspan="8" class="text-center text-muted">No e-sign envelopes yet.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                    <!-- E-Signature  TAB 6 END -->
+
+                </div>
+
+            </div>
+        </div>
+        <!-- row end -->               
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Limitation Catalogue Modal -->
+<%- include('partials/limitations_catalogue_model'); %>
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+      const fx   = window.axiosElaw || window.axios || null;
+</script>
+
+
+
+
+<!-- ============================  START TAB 1 CASE SCRIPT ================================ -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const caseBasicForm = document.getElementById('caseBasicForm');
+  if (!caseBasicForm) return;
+
+  const claimRowsContainer = document.getElementById('caseClaimRows');
+  const claimRowTemplate   = document.getElementById('caseClaimRowTpl');
+  const addClaimBtn        = document.getElementById('addCaseClaimRow');
+  const claimsJsonInput    = document.getElementById('case_claims_json');
+
+  function addCaseClaimRow(prefill = {}) {
+    if (!claimRowsContainer || !claimRowTemplate) return;
+    let fragment;
+    if (claimRowTemplate.content) {
+      fragment = claimRowTemplate.content.cloneNode(true);
+    } else {
+      fragment = document.createElement('div');
+      fragment.innerHTML = claimRowTemplate.innerHTML;
+    }
+    const row = fragment.querySelector ? fragment.querySelector('.case-claim-row') : fragment.firstElementChild;
+    if (!row) return;
+
+    const sel       = row.querySelector('.claim-key');
+    const triggerEl = row.querySelector('.claim-trigger');
+    const notesEl   = row.querySelector('.claim-notes');
+    const primaryEl = row.querySelector('.claim-primary');
+
+    if (sel && prefill.claim_key) sel.value = prefill.claim_key;
+    if (triggerEl && prefill.trigger_date) triggerEl.value = prefill.trigger_date;
+    if (notesEl && prefill.notes) notesEl.value = prefill.notes;
+    if (primaryEl && prefill.is_primary) primaryEl.checked = true;
+
+    claimRowsContainer.appendChild(row);
+  }
+
+  function collectCaseClaimRows() {
+    if (!claimRowsContainer) return [];
+    const rows = Array.from(claimRowsContainer.querySelectorAll('.case-claim-row'));
+    return rows
+      .map(r => {
+        const claimKey = r.querySelector('.claim-key')?.value?.trim() || '';
+        const trigger  = r.querySelector('.claim-trigger')?.value || '';
+        const notes    = r.querySelector('.claim-notes')?.value?.trim() || '';
+        const primary  = !!r.querySelector('.claim-primary')?.checked;
+        return { claim_key: claimKey, trigger_date: trigger, notes, is_primary: primary };
+      })
+      .filter(row => row.claim_key && row.trigger_date);
+  }
+
+  if (claimRowsContainer) {
+    claimRowsContainer.addEventListener('click', function (e) {
+      if (e.target.closest('.remove-claim-row')) {
+        const row = e.target.closest('.case-claim-row');
+        if (row) row.remove();
+        if (claimRowsContainer.childElementCount === 0) {
+          addCaseClaimRow();
+        }
+      }
+    });
+  }
+
+  if (addClaimBtn) {
+    addClaimBtn.addEventListener('click', function () {
+      addCaseClaimRow();
+    });
+  }
+
+  if (claimRowsContainer && claimRowTemplate && claimRowsContainer.childElementCount === 0) {
+    addCaseClaimRow();
+  }
+
+  caseBasicForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const caseId = '<%= caseData.case_id %>';
+    const url = `/firmstaff/cases/${caseId}/basic`;
+
+    if (claimsJsonInput) {
+      const payload = collectCaseClaimRows();
+      claimsJsonInput.value = payload.length ? JSON.stringify(payload) : '';
+    }
+
+    const formData = new FormData(caseBasicForm);
+
+    try {
+      const { data } = await fx.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (data && data.success) {
+        if (window.kilToast) {
+          kilToast.success(data.message || 'Case updated.');
+        } else {
+          alert(data.message || 'Case updated.');
+        }
+
+        // 🔄 Update snapshot + docs + assigned team
+        if (data.snapshot) {
+          updateSnapshotUI(data.snapshot);
+        }
+        if (Array.isArray(data.documents)) {
+          renderGeneralDocsTable(data.documents);
+        }
+        if (Array.isArray(data.claims)) {
+          renderCaseClaimsTable(data.claims);
+          if (claimRowsContainer) {
+            claimRowsContainer.innerHTML = '';
+            addCaseClaimRow();
+          }
+          if (claimsJsonInput) claimsJsonInput.value = '';
+        }
+        refreshAssignedTeamUI();
+      } else {
+        const msg = (data && data.message) || 'Could not update case.';
+        if (window.kilToast) {
+          kilToast.danger(msg);
+        } else {
+          alert(msg);
+        }
+      }
+    } catch (err) {
+      console.error('caseBasicForm error', err);
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Unexpected error while saving case.';
+      if (window.kilToast) {
+        kilToast.danger(msg);
+      } else {
+        alert(msg);
+      }
+    }
+  });
+});
+</script>
+
+
+<script>
+function renderCaseClaimsTable(claims) {
+  const tbody   = document.getElementById('caseClaimsTbody');
+  const wrapper = document.getElementById('caseClaimsTableWrapper');
+  const empty   = document.getElementById('caseClaimsEmpty');
+  const snap    = document.getElementById('snapshotCaseClaims');
+  const caseId  = '<%= caseData.case_id %>';
+
+  if (!tbody) return;
+
+  claims = claims || [];
+
+  if (!claims.length) {
+    tbody.innerHTML = '';
+    if (wrapper) wrapper.style.display = 'none';
+    if (empty)   empty.style.display   = '';
+    if (snap) {
+      snap.innerHTML = '<div class="text-muted small">No limitation claims tracked yet.</div>';
+    }
+    return;
+  }
+
+  const rowsHtml = claims.map(function(cc, idx) {
+    const meta  = cc.meta || {};
+    const label = meta.title || cc.claim_key;
+    const limitText = meta.timeLimitText ||
+      (typeof meta.timeLimitYears === 'number'
+        ? (meta.timeLimitYears + ' years')
+        : '');
+
+    let statusBadge = '<span class="badge bg-success-subtle text-success">Open</span>';
+    if (cc.status === 'expired') {
+      statusBadge = '<span class="badge bg-danger-subtle text-danger">Expired</span>';
+    } else if (cc.status === 'warning') {
+      statusBadge = '<span class="badge bg-warning-subtle text-warning">Warning</span>';
+    }
+
+    return `
+      <tr data-case-claim-id="${cc.case_claim_id}">
+        <td>${idx + 1}</td>
+        <td>
+          <div class="fw-semibold">
+            ${cc.is_primary ? '<span class="badge bg-primary-subtle text-primary me-1">Primary</span>' : ''}
+            ${escapeHtml(label)}
+          </div>
+          ${limitText ? `<div class="small text-muted">${escapeHtml(limitText)}</div>` : ''}
+          ${cc.notes ? `<div class="small mt-1"><strong>Note:</strong> ${escapeHtml(cc.notes)}</div>` : ''}
+        </td>
+        <td class="small">${cc.trigger_date || '--'}</td>
+        <td class="small">${cc.limitation_deadline || '--'}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <button type="button"
+                  class="btn btn-outline-danger btn-sm case-claim-delete"
+                  data-case-claim-id="${cc.case_claim_id}"
+                  data-case-id="${caseId}">
+            <i class="ti ti-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.innerHTML = rowsHtml;
+  if (wrapper) wrapper.style.display = '';
+  if (empty)   empty.style.display   = 'none';
+
+  if (snap) {
+    const snapItems = claims.map(function(cc) {
+      const meta  = cc.meta || {};
+      const label = meta.title || cc.claim_key;
+      const limitText = meta.timeLimitText ||
+        (typeof meta.timeLimitYears === 'number'
+          ? (meta.timeLimitYears + ' years')
+          : '');
+
+      let statusBadge = '<span class="badge bg-success-subtle text-success">Open</span>';
+      if (cc.status === 'expired') {
+        statusBadge = '<span class="badge bg-danger-subtle text-danger">Expired</span>';
+      } else if (cc.status === 'warning') {
+        statusBadge = '<span class="badge bg-warning-subtle text-warning">Warning</span>';
+      }
+
+      return `
+        <li class="mb-1 d-flex flex-wrap align-items-center">
+          ${cc.is_primary ? '<span class="badge bg-primary-subtle text-primary me-2">Primary</span>' : ''}
+          <span class="fw-semibold me-2">${escapeHtml(label)}</span>
+          ${limitText ? `<span class="text-muted me-2">(${escapeHtml(limitText)})</span>` : ''}
+          ${cc.limitation_deadline ? `<span class="badge bg-light text-dark me-2">Deadline: ${cc.limitation_deadline}</span>` : ''}
+          ${statusBadge}
+        </li>
+      `;
+    }).join('');
+
+    snap.innerHTML = `<ul class="list-unstyled mb-0 small">${snapItems}</ul>`;
+  }
+}
+</script>
+
+
+<script>
+document.addEventListener('click', async function (e) {
+  const fx = window.axiosElaw || window.axios || null;
+  if (!fx) return;
+
+  const btn = e.target.closest('.case-claim-delete');
+  if (!btn) return;
+
+  const caseClaimId = btn.getAttribute('data-case-claim-id');
+  const cId         = btn.getAttribute('data-case-id') || '<%= caseData.case_id %>';
+  if (!caseClaimId || !cId) return;
+
+  const result = await Swal.fire({
+    title: 'Delete this limitation claim?',
+    text: 'This will delete the tracked limitation entry for this case.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true,
+    customClass: {
+      confirmButton: 'swal2-confirm btn btn-danger ms-2',
+      cancelButton: 'swal2-cancel btn btn-secondary'
+    },
+    buttonsStyling: false
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const url = `/firmstaff/cases/${cId}/claims/${caseClaimId}`;
+    const { data } = await fx.delete(url);
+
+    if (data && data.success) {
+      if (window.kilToast) {
+        kilToast.success(data.message || 'Case claim deleted.');
+      } else {
+        alert(data.message || 'Case claim deleted.');
+      }
+
+      if (Array.isArray(data.claims)) {
+        renderCaseClaimsTable(data.claims);
+      }
+    } else {
+      const msg = (data && data.message) || 'Could not delete case claim.';
+      if (window.kilToast) {
+        kilToast.danger(msg);
+      } else {
+        alert(msg);
+      }
+    }
+  } catch (err) {
+    console.error('case-claim delete error', err);
+    let msg = 'Unexpected error while deleting case claim.';
+    if (err && err.response && err.response.data && err.response.data.message) {
+      msg = err.response.data.message;
+    }
+    if (window.kilToast) {
+      kilToast.danger(msg);
+    } else {
+      alert(msg);
+    }
+  }
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const docsTable = document.getElementById('generalDocsTable');
+  if (!docsTable) return;
+
+  docsTable.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.case-doc-delete');
+    if (!btn) return;
+
+    const docId  = btn.getAttribute('data-doc-id');
+    const caseId = btn.getAttribute('data-case-id');
+    if (!docId || !caseId) return;
+
+    const result = await Swal.fire({
+      title: 'Delete this document?',
+      text: 'This document will be removed from the case and deleted from storage. This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      customClass: {
+        confirmButton: 'swal2-confirm btn btn-danger ms-2',
+        cancelButton: 'swal2-cancel btn btn-secondary'
+      },
+      buttonsStyling: false
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const url = `/firmstaff/cases/${caseId}/documents/${docId}`;
+      const { data } = await fx.delete(url);
+
+      if (data && data.success) {
+        if (window.kilToast) {
+          kilToast.success(data.message || 'Document deleted.');
+        } else {
+          alert(data.message || 'Document deleted.');
+        }
+
+        if (Array.isArray(data.documents)) {
+          renderGeneralDocsTable(data.documents);
+        } else {
+          const row = btn.closest('tr');
+          if (row) row.remove();
+        }
+      } else {
+        const msg = (data && data.message) || 'Could not delete document.';
+        if (window.kilToast) {
+          kilToast.danger(msg);
+        } else {
+          alert(msg);
+        }
+      }
+    } catch (err) {
+      console.error('case doc delete error', err);
+
+      let msg = 'Unexpected error while deleting document.';
+      if (err && err.response && err.response.data) {
+        msg = err.response.data.message || msg;
+      } else if (err && err.message) {
+        msg = err.message;
+      }
+
+      if (window.kilToast) {
+        kilToast.danger(msg);
+      } else {
+        alert(msg);
+      }
+    }
+  });
+});
+</script>
+
+
+
+
+
+<!--  Tab 1 add more doc  JS Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("documentContainer");
+
+  container.addEventListener("click", function (e) {
+    // Add More button
+    if (e.target.closest(".addMore")) {
+      const newRow = document.createElement("div");
+      newRow.className = "row document-row align-items-end mb-3";
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+        </div>
+        <div class="col-md-6">
+          <input type="file" name="documents" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn removeBtn w-100" style="background-color: #dc3545;color: #fff;">
+            <i class="ti ti-x"></i> Remove
+          </button>
+        </div>
+      `;
+      container.appendChild(newRow);
+    }
+
+    // Remove button
+    if (e.target.closest(".removeBtn")) {
+      const row = e.target.closest(".document-row");
+      row.remove();
+    }
+  });
+});
+</script>
+
+
+
+
+
+<script>
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, function (c) {
+    switch (c) {
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      case "'": return '&#39;';
+      default: return c;
+    }
+  });
+}
+
+function updateSnapshotUI(snapshot) {
+  if (!snapshot) return;
+
+  const paEl  = document.getElementById('snapshotPracticeArea');
+  const jurEl = document.getElementById('snapshotJurisdiction');
+  const priEl = document.getElementById('snapshotPriority');
+  const descEl= document.getElementById('snapshotDescription');
+
+  if (paEl && snapshot.practice_area_name) {
+    paEl.textContent = snapshot.practice_area_name;
+  }
+
+  if (jurEl) {
+    jurEl.textContent = snapshot.jurisdiction || '—';
+  }
+
+  if (priEl) {
+    priEl.textContent = snapshot.priority || 'Normal';
+  }
+
+  if (descEl) {
+    const desc = snapshot.description || '';
+    if (desc.trim()) {
+      const html = '<div class="border rounded p-2 bg-light-subtle small">'
+        + escapeHtml(desc).replace(/\n/g, '<br>')
+        + '</div>';
+      descEl.innerHTML = html;
+    } else {
+      descEl.innerHTML = '<div class="text-muted small">No Case description added yet.</div>';
+    }
+  }
+}
+
+function updateAssignedList(selectId, containerId, emptyText) {
+  const sel = document.getElementById(selectId);
+  const container = document.getElementById(containerId);
+  if (!sel || !container) return;
+
+  const selectedOptions = Array.from(sel.selectedOptions || []);
+  if (!selectedOptions.length) {
+    container.innerHTML = `<div class="text-muted small">${escapeHtml(emptyText)}</div>`;
+    return;
+  }
+
+  const itemsHtml = selectedOptions.map(opt => `
+    <li class="d-flex align-items-center mb-1">
+      <i class="ti ti-user-circle me-2 text-primary"></i>
+      <span>${escapeHtml(opt.text)}</span>
+    </li>
+  `).join('');
+
+  container.innerHTML = `<ul class="list-unstyled mb-0 small">${itemsHtml}</ul>`;
+}
+
+function refreshAssignedTeamUI() {
+  updateAssignedList('assigned_lawyer_ids',     'assignedLawyersBox',    'No lawyer assigned.');
+  updateAssignedList('assigned_paralegal_ids',  'assignedParalegalsBox', 'No paralegal assigned.');
+  updateAssignedList('assigned_finance_ids',    'assignedFinancesBox',   'No finance staff assigned.');
+  updateAssignedList('assigned_intake_ids',     'assignedIntakesBox',    'No intake staff assigned.');
+}
+
+function renderGeneralDocsTable(docs) {
+  const tbody        = document.getElementById('generalDocsTbody');
+  const wrapper      = document.getElementById('generalDocsTableWrapper');
+  const emptyMessage = document.getElementById('generalDocsEmpty');
+  if (!tbody) return;
+
+  docs = docs || [];
+
+  if (!docs.length) {
+    tbody.innerHTML = '';
+    if (wrapper) wrapper.style.display = 'none';
+    if (emptyMessage) emptyMessage.style.display = '';
+    return;
+  }
+
+  const caseId = '<%= caseData.case_id %>';
+
+  const rowsHtml = docs.map((d, idx) => {
+    const fname = (d.s3_key || '').split('/').pop();
+    let createdAt = '—';
+    if (d.created_at) {
+      try {
+        const dt = new Date(d.created_at);
+        createdAt = dt.toISOString().slice(0,16).replace('T',' ');
+      } catch (e) {}
+    }
+    const s3keyEnc = encodeURIComponent(d.s3_key || '');
+
+    return `
+      <tr data-doc-id="${d.document_id}">
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(d.title || '')}</td>
+        <td>
+          ${d.s3_key ? `
+            <a class="btn btn-outline-primary btn-sm"
+               href="/secure/file_stream?s3key=${s3keyEnc}"
+               target="_blank">
+              <i class="ti ti-external-link me-1"></i>
+              ${escapeHtml(fname || 'View')}
+            </a>
+          ` : `<span class="text-muted small">No file</span>`}
+        </td>
+        <td class="small text-muted">${createdAt}</td>
+        <td>
+          <button type="button"
+                  class="btn btn-outline-danger btn-sm case-doc-delete"
+                  data-doc-id="${d.document_id}"
+                  data-case-id="${caseId}">
+            <i class="ti ti-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.innerHTML = rowsHtml;
+  if (wrapper) wrapper.style.display = '';
+  if (emptyMessage) emptyMessage.style.display = 'none';
+}
+</script>
+
+
+
+
+
+<!-- =====================  END TAB 1 CASE Script ============================= -->
+
+
+
+
+<!-- =====================  START TAB 2 RESEARCH Script ============================= -->
+
+
+<!-- research doc JS Logic -->
+<script>
+
+
+
+// research doc JS Logic
+document.addEventListener("DOMContentLoaded", function () {
+  const containerNew = document.getElementById("documentContainerResearch");
+  if (!containerNew) return;
+
+  containerNew.addEventListener("click", function (e) {
+    // Add More button
+    if (e.target.closest(".addMoreNew")) {
+      const newRow = document.createElement("div");
+      newRow.className = "row document-row-new align-items-end mb-3";
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+        </div>
+        <div class="col-md-5">
+          <input type="file" name="documents" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn removeBtnNew w-100" style="background-color: #dc3545;color: #fff;">
+            <i class="ti ti-x"></i> Remove
+          </button>
+        </div>
+      `;
+      containerNew.appendChild(newRow);
+    }
+
+    // Remove button
+    if (e.target.closest(".removeBtnNew")) {
+      const rowNew = e.target.closest(".document-row-new");
+      if (rowNew) rowNew.remove();
+    }
+  });
+});
+
+
+
+
+// Render research logs table from JSON
+function renderResearchTable(logs) {
+  const tbody = document.getElementById('researchTbody');
+  if (!tbody) return;
+
+  logs = Array.isArray(logs) ? logs : [];
+
+  const rowsHtml = logs.map((r, idx) => {
+    const docs = Array.isArray(r.documents) ? r.documents : [];
+    const createdAt = r.created_at
+      ? (() => {
+          try {
+            const dt = new Date(r.created_at);
+            return dt.toISOString().slice(0, 16).replace('T', ' ');
+          } catch (e) {
+            return escapeHtml(String(r.created_at));
+          }
+        })()
+      : '—';
+
+    const summary = r.summary || '';
+    const summaryShort = summary.length > 160
+      ? summary.slice(0, 160) + '…'
+      : summary;
+
+    const citationHtml = `
+      ${
+        r.case_citation
+          ? `<div><span class="small text-muted">Citation:</span> ${escapeHtml(r.case_citation)}</div>`
+          : ''
+      }
+      ${
+        r.statute_reference
+          ? `<div><span class="small text-muted">Statute:</span> ${escapeHtml(r.statute_reference)}</div>`
+          : ''
+      }
+    `;
+
+    const docsHtml = docs.length
+      ? `
+        <div class="small mb-1">
+          <span class="badge bg-info-subtle text-info border border-info">
+            ${docs.length} file(s)
+          </span>
+        </div>
+        ${docs
+          .map((d, di) => {
+            const fname = (d.s3_key || '').split('/').pop() || `File ${di + 1}`;
+            const s3keyEnc = encodeURIComponent(d.s3_key || '');
+            return `
+              <a href="/secure/file_stream?s3key=${s3keyEnc}"
+                 target="_blank"
+                 class="btn btn-outline-primary btn-xs mb-1">
+                <i class="ti ti-file-text me-1"></i>${escapeHtml(fname)}
+              </a><br/>
+            `;
+          })
+          .join('')}
+      `
+      : `<span class="text-muted small">No files</span>`;
+
+    let createdByHtml = '—';
+    if (r.created_by_staff) {
+      const s = r.created_by_staff;
+      const name = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+      createdByHtml = `
+        <div>${escapeHtml(name || '')}</div>
+        ${
+          s.email
+            ? `<div class="text-muted small">${escapeHtml(s.email)}</div>`
+            : ''
+        }
+      `;
+    }
+
+    return `
+      <tr data-research-id="${r.research_id}">
+        <td>${idx + 1}</td>
+        <td class="fw-semibold">${escapeHtml(r.title || '')}</td>
+        <td>${citationHtml}</td>
+        <td class="small">${escapeHtml(summaryShort)}</td>
+        <td>${docsHtml}</td>
+        <td class="small">${createdByHtml}</td>
+        <td class="small text-muted">${createdAt}</td>
+        <td>
+          <div class="dropdown">
+            <a href="javascript:void(0);"
+               class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1"
+               data-bs-toggle="dropdown">
+              <i class="ti ti-dots-vertical"></i>
+            </a>
+            <ul class="dropdown-menu p-2">
+              <li>
+                <a href="javascript:void(0);"
+                   class="dropdown-item text-danger delete-research-btn"
+                   data-id="${r.research_id}">
+                  <i class="ti ti-trash me-2"></i>Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.innerHTML = rowsHtml;
+}
+
+// AJAX submit for research form
+document.addEventListener('DOMContentLoaded', function () {
+  const researchForm = document.getElementById('researchForm');
+
+  researchForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const caseId = '<%= caseData.case_id %>';
+    const url = `/firmstaff/cases/${caseId}/research`;
+    const formData = new FormData(researchForm);
+
+    try {
+      const { data } = await fx.post(url, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (data && data.success) {
+        if (window.kilToast) {
+          kilToast.success(data.message || 'Research log saved.');
+        } else {
+          alert(data.message || 'Research log saved.');
+        }
+
+        if (Array.isArray(data.researchLogs)) {
+          renderResearchTable(data.researchLogs);
+        }
+
+        // Reset form fields except CSRF and case_id
+        researchForm.reset();
+      } else {
+        const msg = (data && data.message) || 'Could not save research log.';
+        if (window.kilToast) {
+          kilToast.danger(msg);
+        } else {
+          alert(msg);
+        }
+      }
+    } catch (err) {
+      console.error('researchForm error', err);
+      const msg =
+        (err && err.response && err.response.data && err.response.data.message) ||
+        err.message ||
+        'Unexpected error while saving research log.';
+      if (window.kilToast) {
+        kilToast.danger(msg);
+      } else {
+        alert(msg);
+      }
+    }
+  });
+});
+
+// Delete Research Log (delegated on table)
+document.addEventListener('DOMContentLoaded', function () {
+  const table = document.getElementById('researchlogTable');
+
+
+  table.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.delete-research-btn');
+    if (!btn) return;
+
+    const researchId = btn.getAttribute('data-id');
+    if (!researchId) return;
+
+    const caseId = '<%= caseData.case_id %>';
+
+    const result = await Swal.fire({
+      title: 'Delete this research log?',
+      text: 'This research log and all attached files will be deleted permanently.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      customClass: {
+        confirmButton: 'swal2-confirm btn btn-danger ms-2',
+        cancelButton: 'swal2-cancel btn btn-secondary',
+      },
+      buttonsStyling: false,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const url = `/firmstaff/cases/${caseId}/research/${researchId}`;
+      const { data } = await fx.delete(url);
+
+      if (data && data.success) {
+        if (window.kilToast) {
+          kilToast.success(data.message || 'Research log deleted.');
+        } else {
+          alert(data.message || 'Research log deleted.');
+        }
+
+        if (Array.isArray(data.researchLogs)) {
+          renderResearchTable(data.researchLogs);
+        }
+      } else {
+        const msg = (data && data.message) || 'Could not delete research log.';
+        if (window.kilToast) {
+          kilToast.danger(msg);
+        } else {
+          alert(msg);
+        }
+      }
+    } catch (err) {
+      console.error('delete research error', err);
+      const msg =
+        (err && err.response && err.response.data && err.response.data.message) ||
+        err.message ||
+        'Unexpected error while deleting research log.';
+      if (window.kilToast) {
+        kilToast.danger(msg);
+      } else {
+        alert(msg);
+      }
+    }
+  });
+});
+
+
+
+
+</script>
+
+
+
+
+<!-- =====================  END TAB 2 RESEARCH Script ============================= -->
+
+
+
+
+<!-- =====================  START TAB 3 COURT FILING Script ============================= -->
+<script>
+function renderCourtFilingTable(filings) {
+  const tbody = document.getElementById('courtFilingTbody');
+  if (!tbody) return;
+
+  const rows = (Array.isArray(filings) ? filings : []).map((f, idx) => {
+    const filingDate = f.filing_date
+      ? (() => {
+          try { return new Date(f.filing_date).toISOString().slice(0, 10); }
+          catch (e) { return escapeHtml(String(f.filing_date)); }
+        })()
+      : '—';
+
+    const status = f.status || 'Pending';
+    let statusBadge = `<span class="badge bg-warning-subtle text-warning border border-warning">${escapeHtml(status)}</span>`;
+    if (status === 'Filed') {
+      statusBadge = `<span class="badge bg-success-subtle text-success border border-success">${escapeHtml(status)}</span>`;
+    } else if (status === 'Returned') {
+      statusBadge = `<span class="badge bg-danger-subtle text-danger border border-danger">${escapeHtml(status)}</span>`;
+    }
+
+    const receiptHtml = f.receipt_s3_key
+      ? `<a href="/secure/file_stream?s3key=${encodeURIComponent(f.receipt_s3_key || '')}" target="_blank">
+          <i class="ti ti-file-text me-1"></i>View
+         </a>`
+      : '<span class="text-muted small">No receipt</span>';
+
+    return `
+      <tr data-filing-id="${f.filing_id}">
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(f.court_type || '')}</td>
+        <td>${escapeHtml(f.filing_type || '')}</td>
+        <td>${filingDate}</td>
+        <td>${escapeHtml(f.reference_no || '—')}</td>
+        <td>${statusBadge}</td>
+        <td>${receiptHtml}</td>
+        <td>
+          <div class="dropdown">
+            <a href="javascript:void(0);" class="shadow-sm border rounded-2 p-1 d-inline-flex" data-bs-toggle="dropdown">
+              <i class="ti ti-dots-vertical"></i>
+            </a>
+            <ul class="dropdown-menu p-2">
+              <li>
+                <a href="javascript:void(0);" class="dropdown-item text-danger delete-court-btn" data-id="${f.filing_id}">
+                  <i class="ti ti-trash me-2"></i>Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="court-filing-empty-row"><td colspan="8" class="text-center text-muted">No filings yet.</td></tr>';
+  } else {
+    tbody.innerHTML = rows.join('');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const caseId = '<%= caseData.case_id %>';
+  const initialFilings = <%- JSON.stringify(courtFilings || []) %>;
+
+  renderCourtFilingTable(initialFilings);
+
+  const form = document.getElementById('courtFilingForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const { data } = await fx.post(`/firmstaff/cases/${caseId}/filings`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        if (data?.success) {
+          if (window.kilToast) {
+            kilToast.success(data.message || 'Court filing saved.');
+          }
+          renderCourtFilingTable(data.filings);
+          form.reset();
+        } else {
+          const msg = data?.message || 'Could not save filing.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('court filing submit error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while saving filing.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+
+  const table = document.getElementById('courtfilingTable');
+  if (table) {
+    table.addEventListener('click', async function (e) {
+      const btn = e.target.closest('.delete-court-btn');
+      if (!btn) return;
+
+      const filingId = btn.getAttribute('data-id');
+      if (!filingId) return;
+
+      const result = await Swal.fire({
+        title: 'Delete this filing?',
+        text: 'This filing and its receipt will be deleted permanently.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary',
+        },
+        buttonsStyling: false,
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const { data } = await fx.delete(`/firmstaff/cases/${caseId}/filings/${filingId}`);
+        if (data?.success) {
+          if (window.kilToast) {
+            kilToast.success(data.message || 'Filing deleted.');
+          }
+          renderCourtFilingTable(data.filings);
+        } else {
+          const msg = data?.message || 'Could not delete filing.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('delete filing error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while deleting filing.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+});
+</script>
+<!-- =====================  END TAB 3 COURT FILING Script ============================= -->
+
+
+
+<!-- =====================  START TAB 3 CPR TIMELINES Script ============================= -->
+<script>
+function humanizeBaseKey(key) {
+  if (!key) return '';
+  return String(key)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function statusBadge(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'completed') return '<span class="badge bg-secondary-subtle text-secondary border border-secondary">Completed</span>';
+  if (s === 'overdue')   return '<span class="badge bg-danger-subtle text-danger border border-danger">Overdue</span>';
+  if (s === 'due')       return '<span class="badge bg-warning-subtle text-warning border border-warning">Due soon</span>';
+  if (s === 'upcoming')  return '<span class="badge bg-success-subtle text-success border border-success">Upcoming</span>';
+  return '<span class="badge bg-light text-dark border">Not set</span>';
+}
+
+function buildBaseDatesFromDeadlines(deadlines) {
+  const base = {};
+  (Array.isArray(deadlines) ? deadlines : []).forEach(d => {
+    if (d.base_date_key && d.base_date && !base[d.base_date_key]) {
+      base[d.base_date_key] = d.base_date;
+    }
+  });
+  return base;
+}
+
+function renderCprBaseDateFields(baseDateKeys, presetBaseDates) {
+  const container = document.getElementById('cprBaseDatesFields');
+  if (!container) return;
+
+  const primary = [
+    'issue_date',
+    'service_date',
+    'defence_service_date',
+    'defence_filing_date',
+    'cmc_date',
+    'hearing_date',
+    'trial_date',
+  ];
+
+  const all = Array.isArray(baseDateKeys) ? baseDateKeys.slice() : [];
+  const seen = new Set();
+  const ordered = [];
+  primary.forEach(k => { if (all.includes(k)) { ordered.push(k); seen.add(k); } });
+  all.sort().forEach(k => { if (!seen.has(k)) ordered.push(k); });
+
+  const fields = ordered.map(k => {
+    const label = humanizeBaseKey(k);
+    const value = (presetBaseDates && presetBaseDates[k]) ? presetBaseDates[k] : '';
+    return `
+      <div class="col-md-3">
+        <label class="form-label small fw-medium mb-1">${escapeHtml(label)}</label>
+        <input type="date" class="form-control form-control-sm cpr-base-date" data-key="${escapeHtml(k)}" value="${escapeHtml(value)}">
+      </div>
+    `;
+  });
+
+  container.innerHTML = fields.join('') || '<div class="text-muted small">No base dates available.</div>';
+}
+
+function renderCprDeadlinesTable(deadlines) {
+  const tbody = document.getElementById('cprDeadlinesTbody');
+  if (!tbody) return;
+
+  const list = Array.isArray(deadlines) ? deadlines.slice() : [];
+  list.sort((a, b) => {
+    const ad = a?.due_date || '9999-99-99';
+    const bd = b?.due_date || '9999-99-99';
+    if (ad < bd) return -1;
+    if (ad > bd) return 1;
+    return String(a?.event_label || '').localeCompare(String(b?.event_label || ''));
+  });
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No CPR deadlines yet. Click Generate / Update.</td></tr>';
+    return;
+  }
+
+  const rows = list.map((d, idx) => {
+    const id = d.case_cpr_deadline_id;
+    const title = d.event_label || d.event_key || '';
+    const rule = d.rule_reference || '';
+    const baseInfo = d.base_date_key
+      ? `<div class="fw-semibold">${escapeHtml(humanizeBaseKey(d.base_date_key))}</div><div class="small text-muted">${escapeHtml(d.base_date || '—')}</div>`
+      : '<span class="text-muted small">—</span>';
+
+    const dueVal = d.due_date || '';
+    const manualBadge = d.is_manual ? '<span class="badge bg-info-subtle text-info border border-info ms-1">Manual</span>' : '';
+    const computedBadge = d.is_computed ? '<span class="badge bg-light text-dark border ms-1">Computed</span>' : '<span class="badge bg-light text-dark border ms-1">Manual-only</span>';
+
+    const isCompleted = !!d.completed_at;
+    const completeBtnText = isCompleted ? 'Uncomplete' : 'Complete';
+    const completeBtnClass = isCompleted ? 'btn-outline-secondary' : 'btn-outline-success';
+
+    const resetBtn = (d.is_manual && d.is_computed)
+      ? `<button type="button" class="btn btn-outline-warning btn-sm cpr-reset-btn" data-id="${id}">Reset</button>`
+      : '';
+
+    const deleteBtn = (d.is_manual && !d.is_computed)
+      ? `<button type="button" class="btn btn-outline-danger btn-sm cpr-delete-btn" data-id="${id}"><i class="ti ti-trash"></i></button>`
+      : '';
+
+    return `
+      <tr data-cpr-deadline-id="${id}">
+        <td>${idx + 1}</td>
+        <td>
+          <div class="fw-semibold">${escapeHtml(title)}${manualBadge}${computedBadge}</div>
+          ${rule ? `<div class="small text-muted">${escapeHtml(rule)}</div>` : ''}
+        </td>
+        <td>${baseInfo}</td>
+        <td>
+          <input type="date" class="form-control form-control-sm cpr-due-input" data-id="${id}" value="${escapeHtml(dueVal)}">
+        </td>
+        <td>${statusBadge(d.status)}</td>
+        <td>
+          <div class="d-flex flex-wrap gap-1">
+            <button type="button" class="btn btn-outline-primary btn-sm cpr-save-btn" data-id="${id}">Save</button>
+            ${resetBtn}
+            <button type="button" class="btn ${completeBtnClass} btn-sm cpr-toggle-complete-btn" data-id="${id}" data-completed="${isCompleted ? '1' : '0'}">${completeBtnText}</button>
+            ${deleteBtn}
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const caseId = '<%= caseData.case_id %>';
+  const fx = window.axiosElaw || window.axios || null;
+  if (!fx) return;
+
+  const mount = document.getElementById('cprTimelinesMount');
+  const card = document.getElementById('cprDeadlinesCard');
+  if (mount && card && card.parentElement !== mount) {
+    mount.appendChild(card);
+  }
+
+  let baseDateKeys = [];
+  let deadlines = [];
+
+  async function loadCprDeadlines({ bootstrapIfEmpty = false } = {}) {
+    const { data } = await fx.get(`/firmstaff/cases/${caseId}/cpr_deadlines`);
+    if (!data?.success) throw new Error(data?.message || 'Could not load CPR deadlines.');
+
+    baseDateKeys = Array.isArray(data.baseDateKeys) ? data.baseDateKeys : [];
+    deadlines = Array.isArray(data.deadlines) ? data.deadlines : [];
+
+    if (bootstrapIfEmpty && deadlines.length === 0) {
+      await fx.post(`/firmstaff/cases/${caseId}/cpr_deadlines/generate`, { base_dates: {} });
+      return loadCprDeadlines({ bootstrapIfEmpty: false });
+    }
+
+    const presetBaseDates = buildBaseDatesFromDeadlines(deadlines);
+    renderCprBaseDateFields(baseDateKeys, presetBaseDates);
+    renderCprDeadlinesTable(deadlines);
+  }
+
+  async function generateFromForm() {
+    const baseDates = {};
+    document.querySelectorAll('.cpr-base-date').forEach(el => {
+      const k = el.getAttribute('data-key');
+      const v = el.value;
+      if (k && v) baseDates[k] = v;
+    });
+
+    const { data } = await fx.post(`/firmstaff/cases/${caseId}/cpr_deadlines/generate`, { base_dates: baseDates });
+    if (!data?.success) throw new Error(data?.message || 'Could not generate CPR deadlines.');
+    if (window.kilToast) kilToast.success(data.message || 'CPR deadlines generated.');
+    await loadCprDeadlines({ bootstrapIfEmpty: false });
+  }
+
+  document.getElementById('cprRefreshBtn')?.addEventListener('click', async function () {
+    try { await loadCprDeadlines({ bootstrapIfEmpty: false }); }
+    catch (e) { if (window.kilToast) kilToast.danger(e.message); else alert(e.message); }
+  });
+
+  document.getElementById('cprGenerateBtn')?.addEventListener('click', async function () {
+    try { await generateFromForm(); }
+    catch (e) { if (window.kilToast) kilToast.danger(e.message); else alert(e.message); }
+  });
+
+  document.getElementById('cprManualAddBtn')?.addEventListener('click', async function () {
+    const title = document.getElementById('cprManualTitle')?.value?.trim() || '';
+    const due_date = document.getElementById('cprManualDueDate')?.value || '';
+    const rule_reference = document.getElementById('cprManualRule')?.value?.trim() || '';
+    const notes = document.getElementById('cprManualNotes')?.value?.trim() || '';
+
+    if (!title || !due_date) {
+      if (window.kilToast) kilToast.danger('Title and due date are required.');
+      return;
+    }
+
+    try {
+      const { data } = await fx.post(`/firmstaff/cases/${caseId}/cpr_deadlines/manual`, { title, due_date, rule_reference, notes });
+      if (!data?.success) throw new Error(data?.message || 'Could not add manual deadline.');
+      if (window.kilToast) kilToast.success(data.message || 'Deadline added.');
+      document.getElementById('cprManualTitle').value = '';
+      document.getElementById('cprManualDueDate').value = '';
+      document.getElementById('cprManualRule').value = '';
+      document.getElementById('cprManualNotes').value = '';
+      await loadCprDeadlines({ bootstrapIfEmpty: false });
+    } catch (e) {
+      if (window.kilToast) kilToast.danger(e.message); else alert(e.message);
+    }
+  });
+
+  document.getElementById('cprDeadlinesTable')?.addEventListener('click', async function (e) {
+    const saveBtn = e.target.closest('.cpr-save-btn');
+    if (saveBtn) {
+      const id = saveBtn.getAttribute('data-id');
+      const dueInput = document.querySelector(`.cpr-due-input[data-id="${id}"]`);
+      const due_date = dueInput ? dueInput.value : '';
+      try {
+        const { data } = await fx.patch(`/firmstaff/cases/${caseId}/cpr_deadlines/${id}`, { due_date });
+        if (!data?.success) throw new Error(data?.message || 'Could not update deadline.');
+        if (window.kilToast) kilToast.success(data.message || 'Deadline updated.');
+        await loadCprDeadlines({ bootstrapIfEmpty: false });
+      } catch (err) {
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while updating deadline.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+      return;
+    }
+
+    const resetBtn = e.target.closest('.cpr-reset-btn');
+    if (resetBtn) {
+      const id = resetBtn.getAttribute('data-id');
+      try {
+        const { data } = await fx.patch(`/firmstaff/cases/${caseId}/cpr_deadlines/${id}`, { reset_manual: true });
+        if (!data?.success) throw new Error(data?.message || 'Could not reset deadline.');
+        if (window.kilToast) kilToast.success(data.message || 'Deadline reset.');
+        await loadCprDeadlines({ bootstrapIfEmpty: false });
+      } catch (err) {
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while resetting deadline.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+      return;
+    }
+
+    const completeBtn = e.target.closest('.cpr-toggle-complete-btn');
+    if (completeBtn) {
+      const id = completeBtn.getAttribute('data-id');
+      const completed = completeBtn.getAttribute('data-completed') === '1';
+      try {
+        const { data } = await fx.patch(`/firmstaff/cases/${caseId}/cpr_deadlines/${id}`, { completed: !completed });
+        if (!data?.success) throw new Error(data?.message || 'Could not update deadline.');
+        if (window.kilToast) kilToast.success(data.message || 'Deadline updated.');
+        await loadCprDeadlines({ bootstrapIfEmpty: false });
+      } catch (err) {
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while updating deadline.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+      return;
+    }
+
+    const deleteBtn = e.target.closest('.cpr-delete-btn');
+    if (deleteBtn) {
+      const id = deleteBtn.getAttribute('data-id');
+      const result = await Swal.fire({
+        title: 'Delete this deadline?',
+        text: 'This manual deadline will be deleted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary'
+        },
+        buttonsStyling: false
+      });
+      if (!result.isConfirmed) return;
+
+      try {
+        const { data } = await fx.delete(`/firmstaff/cases/${caseId}/cpr_deadlines/${id}`);
+        if (!data?.success) throw new Error(data?.message || 'Could not delete deadline.');
+        if (window.kilToast) kilToast.success(data.message || 'Deadline deleted.');
+        await loadCprDeadlines({ bootstrapIfEmpty: false });
+      } catch (err) {
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while deleting deadline.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    }
+  });
+
+  loadCprDeadlines({ bootstrapIfEmpty: true }).catch(function (err) {
+    console.error('CPR deadlines init error', err);
+    const msg = err?.response?.data?.message || err.message || 'Could not initialize CPR deadlines.';
+    if (window.kilToast) kilToast.danger(msg); else alert(msg);
+  });
+});
+</script>
+<!-- =====================  END TAB 3 CPR TIMELINES Script ============================= -->
+
+
+<!-- =====================  START TAB 4 EVIDENCE Script ============================= -->
+<script>
+function renderEvidenceTable(items) {
+  const tbody = document.getElementById('evidenceTbody');
+  if (!tbody) return;
+
+  const rows = (Array.isArray(items) ? items : []).map((ev, idx) => {
+    const doc = (ev.documents || [])[0];
+    const dateCollected = ev.date_collected
+      ? (() => {
+          try { return new Date(ev.date_collected).toISOString().slice(0, 10); }
+          catch (e) { return escapeHtml(String(ev.date_collected)); }
+        })()
+      : '—';
+
+    const receiptHtml = doc && doc.s3_key
+      ? `<a href="/secure/file_stream?s3key=${encodeURIComponent(doc.s3_key || '')}" target="_blank" class="btn btn-outline-primary btn-xs">
+          <i class="ti ti-file-text me-1"></i>View
+         </a>`
+      : '<span class="text-muted small">No file</span>';
+
+    return `
+      <tr data-evidence-id="${ev.evidence_id}">
+        <td>${idx + 1}</td>
+        <td>${escapeHtml(ev.exhibit_no || '')}</td>
+        <td class="small">${escapeHtml(ev.description || '—')}</td>
+        <td>${escapeHtml(ev.source || '')}</td>
+        <td>${dateCollected}</td>
+        <td>${escapeHtml(ev.linked_case_ref || '—')}</td>
+        <td>${escapeHtml(ev.stored_location || '—')}</td>
+        <td>
+          <div class="d-flex align-items-center gap-1">
+            ${receiptHtml}
+            <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+              <i class="ti ti-dots-vertical"></i>
+            </a>
+            <ul class="dropdown-menu p-2">
+              <li>
+                <a href="javascript:void(0);" class="dropdown-item text-danger delete-evidence-btn" data-id="${ev.evidence_id}">
+                  <i class="ti ti-trash me-2"></i> Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.length
+    ? rows.join('')
+    : '<tr class="evidence-empty-row"><td colspan="8" class="text-center text-muted">No evidence captured yet.</td></tr>';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const caseId = '<%= caseData.case_id %>';
+  const initialEvidence = <%- JSON.stringify(evidences || []) %>;
+
+  renderEvidenceTable(initialEvidence);
+
+  const form = document.getElementById('evidenceForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const { data } = await fx.post(`/firmstaff/cases/${caseId}/evidence`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (data?.success) {
+          if (window.kilToast) kilToast.success(data.message || 'Evidence saved.');
+          renderEvidenceTable(data.evidences);
+          form.reset();
+        } else {
+          const msg = data?.message || 'Could not save evidence.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('evidence submit error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while saving evidence.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+
+  const table = document.getElementById('evidenceTable');
+  if (table) {
+    table.addEventListener('click', async function (e) {
+      const btn = e.target.closest('.delete-evidence-btn');
+      if (!btn) return;
+
+      const evidenceId = btn.getAttribute('data-id');
+      if (!evidenceId) return;
+
+      const result = await Swal.fire({
+        title: 'Delete this evidence?',
+        text: 'This evidence and its files will be deleted permanently.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary',
+        },
+        buttonsStyling: false,
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const { data } = await fx.delete(`/firmstaff/cases/${caseId}/evidence/${evidenceId}`);
+        if (data?.success) {
+          if (window.kilToast) kilToast.success(data.message || 'Evidence deleted.');
+          renderEvidenceTable(data.evidences);
+        } else {
+          const msg = data?.message || 'Could not delete evidence.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('delete evidence error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while deleting evidence.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+});
+</script>
+<!-- =====================  END TAB 4 EVIDENCE Script ============================= -->
+
+
+<!-- =====================  START TAB 5 DOCUMENT DRAFTING Script ============================= -->
+<script>
+function renderDraftingDocsTable(docs) {
+  const tbody = document.getElementById('draftingDocsTbody');
+  if (!tbody) return;
+
+  const rows = (Array.isArray(docs) ? docs : []).map((d, idx) => {
+    const createdAt = d.created_at
+      ? (() => {
+          try { return new Date(d.created_at).toISOString().slice(0, 16).replace('T', ' '); }
+          catch (e) { return escapeHtml(String(d.created_at)); }
+        })()
+      : '—';
+
+    const fname = (d.s3_key || '').split('/').pop() || 'File';
+    const fileHtml = d.s3_key
+      ? `<a href="/secure/file_stream?s3key=${encodeURIComponent(d.s3_key || '')}" target="_blank">
+          <i class="ti ti-file-text me-1"></i>${escapeHtml(fname)}
+         </a>`
+      : '<span class="text-muted small">No file</span>';
+
+    const uploader = d.FirmStaff
+      ? `<div>${escapeHtml((d.FirmStaff.first_name || '') + ' ' + (d.FirmStaff.last_name || ''))}</div>
+         ${d.FirmStaff.email ? `<div class="text-muted">${escapeHtml(d.FirmStaff.email)}</div>` : ''}`
+      : '<span class="text-muted">—</span>';
+
+    return `
+      <tr data-doc-id="${d.document_id}" data-case-id="${d.case_id}">
+        <td>${idx + 1}</td>
+        <td class="fw-semibold">${escapeHtml(d.title || '')}</td>
+        <td>${escapeHtml(String(d.case_id || ''))}</td>
+        <td>${escapeHtml(d.kind || '')}</td>
+        <td>${fileHtml}</td>
+        <td><span class="badge bg-secondary-subtle text-secondary">Case Team</span></td>
+        <td class="small">${uploader}</td>
+        <td class="small text-muted">${createdAt}</td>
+        <td>
+          <div class="d-flex align-items-center gap-1">
+            <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+              <i class="ti ti-dots-vertical"></i>
+            </a>
+            <ul class="dropdown-menu p-2">
+              <li>
+                <a href="javascript:void(0);" class="dropdown-item text-danger delete-drafting-btn" data-id="${d.document_id}" data-case-id="${d.case_id}">
+                  <i class="ti ti-trash me-2"></i> Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.length
+    ? rows.join('')
+    : '<tr class="drafting-empty-row"><td colspan="9" class="text-center text-muted">No documents uploaded yet.</td></tr>';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const initialDrafting = <%- JSON.stringify(draftingDocs || []) %>;
+  renderDraftingDocsTable(initialDrafting);
+
+  const form = document.getElementById('draftingForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const caseId = document.getElementById('doc_case_id')?.value;
+      if (!caseId) {
+        if (window.kilToast) kilToast.danger('Please select a case.');
+        return;
+      }
+      const formData = new FormData(form);
+
+      try {
+        const { data } = await fx.post(`/firmstaff/cases/${caseId}/drafting_documents`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (data?.success) {
+          if (window.kilToast) kilToast.success(data.message || 'Document uploaded.');
+          renderDraftingDocsTable(data.draftingDocs);
+          form.reset();
+          // re-apply select2 defaults if needed
+        } else {
+          const msg = data?.message || 'Could not upload document.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('drafting upload error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while uploading document.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+
+  const table = document.getElementById('documentsTable');
+  if (table) {
+    table.addEventListener('click', async function (e) {
+      const btn = e.target.closest('.delete-drafting-btn');
+      if (!btn) return;
+
+      const docId = btn.getAttribute('data-id');
+      const caseId = btn.getAttribute('data-case-id');
+      if (!docId || !caseId) return;
+
+      const result = await Swal.fire({
+        title: 'Delete this document?',
+        text: 'This document will be deleted permanently.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary',
+        },
+        buttonsStyling: false,
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const { data } = await fx.delete(`/firmstaff/cases/${caseId}/drafting_documents/${docId}`);
+        if (data?.success) {
+          if (window.kilToast) kilToast.success(data.message || 'Document deleted.');
+          renderDraftingDocsTable(data.draftingDocs);
+        } else {
+          const msg = data?.message || 'Could not delete document.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('delete drafting doc error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while deleting document.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+});
+</script>
+<!-- =====================  END TAB 5 DOCUMENT DRAFTING Script ============================= -->
+
+
+<!-- =====================  START TAB 6 E-SIGN Script ============================= -->
+<script>
+function collectRecipients() {
+  const rows = document.querySelectorAll('#recipients-container .recipient-item');
+  const list = [];
+  rows.forEach(row => {
+    const type = (row.querySelector('select[name*="[type]"]')?.value || 'External').toLowerCase();
+    const role = row.querySelector('select[name*="[role]"]')?.value || 'signer';
+    let email = '';
+    let name = '';
+
+    if (type === 'caseteam') {
+      const sel = row.querySelector('.firmuser-select');
+      const opt = sel?.selectedOptions?.[0];
+      if (opt && opt.value) {
+        email = opt.dataset.email || ((opt.textContent.match(/\(([^)]+)\)/) || [])[1] || '');
+        name = opt.dataset.name || (opt.textContent.split('(')[0] || '').trim();
+      }
+    } else if (type === 'client') {
+      const sel = row.querySelector('.client-select');
+      const opt = sel?.selectedOptions?.[0];
+      if (opt && opt.value) {
+        email = opt.dataset.email || ((opt.textContent.match(/\(([^)]+)\)/) || [])[1] || '');
+        name = opt.dataset.name || (opt.textContent.split('(')[0] || '').trim();
+      }
+    } else {
+      email = row.querySelector('.external-input')?.value?.trim() || '';
+      name  = row.querySelector('.external-name')?.value?.trim() || '';
+    }
+
+    if (email) {
+      list.push({ type: type === 'caseteam' ? 'CaseTeam' : type === 'client' ? 'Client' : 'External', id_email: email, name: name || email, role });
+    }
+  });
+  return list;
+}
+
+function renderEsignTable(envelopes) {
+  const tbody = document.getElementById('esignTbody');
+  if (!tbody) return;
+
+  const rows = (Array.isArray(envelopes) ? envelopes : []).map((env, idx) => {
+    const docTitle = env.Document ? env.Document.title : '';
+    const docCaseId = env.Document ? env.Document.case_id : '';
+    const recs = env.recipients || [];
+    const signerStatuses = recs
+      .filter(r => (r.role || '').toLowerCase() === 'signer')
+      .map(r => {
+        const label = r.status === 'signed'
+          ? `<span class="badge bg-success-subtle text-success border border-success">captured from ${escapeHtml(r.name || r.email)}</span>`
+          : `<span class="badge bg-danger-subtle text-danger border border-danger">pending signature from ${escapeHtml(r.name || r.email)}</span>`;
+        return `<div class="mb-1">${label}</div>`;
+      })
+      .join('');
+
+    const recBadge = recs.length
+      ? `<div class="badge bg-info-subtle text-info border border-info">${recs.length} recipient(s)</div>
+         <div class="mt-1 small">${signerStatuses || '<span class="text-muted">No signer</span>'}</div>`
+      : '<span class="text-muted">—</span>';
+
+    let statusBadge = `<span class="badge bg-secondary-subtle text-secondary border border-secondary">${escapeHtml(env.status || '')}</span>`;
+    if (env.status === 'completed') {
+      statusBadge = '<span class="badge bg-success-subtle text-success border border-success">Completed</span>';
+    } else if (env.status === 'sent') {
+      statusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary">Sent</span>';
+    } else if (['voided','declined','error'].includes(env.status)) {
+      statusBadge = `<span class="badge bg-danger-subtle text-danger border border-danger">${escapeHtml(env.status)}</span>`;
+    }
+
+    const createdAt = env.createdAt
+      ? (() => { try { return new Date(env.createdAt).toISOString().slice(0,16).replace('T',' '); } catch(e){ return escapeHtml(String(env.createdAt)); } })()
+      : '—';
+
+    const senderHtml = env.sender
+      ? `<div>${escapeHtml(`${env.sender.first_name || ''} ${env.sender.last_name || ''}`.trim())}</div>${env.sender.email ? `<div class="text-muted">${escapeHtml(env.sender.email)}</div>` : ''}`
+      : '<span class="text-muted">—</span>';
+
+    return `
+      <tr data-envelope-id="${env.envelope_id}">
+        <td>${idx + 1}</td>
+        <td>
+          <div class="fw-semibold">${escapeHtml(docTitle)}</div>
+          <div class="text-muted small">Case ${escapeHtml(String(docCaseId || ''))}</div>
+        </td>
+        <td class="text-capitalize">${escapeHtml(env.provider || '')}</td>
+        <td class="small">${recBadge}</td>
+        <td>${statusBadge}</td>
+        <td class="small">${senderHtml}</td>
+        <td class="small text-muted">${createdAt}</td>
+        <td>
+          <div class="d-flex align-items-center gap-1">
+            ${env.status === 'draft' ? `<button class="btn btn-sm btn-outline-primary me-1 edit-esign-btn" data-id="${env.envelope_id}">Edit &amp; Send</button>` : ''}
+            <button class="btn btn-sm btn-outline-danger delete-esign-btn" data-id="${env.envelope_id}"><i class="ti ti-trash"></i></button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.length
+    ? rows.join('')
+    : '<tr class="esign-empty-row"><td colspan="8" class="text-center text-muted">No e-sign envelopes yet.</td></tr>';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const caseId = '<%= caseData.case_id %>';
+const initialEnvelopes = <%- JSON.stringify(esignEnvelopes || []) %>;
+let currentEnvelopes = initialEnvelopes.slice();
+renderEsignTable(currentEnvelopes);
+
+  // Recipient rows
+  const recContainer = document.getElementById('recipients-container');
+  const firmOptions = <%- JSON.stringify(esignFirmRecipients || []) %>;
+  const clientOption = <%- JSON.stringify(esignClientRecipient || null) %>;
+
+  function makeRecipientRow(idx = 0) {
+    const row = document.createElement('div');
+    row.className = 'row mb-2 recipient-item align-items-center';
+    row.innerHTML = `
+      <div class="col-3">
+        <select name="recipients[${idx}][type]" class="form-select select2 recipient-type">
+          <option value="CaseTeam">Case Team</option>
+          <option value="Client">Client</option>
+          <option value="External">External</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <select name="recipients[${idx}][id_email]" class="form-select select2 recipient-select firmuser-select">
+          <option value="">Select Case Team</option>
+          ${firmOptions.map(u => `<option value="${u.staff_id}" data-email="${u.email}" data-name="${u.name}">${u.name} (${u.email})</option>`).join('')}
+        </select>
+        <select name="recipients[${idx}][id_email]" class="form-select select2 recipient-select client-select d-none">
+          ${clientOption ? `<option value="${clientOption.client_id}" data-email="${clientOption.email}" data-name="${clientOption.name}">${clientOption.name} (${clientOption.email})</option>` : '<option value="">No client</option>'}
+        </select>
+        <input type="text" data-ignore-kilvish="Yes" name="recipients[${idx}][id_email]" class="form-control recipient-select external-input d-none" placeholder="Email"/>
+      </div>
+      <div class="col-3">
+        <input type="text" data-ignore-kilvish="Yes" name="recipients[${idx}][name]" class="form-control external-name d-none" placeholder="Name (External)"/>
+      </div>
+      <div class="col-2">
+        <select name="recipients[${idx}][role]" class="form-select select2 recipient-role">
+          <option value="signer">Signer</option>
+          <option value="cc">CC</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-auto mt-2 mt-md-0">
+        <button type="button" class="btn btn-danger btn-sm remove-recipient">Remove</button>
+      </div>
+    `;
+    return row;
+  }
+
+  function initRow(row) {
+    const typeSel = row.querySelector('.recipient-type');
+    const firmSel = row.querySelector('.firmuser-select');
+    const clientSel = row.querySelector('.client-select');
+    const extInput = row.querySelector('.external-input');
+    const nameInput = row.querySelector('.external-name');
+
+    function toggleInputs() {
+      const type = (typeSel?.value || '').toLowerCase();
+      [firmSel, clientSel, extInput, nameInput].forEach(el => { if (el) el.classList.add('d-none'); });
+      if (type === 'caseteam') {
+        firmSel?.classList.remove('d-none');
+      } else if (type === 'client') {
+        clientSel?.classList.remove('d-none');
+      } else {
+        extInput?.classList.remove('d-none');
+        nameInput?.classList.remove('d-none');
+      }
+      updateDefaultMessage();
+    }
+
+    typeSel?.addEventListener('change', toggleInputs);
+    toggleInputs();
+  }
+
+  function addRecipientRow() {
+    const idx = recContainer.querySelectorAll('.recipient-item').length;
+    const row = makeRecipientRow(idx);
+    recContainer.appendChild(row);
+    initRow(row);
+  }
+
+  function updateDefaultMessage() {
+    const msgBox = document.getElementById('es_message');
+    if (!msgBox) return;
+    const roles = Array.from(recContainer.querySelectorAll('.recipient-role')).map(el => (el.value || '').toLowerCase());
+    if (!msgBox.value.trim()) {
+      msgBox.value = roles.includes('signer') ? '' : 'FYI: document shared for awareness.';
+    }
+  }
+
+  if (recContainer) {
+    recContainer.innerHTML = '';
+    addRecipientRow();
+    recContainer.addEventListener('click', function (e) {
+      if (e.target.closest('.remove-recipient')) {
+        const row = e.target.closest('.recipient-item');
+        row?.remove();
+        updateDefaultMessage();
+      }
+    });
+    document.getElementById('addRecipientBtn')?.addEventListener('click', addRecipientRow);
+  }
+
+  const form = document.getElementById('esignForm');
+  let editingEnvelopeId = null;
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const provider = document.getElementById('provider')?.value;
+      const docId = document.getElementById('es_doc_id')?.value;
+      const recs = collectRecipients();
+
+      if (!docId) {
+        if (window.kilToast) kilToast.danger('Select a document.');
+        return;
+      }
+      console.log('recs',recs)
+
+      if (!recs.some(r => (r.role || '').toLowerCase() === 'signer')) {
+        if (window.kilToast) kilToast.danger('Add at least one signer.');
+        return;
+      }
+
+      const payload = {
+        provider,
+        document_id: docId,
+        recipients: recs,
+        message: document.getElementById('es_message')?.value || '',
+        send_now: document.getElementById('send_now')?.checked || false,
+      };
+
+      try {
+        let url = `/firmstaff/cases/${caseId}/esign_envelopes`;
+        let method = 'post';
+        if (editingEnvelopeId) {
+          url = `/firmstaff/cases/${caseId}/esign_envelopes/${editingEnvelopeId}/send`;
+          method = 'patch';
+        }
+
+        const { data } = await fx[method](url, payload);
+        if (data?.success) {
+          if (window.kilToast) kilToast.success(data.message || 'Envelope created.');
+          currentEnvelopes = Array.isArray(data.esignEnvelopes) ? data.esignEnvelopes : [];
+          renderEsignTable(currentEnvelopes);
+          form.reset();
+          recContainer.innerHTML = '';
+          addRecipientRow();
+          editingEnvelopeId = null;
+        } else {
+          const msg = data?.message || 'Could not create envelope.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+      } catch (err) {
+        console.error('esign create error', err);
+        const msg = err?.response?.data?.message || err.message || 'Unexpected error while creating envelope.';
+        if (window.kilToast) kilToast.danger(msg); else alert(msg);
+      }
+    });
+  }
+
+  const esignTable = document.getElementById('esignTable');
+  if (esignTable) {
+    esignTable.addEventListener('click', async function (e) {
+      const deleteBtn = e.target.closest('.delete-esign-btn');
+      if (deleteBtn) {
+        const envelopeId = deleteBtn.getAttribute('data-id');
+        if (!envelopeId) return;
+        const result = await Swal.fire({
+          title: 'Delete this envelope?',
+          text: 'This envelope record will be deleted.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, delete it',
+          cancelButtonText: 'Cancel',
+          reverseButtons: true,
+          customClass: {
+            confirmButton: 'swal2-confirm btn btn-danger ms-2',
+            cancelButton: 'swal2-cancel btn btn-secondary',
+          },
+          buttonsStyling: false,
+        });
+        if (!result.isConfirmed) return;
+
+        try {
+          const { data } = await fx.delete(`/firmstaff/cases/${caseId}/esign_envelopes/${envelopeId}`);
+          if (data?.success) {
+            if (window.kilToast) kilToast.success(data.message || 'Envelope deleted.');
+            renderEsignTable(data.esignEnvelopes);
+          } else {
+            const msg = data?.message || 'Could not delete envelope.';
+            if (window.kilToast) kilToast.danger(msg); else alert(msg);
+          }
+        } catch (err) {
+          console.error('esign delete error', err);
+          const msg = err?.response?.data?.message || err.message || 'Unexpected error while deleting envelope.';
+          if (window.kilToast) kilToast.danger(msg); else alert(msg);
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.edit-esign-btn');
+      if (editBtn) {
+        const envelopeId = editBtn.getAttribute('data-id');
+        const env = (Array.isArray(currentEnvelopes) ? currentEnvelopes : []).find(en => String(en.envelope_id) === String(envelopeId));
+        if (!env) return;
+
+        document.getElementById('provider').value = env.provider || 'docusign';
+        const docSel = document.getElementById('es_doc_id');
+        if (docSel) {
+          docSel.value = env.document_id || '';
+          docSel.dispatchEvent(new Event('change'));
+        }
+        document.getElementById('es_message').value = env.message || '';
+        document.getElementById('send_now').checked = true;
+
+        recContainer.innerHTML = '';
+        const recs = Array.isArray(env.recipients) ? env.recipients : [];
+        recs.forEach((r, idx) => {
+          addRecipientRow();
+          const row = recContainer.querySelectorAll('.recipient-item')[idx];
+          const typeSel = row.querySelector('.recipient-type');
+          const firmSel = row.querySelector('.firmuser-select');
+          const clientSel = row.querySelector('.client-select');
+          const extInput = row.querySelector('.external-input');
+          const nameInput = row.querySelector('.external-name');
+          typeSel.value = r.type === 'CaseTeam' ? 'CaseTeam' : r.type === 'Client' ? 'Client' : 'External';
+          typeSel.dispatchEvent(new Event('change'));
+          if (typeSel.value === 'CaseTeam') {
+            if (firmSel) {
+              const match = Array.from(firmSel.options).find(o => o.text.includes(r.email));
+              if (match) firmSel.value = match.value;
+            }
+          } else if (typeSel.value === 'Client') {
+            if (clientSel) clientSel.selectedIndex = 0;
+          } else {
+            if (extInput) extInput.value = r.email;
+            if (nameInput) nameInput.value = r.name;
+          }
+          const roleSel = row.querySelector('.recipient-role');
+          if (roleSel) roleSel.value = r.role || 'signer';
+        });
+
+        editingEnvelopeId = envelopeId;
+      }
+    });
+  }
+});
+</script>
+<!-- =====================  END TAB 6 E-SIGN Script ============================= -->
+<!-- JS Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const containerNew = document.getElementById("documentContainerDrafting");
+
+  containerNew.addEventListener("click", function (e) {
+
+    // Add More button
+    if (e.target.closest(".addMoreNew")) {
+      const newRow = document.createElement("div");
+      newRow.className = "row document-row-new align-items-end mb-3";
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+        </div>
+        <div class="col-md-5">
+          <input type="file" name="documents" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn removeBtnNew w-100" style="background-color: #dc3545;color: #fff;">
+            <i class="ti ti-x"></i> Remove
+          </button>
+        </div>
+      `;
+      containerNew.appendChild(newRow);
+    }
+
+    // Remove button
+    if (e.target.closest(".removeBtnNew")) {
+      const rowNew = e.target.closest(".document-row-new");
+      rowNew.remove();
+    }
+  });
+});
+</script>
+
+
+<!-- (Old recipients repeater removed) -->
+
+<!--******************************************-->
+<!-- Delete Confirmation Case Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-case-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const caseId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This case will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-case?id=' + caseId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Legal Drafting Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-legal-drafting-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const docId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This legal drafting record will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to delete page
+                    window.location.href = '/firmstaff/delete-document?id=' + docId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Research Log Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-research-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const researchId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This research log will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-research?id=' + researchId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Document Drafting Script -->

@@ -1,0 +1,750 @@
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('supersidebar.ejs'); %>
+
+
+<style>
+/* Practice Area Picker */
+.pa-picker .pa-search-group .form-control { border-left: 0; }
+.pa-suggest{
+  border:1px solid #e7eaf0; border-radius:10px; background:#fff;
+  box-shadow: 0 8px 24px rgba(16,24,40,.08); max-height:30vh; overflow:auto;
+}
+.pa-suggest-item{
+  padding:10px 12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+}
+.pa-suggest-item:hover{ background:#f8fafc; }
+.pa-suggest-item .meta{ font-size:12px; color:#64748b; }
+
+.pa-card{
+  border:1px solid #e7eaf0; border-radius:12px; padding:12px 12px;
+  background:#fff; box-shadow:0 1px 2px rgba(16,24,40,.04); margin-bottom:10px;
+}
+.pa-card-head{ display:flex; align-items:center; gap:8px; }
+.pa-card-title{ font-weight:600; color:#0f172a; }
+.pa-chip-close{
+  margin-left:auto; border:none; background:transparent; color:#ef4444;
+  border-radius:8px; padding:4px 6px; cursor:pointer;
+}
+.pa-chip-close:hover{ background:#fee2e2; }
+
+.pa-children{
+  margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;
+}
+.pa-child-chip{
+  font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #dbeafe;
+  background:#eff6ff; color:#1d4ed8;
+}
+
+.pa-browse-modal{
+  text-align:left;
+}
+.pa-browse-item{
+  border:1px solid #e7eaf0; border-radius:10px; padding:10px; margin-bottom:8px;
+  display:flex; justify-content:space-between; align-items:center; background:#fff;
+}
+.pa-browse-item .label{ font-weight:600; }
+.pa-browse-actions button{ min-width: 88px; }
+</style>
+
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <h4 class="fw-bold mb-0">
+        Edit Law Firm
+        <span class="badge badge-soft-primary border py-1 px-2 border-primary fs-13 ms-1">
+          #<%= lawfirm.firm_id %>
+        </span>
+      </h4>
+      <div>
+        <a href="/superadmin/view_lawfirms" class="btn btn-outline-secondary btn-md fs-13">
+          <i class="ti ti-chevron-left me-1"></i> Back to List
+        </a>
+      </div>
+    </div>
+
+    <form id="kilform" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="firm_id" value="<%= lawfirm.firm_id %>">
+
+      <div class="card">
+        <div class="card-body pb-0">
+          <div class="form">
+
+            <h6 class="fw-bold mb-3">Law Firm Information</h6>
+            <div class="row">
+
+      <!-- Logo -->
+<div class="col-lg-12">
+  <div class="mb-3">
+    <label class="form-label mb-1 fw-medium">Firm Logo</label>
+
+    <% if (!lawfirm.firm_logo) { %>
+      <!-- No logo: simple browse -->
+      <input type="file" id="firm_logo" name="firm_logo" class="form-control">
+      <div class="form-text">Upload a PNG/JPG (optional).</div>
+    <% } else { %>
+      <!-- Has logo: view + replace + remove -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <a
+          href="/secure/file_stream?s3key=<%= encodeURIComponent(lawfirm.firm_logo) %>"
+          target="_blank"
+          class="btn btn-outline-primary btn-sm"
+        >
+<!-- 
+           <a
+          href="/images/s3fallback.png"
+          target="_blank"
+          class="btn btn-outline-primary btn-sm"
+        > -->
+          <i class="ti ti-external-link me-1"></i> View file
+        </a>
+
+        <label class="btn btn-outline-secondary btn-sm mb-0">
+          <i class="ti ti-upload me-1"></i> Replace
+          <input type="file" id="firm_logo" name="firm_logo" class="d-none">
+        </label>
+
+        <div class="form-check ms-1">
+          <input class="form-check-input" type="checkbox" data-ignore-kilvish="Yes" id="remove_logo" name="remove_logo" value="1">
+          <label class="form-check-label" for="remove_logo">Remove</label>
+        </div>
+      </div>
+      <!-- <div class="small text-muted mt-1">Key: <code><%= lawfirm.firm_logo %></code></div> -->
+       
+ <!-- <div class="small text-muted mt-1">Key: <code>     
+   STATUS: S3 Bucket Setup Pending
+Missing CloudFront distribution, Key Pair ID, private key (.pem), and other required credentials.
+Action required: Provide CloudFront domain, Key Pair ID, and the .pem private key for signed URLs, or approve an alternate access method.
+</code></div> -->
+
+    <% } %>
+  </div>
+</div>
+              <!-- Firm Name -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="firm_name" class="form-label mb-1 fw-medium">Firm Name<span class="text-danger ms-1">*</span></label>
+                  <input type="text" id="firm_name" name="firm_name" class="form-control" required
+                         value="<%- lawfirm.firm_name || '' %>">
+                </div>
+              </div>
+
+              <!-- Registration Number -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="registration_number" class="form-label mb-1 fw-medium">Registration Number<span class="text-danger ms-1">*</span></label>
+                  <input type="text" data-kilvish-char='mix_-_' id="registration_number" name="registration_number" class="form-control" required
+                         value="<%- lawfirm.registration_number || '' %>">
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-6">
+                <div class="mb-1">
+                  <label for="email" class="form-label mb-1 fw-medium">Email Address<span class="text-danger ms-1">*</span></label>
+                  <input type="email" id="emailInput" name="email" class="form-control" required
+                         value="<%- lawfirm.email || '' %>">
+                </div>
+                <div id="emailInputError" class="text-danger small"></div>
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="full_contact" class="form-label mb-1 fw-medium">Phone Number<span class="text-danger ms-1">*</span></label>
+                  <div class="input-group kiltel-phone-wrap col-6">
+                    <button type="button" class="kiltel-country-trigger"></button>
+                    <input data-ignore-kilvish="Yes"  type="tel"
+                           class="form-control"
+                           name="full_contact"
+                           id="kilvishcontact"
+                           data-kilvish-tel
+                           data-kilvish-preferred="JM,IN"
+                           data-kiltel-init="JM"
+                           data-kiltel-validation="yes"
+                           value="<%- lawfirm.full_contact || '' %>"
+                           required>
+                    <input type="hidden" id="country_code" name="country_code" value="<%- lawfirm.country_code || '' %>">
+                    <input type="hidden" id="contact" name="contact" value="<%- lawfirm.contact || '' %>">
+                  </div>
+                  <div id="errorText1" class="text-danger small"></div>
+                  <div id="kiltel-error" class="text-danger small mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Parish -->
+              <!-- <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="parish" class="form-label">Select Parish</label>
+                  <select id="parish" name="parish" class="form-select select2" required>
+                    <option value="">Select Parish</option>
+                    <% (states || []).forEach(function(p){ const label = p.replace(/^Saint\s/, 'St. '); %>
+                      <option value="<%= p %>" <%= lawfirm.parish === p ? 'selected' : '' %>><%= label %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div> -->
+
+            </div>
+
+            <!-- <h6 class="fw-bold mb-3 border-top pt-3">Address Information</h6>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="mb-3">
+                  <label for="firm_address" class="form-label mb-1 fw-medium">Address<span class="text-danger ms-1">*</span></label>
+                  <textarea class="form-control" id="firm_address" name="firm_address" rows="3" required
+                            placeholder="Enter address, city, zip"><%- lawfirm.address || '' %></textarea>
+                </div>
+              </div>
+            </div> -->
+
+
+            <h6 class="fw-bold mb-3 border-top pt-3">Service Locations</h6>
+<input type="hidden" id="locations_json" name="locations_json">
+
+<div id="locationsWrap" class="mb-3">
+  <!-- Rows will be rendered by JS from window.initialLocations -->
+</div>
+
+<div>
+  <button type="button" class="btn btn-outline-primary btn-sm" id="addLocationBtn">
+    <i class="ti ti-plus me-1"></i>Add Location
+  </button>
+</div>
+
+<script>
+  // Pass existing locations from server in EDIT. For ADD keep it empty array.
+  window.initialLocations = <%- JSON.stringify((typeof locations !== 'undefined' && locations) ? locations : []) %>;
+
+  // Parish list (reuse your 'states' array from server)
+  window.allParishes = <%- JSON.stringify(states || []) %>;
+</script>
+
+
+
+
+
+<h6 class="fw-bold mb-3 border-top pt-3">Practice Areas</h6>
+
+<!-- Hidden field that will carry selected parent IDs as JSON -->
+<input type="hidden" id="practice_area_ids" name="practice_area_ids" value="[]">
+
+<div class="pa-picker card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="flex-grow-1">
+        <div class="input-group input-group-sm pa-search-group">
+          <span class="input-group-text bg-white"><i class="ti ti-search"></i></span>
+          <input type="text" id="paSearchInput" class="form-control" placeholder="Search practice areas (parents only)...">
+        </div>
+      </div>
+      <button type="button" id="paOpenList" class="btn btn-outline-primary btn-sm">
+        <i class="ti ti-list-search me-1"></i>Browse All
+      </button>
+    </div>
+
+    <!-- Suggestions dropdown -->
+    <div id="paSuggest" class="pa-suggest mt-2 d-none"></div>
+
+    <!-- Selected chips/cards -->
+    <div id="paSelectedWrap" class="mt-3"></div>
+  </div>
+</div>
+
+
+
+
+
+            <h6 class="fw-bold mb-3 border-top pt-3">Other Information</h6>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="mb-3">
+                  <label for="description" class="form-label mb-1 fw-medium">Firm Description</label>
+                  <textarea class="form-control" id="description" name="description" rows="3"
+                            placeholder="Enter about word..."><%- lawfirm.description || '' %></textarea>
+                </div>
+              </div>
+
+              <!-- Certificate -->
+
+              <!-- Certificate -->
+<div class="col-lg-6">
+  <div class="mb-3">
+    <label class="form-label mb-1">Firm Certificate / Document</label>
+
+    <% if (!lawfirm.firm_certificate) { %>
+      <!-- No certificate: simple browse -->
+      <input type="file" id="firm_certificate" name="firm_certificate" class="form-control">
+      <div class="form-text">PDF / image (optional).</div>
+    <% } else { %>
+      <!-- Has certificate: view + replace + remove -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <a
+          href="/secure/file_stream?s3key=<%= encodeURIComponent(lawfirm.firm_certificate) %>"
+          target="_blank"
+          class="btn btn-outline-primary btn-sm"
+        >
+
+           <!-- <a
+          href="/images/s3fallback.png"
+          target="_blank"
+          class="btn btn-outline-primary btn-sm"
+        > -->
+      
+          <i class="ti ti-external-link me-1"></i> View file
+        </a>
+
+        <label class="btn btn-outline-secondary btn-sm mb-0">
+          <i class="ti ti-upload me-1"></i> Replace
+          <input type="file" id="firm_certificate" name="firm_certificate" class="d-none">
+        </label>
+
+        <div class="form-check ms-1">
+          <input class="form-check-input" type="checkbox" data-ignore-kilvish="Yes" id="remove_certificate" name="remove_certificate" value="1">
+          <label class="form-check-label" for="remove_certificate">Remove</label>
+        </div>
+      </div>
+      <!-- <div class="small text-muted mt-1">Key: <code><%= lawfirm.firm_certificate %></code></div> -->
+<!-- 
+ <div class="small text-muted mt-1">Key: <code>      STATUS: S3 Bucket Setup Pending
+Missing CloudFront distribution, Key Pair ID, private key (.pem), and other required credentials.
+Action required: Provide CloudFront domain, Key Pair ID, and the .pem private key for signed URLs, or approve an alternate access method.</code></div> -->
+
+    <% } %>
+  </div>
+</div>
+        
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-end mt-3">
+        <a href="/superadmin/view_lawfirms" class="btn btn-light btn-md fs-13 fw-medium me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium">Update Law Firm</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+  window.prefillPracticeAreaIds = <%- JSON.stringify(prefillPracticeAreaIds || []) %>;
+</script>
+
+
+<script>
+  
+  // Email uniqueness (skip if same as original)
+  (function(){
+    const origEmail = '<%- (lawfirm.email || "").toLowerCase() %>';
+    $('#emailInput').on('change', function(){
+      const email = (this.value || '').toLowerCase();
+      if (!email || email === origEmail) { $('#emailInputError').text(''); return; }
+
+      $.ajax({
+        type: 'POST',
+        url: '/superadmin/check_firm_email',
+        headers: { 'CSRF-Token': csrfToken },
+        data: { email },
+        success: function (data) {
+          if (data.exists === true) {
+            $('#emailInputError').text(`Email (${email}) already exists.`);
+      
+             kilToast.danger('Email ' + email + ' already exists.')
+
+          } else {
+            $('#emailInputError').text('');
+          }
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || 'Error validating email.';
+          $('#emailInputError').text(msg);
+           kilToast.danger(msg)
+        }
+      });
+    });
+  })();
+
+  // Phone uniqueness (skip if unchanged)
+  (function(){
+    const origFull = '<%- lawfirm.full_contact || "" %>';
+    $('#kilvishcontact').on('change', function(){
+      const phoneNumber = this.value || '';
+      const countryCode = document.querySelector("#country_code").value;
+      if (!phoneNumber || (countryCode + (document.getElementById('contact').value || '')) === origFull) {
+        $('#errorText1').text(''); return;
+      }
+      $.ajax({
+        type: 'POST',
+        url: '/superadmin/check_firm_phonenumber',
+        headers: { 'CSRF-Token': csrfToken },
+        data: { phoneNumber, countryCode },
+        success: function (data) {
+          if (data.exists === true) {
+            $('#errorText1').text(`Contact number (${phoneNumber}) already exists.`);
+         
+             kilToast.danger(`Contact number ${phoneNumber} already exists.`)
+          } else {
+            $('#errorText1').text('');
+          }
+        },
+        error: function (xhr) {
+          const msg = xhr.responseJSON?.message || 'Error validating phone number.';
+          $('#errorText1').text(msg);
+        
+           kilToast.danger(msg)
+        }
+      });
+    });
+  })();
+
+
+ 
+  const fx = (window.axiosElaw); // CSRF-aware
+  document.getElementById('kilform')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+
+    try {
+      const { data } = await fx.post('/superadmin/edit_lawFirm', fd);
+
+      if (!data?.success) {
+      
+           kilToast.danger( data?.message || 'Failed to update law firm.')
+        return;
+      }
+      
+       kilToast.success( data?.message || 'Law firm updated successfully.')
+      location.href = '/superadmin/view_lawfirms';
+
+    } catch (err) {
+      console.error(err);
+      const msg = err?.response?.data?.message || 'Failed to update law firm.';
+  
+      kilToast.danger(msg)
+    }
+  });
+</script>
+
+
+
+<script>
+(function(){
+  const wrap = document.getElementById('locationsWrap');
+  const addBtn = document.getElementById('addLocationBtn');
+  const hidden = document.getElementById('locations_json');
+    const parishes = <%- JSON.stringify(states) %>;
+  let rows = []; // local state: [{location_id?, parish, address, is_primary, _deleted?}]
+
+  // Seed from server (edit) or default (add)
+  rows = (Array.isArray(window.initialLocations) && window.initialLocations.length)
+    ? window.initialLocations.map(l => ({
+        location_id: l.location_id || null,
+        parish: l.parish || '',
+        address: l.address || '',
+        is_primary: !!l.is_primary,
+        _deleted: false
+      }))
+    : [{ location_id: null, parish: '', address: '', is_primary: true, _deleted: false }];
+
+  function parishOptions(selected){
+    return ['<option value="">Select Parish</option>']
+      .concat(parishes.map(p => {
+        const label = p.replace(/^Saint\s/, 'St. ');
+        return `<option value="${p}" ${p===selected?'selected':''}>${label}</option>`;
+      })).join('');
+  }
+
+  function render(){
+    wrap.innerHTML = '';
+    rows.forEach((r, idx) => {
+      if (r._deleted) return; // skip deleted in UI
+      const el = document.createElement('div');
+      el.className = 'card mb-2';
+      el.innerHTML = `
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">Parish<span class="text-danger">*</span></label>
+              <select class="form-select parish-inp" data-idx="${idx}">
+                ${parishOptions(r.parish)}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Address<span class="text-danger">*</span></label>
+              <input data-ignore-kilvish="Yes"  type="text" class="form-control address-inp" data-idx="${idx}" placeholder="Full address" value="${(r.address||'').replace(/"/g,'&quot;')}">
+            </div>
+            <div class="col-md-2 d-flex align-items-center gap-2">
+              <div class="form-check">
+                <input data-ignore-kilvish="Yes"  class="form-check-input primary-radio" type="radio" name="primaryLoc" data-idx="${idx}" ${r.is_primary?'checked':''}>
+                <label class="form-check-label">Primary</label>
+              </div>
+              <button type="button" class="btn btn-outline-danger btn-sm remove-loc" data-idx="${idx}">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+    serialize(); // keep hidden JSON in sync
+  }
+
+  function serialize(){
+    const payload = rows
+      .filter(r => !r._deleted)
+      .map(r => ({
+        location_id: r.location_id || undefined,
+        parish: (r.parish||'').trim(),
+        address: (r.address||'').trim(),
+        is_primary: !!r.is_primary
+      }));
+    hidden.value = JSON.stringify(payload);
+  }
+
+  // Handlers
+  wrap.addEventListener('change', (e) => {
+    const idx = +e.target.dataset.idx;
+    if (e.target.classList.contains('parish-inp')) {
+      rows[idx].parish = e.target.value;
+      serialize();
+    }
+    if (e.target.classList.contains('address-inp')) {
+      rows[idx].address = e.target.value;
+      serialize();
+    }
+    if (e.target.classList.contains('primary-radio')) {
+      rows.forEach((r, i) => r.is_primary = (i===idx));
+      render(); // re-render to reflect radios
+    }
+  });
+
+  wrap.addEventListener('click', (e) => {
+    const idx = +e.target.closest('[data-idx]')?.dataset.idx ?? NaN;
+    if (e.target.closest('.remove-loc')) {
+      // If it's a new row (no id), just drop it; if existing, mark _deleted
+      if (rows[idx].location_id) rows[idx]._deleted = true;
+      else rows.splice(idx,1);
+      // Ensure at least one row remains
+      if (!rows.some(r => !r._deleted)) rows.push({ location_id:null, parish:'', address:'', is_primary:true, _deleted:false });
+      // Ensure one row is primary
+      if (!rows.some(r => !r._deleted && r.is_primary)) {
+        const first = rows.find(r => !r._deleted);
+        if (first) first.is_primary = true;
+      }
+      render();
+    }
+  });
+
+  addBtn?.addEventListener('click', () => {
+    rows.push({ location_id:null, parish:'', address:'', is_primary: rows.every(r => r._deleted || !r.is_primary), _deleted:false });
+    render();
+  });
+
+  // initial paint
+  render();
+
+  // Hook the existing submit to ensure JSON is present
+  document.getElementById('kilform')?.addEventListener('submit', () => serialize());
+})();
+</script>
+
+
+
+
+<script>
+(function(){
+  const fx = window.axiosElaw;
+  const toast = (t,m)=>window.kweToast?.(t,m);
+  const $ = (s,p=document)=>p.querySelector(s);
+  const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
+
+  const hidden = $('#practice_area_ids');
+  const searchInp = $('#paSearchInput');
+  const suggestBox = $('#paSuggest');
+  const selectedWrap = $('#paSelectedWrap');
+  const browseBtn = $('#paOpenList');
+
+  // State
+  let tree = [];         // full tree (parents + children)
+  let parents = [];      // derived: only parents
+  let selectedIds = [];  // parent IDs chosen
+
+  // If edit page provides prefill
+  if (Array.isArray(window.prefillPracticeAreaIds)) {
+    selectedIds = window.prefillPracticeAreaIds.map(Number).filter(Boolean);
+  }
+
+  // Load tree (you already have this JSON endpoint used elsewhere)
+  async function loadTree(){
+    const { data } = await fx.get('/superadmin/practice_areas_json');
+    if (!data?.success) throw new Error(data?.message || 'Failed to load practice areas.');
+    tree = data.tree || [];
+    parents = flattenParents(tree);
+    renderSelected();
+  }
+
+  function flattenParents(nodes){
+    const acc = [];
+    const dfs = (list) => {
+      for (const n of list) {
+        if (!n.parent_id) {
+          acc.push({
+            id: Number(n.practice_area_id),
+            name: n.name,
+            slug: n.slug,
+            children: (n.children || []).map(c => ({ id: Number(c.practice_area_id), name: c.name }))
+          });
+        }
+        if (n.children?.length) dfs(n.children);
+      }
+    };
+    dfs(nodes);
+    // sort by name
+    acc.sort((a,b)=>a.name.localeCompare(b.name));
+    return acc;
+  }
+
+  function setHidden(){
+    hidden.value = JSON.stringify(selectedIds);
+  }
+
+  function renderSelected(){
+    setHidden();
+    selectedWrap.innerHTML = selectedIds.map(id => {
+      const p = parents.find(x => x.id === id);
+      if (!p) return '';
+      const childChips = (p.children||[]).slice(0,12).map(c => `<span class="pa-child-chip">${escapeHtml(c.name)}</span>`).join('');
+      const more = (p.children?.length > 12) ? `<span class="pa-child-chip" title="And ${p.children.length-12} more...">+${p.children.length-12}</span>` : '';
+      return `
+        <div class="pa-card" data-id="${p.id}">
+          <div class="pa-card-head">
+            <div class="pa-card-title">${escapeHtml(p.name)}</div>
+            <button type="button" class="pa-chip-close" data-remove="${p.id}" title="Remove"><i class="ti ti-x"></i></button>
+          </div>
+          ${(p.children?.length ? `<div class="pa-children">${childChips}${more}</div>` : '')}
+        </div>
+      `;
+    }).join('') || `<div class="text-muted">No practice areas selected.</div>`;
+  }
+
+  function showSuggest(items){
+    if (!items.length) {
+      suggestBox.classList.add('d-none');
+      suggestBox.innerHTML = '';
+      return;
+    }
+    suggestBox.innerHTML = items.map(p => `
+      <div class="pa-suggest-item" data-id="${p.id}">
+        <div>${escapeHtml(p.name)}</div>
+        <div class="meta">${p.children.length ? `${p.children.length} sub-area${p.children.length>1?'s':''}` : 'No sub-areas'}</div>
+      </div>
+    `).join('');
+    suggestBox.classList.remove('d-none');
+  }
+
+  function filterSuggest(q){
+    q = q.trim().toLowerCase();
+    if (!q) { showSuggest([]); return; }
+    const list = parents
+      .filter(p => p.name.toLowerCase().includes(q) || p.slug?.toLowerCase().includes(q))
+      .filter(p => !selectedIds.includes(p.id))
+      .slice(0, 15);
+    showSuggest(list);
+  }
+
+  searchInp.addEventListener('input', () => filterSuggest(searchInp.value));
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('.pa-suggest-item');
+    if (item) {
+      const id = Number(item.dataset.id);
+      if (!selectedIds.includes(id)) selectedIds.push(id);
+      renderSelected();
+      suggestBox.classList.add('d-none');
+      searchInp.value = '';
+      return;
+    }
+    if (!e.target.closest('.pa-suggest') && e.target !== searchInp) {
+      suggestBox.classList.add('d-none');
+    }
+  });
+
+  selectedWrap.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove]');
+    if (!btn) return;
+    const id = Number(btn.dataset.remove);
+    selectedIds = selectedIds.filter(x => x !== id);
+    renderSelected();
+  });
+
+  // “Browse All” modal for quick multi-pick
+  browseBtn.addEventListener('click', async () => {
+    const html = parents.map(p => `
+      <div class="pa-browse-item">
+        <div class="label">${escapeHtml(p.name)}</div>
+        <div class="pa-browse-actions">
+          ${selectedIds.includes(p.id)
+            ? `<button type="button" class="btn btn-outline-danger btn-sm" data-parem="${p.id}" data-action="remove">Remove</button>`
+            : `<button type="button" class="btn btn-outline-primary btn-sm" data-parem="${p.id}" data-action="add">Add</button>`
+          }
+        </div>
+      </div>
+    `).join('');
+
+    await Swal.fire({
+      title: 'Browse Practice Areas (Parents)',
+      html: `<div class="pa-browse-modal">${html}</div>`,
+      width: 700,
+      showCancelButton: true,
+      confirmButtonText: 'Done',
+      didOpen: () => {
+        const modal = Swal.getHtmlContainer();
+        modal.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-action]');
+          if (!btn) return;
+          const id = Number(btn.dataset.parem);
+          const action = btn.dataset.action;
+          if (action === 'add' && !selectedIds.includes(id)) {
+            selectedIds.push(id);
+            btn.outerHTML = `<button type="button" class="btn btn-outline-danger btn-sm" data-parem="${id}" data-action="remove">Remove</button>`;
+          } else if (action === 'remove') {
+            selectedIds = selectedIds.filter(x => x !== id);
+            btn.outerHTML = `<button type="button" class="btn btn-outline-primary btn-sm" data-parem="${id}" data-action="add">Add</button>`;
+          }
+        });
+      }
+    });
+    renderSelected();
+  });
+
+  function escapeHtml(s=''){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // Init
+  loadTree().catch(err => {
+    console.error(err);
+   
+    kilToast.danger(err?.message || 'Failed to load practice areas.')
+  });
+
+})();
+</script>
+
+
+
+
+

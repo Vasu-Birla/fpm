@@ -1,0 +1,244 @@
+<!-- Header -->
+<%- include('superheader.ejs'); %>
+
+<!-- Sidebar -->
+<%- include('supersidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <h4 class="fw-bold mb-0">Add Lawyer</h4>
+      <div>
+        <a href="/superadmin/view_lawyers" class="btn btn-outline-secondary btn-md fs-13">
+          <i class="ti ti-chevron-left me-1"></i> Back to List
+        </a>
+      </div>
+    </div>
+
+    <form id="kilform" method="POST" enctype="multipart/form-data">
+      <div class="card">
+        <div class="card-body pb-0">
+          <div class="row g-3">
+            
+            <!-- Firm -->
+            <div class="col-md-6">
+              <label for="firm_id" class="form-label mb-1 fw-medium">Law Firm <span class="text-danger">*</span></label>
+              <select id="firm_id" name="firm_id" class="form-select" required>
+                <option value="">Select Firm</option>
+                <% (lawfirms || []).forEach(f => { %>
+                  <option value="<%= f.firm_id %>" <%= (preselectFirmId && preselectFirmId===f.firm_id) ? 'selected' : '' %>>
+                    <%= f.firm_name %>
+                  </option>
+                <% }) %>
+              </select>
+              <div id="firmError" class="text-danger small"></div>
+            </div>
+
+            <!-- Role (auto-loads for selected firm) -->
+            <div class="col-md-6">
+              <label for="firm_role_id" class="form-label mb-1 fw-medium">Role <span class="text-danger">*</span></label>
+              <select id="firm_role_id" name="firm_role_id" class="form-select" required>
+                <option value="">Select Role</option>
+              </select>
+              <div class="form-text">Defaults to “Lawyer”.</div>
+            </div>
+
+            <!-- Avatar -->
+            <div class="col-md-12">
+              <label for="avatar" class="form-label mb-1 fw-medium">Avatar (optional)</label>
+              <input type="file" id="avatar" name="avatar" class="form-control">
+              <div class="form-text">PNG/JPG up to ~2MB.</div>
+            </div>
+
+            <!-- Names -->
+            <div class="col-md-6">
+              <label for="first_name" class="form-label mb-1 fw-medium">First Name <span class="text-danger">*</span></label>
+              <input type="text" id="first_name" name="first_name" class="form-control" placeholder="John" required>
+            </div>
+            <div class="col-md-6">
+              <label for="last_name" class="form-label mb-1 fw-medium">Last Name <span class="text-danger">*</span></label>
+              <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Doe" required>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label for="email" class="form-label mb-1 fw-medium">Email <span class="text-danger">*</span></label>
+              <input type="email" id="emailInput" name="email" class="form-control" placeholder="john@firm.com" required>
+              <div id="emailInputError" class="text-danger small"></div>
+            </div>
+
+            <!-- Phone (kiltel) -->
+            <div class="col-md-6">
+              <label class="form-label mb-1 fw-medium">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-group kiltel-phone-wrap">
+                <button type="button" class="kiltel-country-trigger"></button>
+                <input data-ignore-kilvish="Yes"
+                       type="tel"
+                       class="form-control"
+                       name="full_contact"
+                       id="kilvishcontact"
+                       data-kilvish-tel
+                       data-kilvish-preferred="JM,IN"
+                       data-kiltel-init="JM"
+                       data-kiltel-validation="yes"
+                       required>
+                <input type="hidden" id="country_code" name="country_code">
+                <input type="hidden" id="contact" name="contact">
+              </div>
+              <div id="kiltel-error" class="text-danger small"></div>
+              <div id="phoneError" class="text-danger small"></div>
+            </div>
+
+            <!-- Password (optional) -->
+            <div class="col-md-6">
+              <label class="form-label fw-bold">Password (optional)</label>
+              <input type="password" id="password" name="password" class="form-control" placeholder="Leave blank to invite">
+              <div class="form-text">If left blank, a temporary password is generated and status = Invited.</div>
+            </div>
+
+            <!-- Status + 2FA -->
+            <div class="col-md-3">
+              <label class="form-label mb-1 fw-medium">Status</label>
+              <select name="status" class="form-select">
+                <option value="">Auto (Active if password set, else Invited)</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Invited">Invited</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label mb-1 fw-medium">Two Step Verification</label>
+              <select name="two_step_verification" class="form-select">
+                <option value="Off" selected>Off</option>
+                <option value="On">On</option>
+              </select>
+            </div>
+
+            <!-- Timezone -->
+            <div class="col-md-6">
+              <label class="form-label mb-1 fw-medium">Timezone</label>
+              <input type="text" class="form-control" name="timezone" value="Asia/Kolkata">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-end mt-3">
+        <a href="/superadmin/view_lawyers" class="btn btn-light btn-md fs-13 fw-medium me-2">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium">Save Lawyer</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('superfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = window.axiosElaw;
+
+  // Load roles when firm changes (default to "Lawyer")
+  async function loadRolesForFirm(firmId){
+    const sel = document.getElementById('firm_role_id');
+    sel.innerHTML = '<option value="">Loading...</option>';
+    try {
+      const { data } = await fx.post('/superadmin/firm_roles', { firm_id: firmId });
+      if (!data?.success) throw new Error(data?.message || 'Failed roles');
+
+      sel.innerHTML = '<option value="">Select Role</option>';
+      (data.roles || []).forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.firm_role_id;
+        opt.textContent = r.name;
+        sel.appendChild(opt);
+      });
+      // default select Lawyer if present
+      const lawyerOpt = Array.from(sel.options).find(o => (o.textContent||'').toLowerCase() === 'lawyer');
+      if (lawyerOpt) sel.value = lawyerOpt.value;
+    } catch(err){
+      console.error(err);
+      sel.innerHTML = '<option value="">Select Role</option>';
+      window.kweToast?.('danger', err?.message || 'Failed to load roles.');
+    }
+  }
+
+  const firmSel = document.getElementById('firm_id');
+  firmSel.addEventListener('change', () => {
+    const firmId = firmSel.value;
+    if (firmId) loadRolesForFirm(firmId);
+  });
+
+  // Preload roles if firm is preselected
+  if (firmSel.value) loadRolesForFirm(firmSel.value);
+
+  // Email uniqueness (per firm)
+  document.getElementById('emailInput').addEventListener('change', async function(){
+    const email = (this.value||'').trim().toLowerCase();
+    const firmId = document.getElementById('firm_id').value;
+    if (!email || !firmId) return;
+
+    try {
+      const { data } = await fx.post('/superadmin/check_firm_email', { email, firm_id: firmId });
+      if (data?.exists) {
+        document.getElementById('emailInputError').textContent =
+          `Email (${email}) already exists in this firm.`;
+        window.kweToast?.('danger', `Email ${email} already exists in this firm.`);
+        this.value = '';
+      } else {
+        document.getElementById('emailInputError').textContent = '';
+      }
+    } catch(err){
+      console.error(err);
+      document.getElementById('emailInputError').textContent =
+        err?.response?.data?.message || 'Error validating email.';
+      window.kweToast?.('danger', err?.response?.data?.message || 'Error validating email.');
+    }
+  });
+
+  // Phone uniqueness (per firm)
+  document.getElementById('kilvishcontact').addEventListener('change', async function(){
+    const phoneNumber = (this.value||'').trim();
+    const firmId = document.getElementById('firm_id').value;
+    if (!phoneNumber || !firmId) return;
+
+    try {
+      const { data } = await fx.post('/superadmin/check_firm_staff_phone', { phoneNumber, firm_id: firmId });
+      if (data?.exists) {
+        document.getElementById('phoneError').textContent = `Contact number (${phoneNumber}) already exists in this firm.`;
+        window.kweToast?.('danger', `Contact number ${phoneNumber} already exists in this firm.`);
+        this.value = '';
+      } else {
+        document.getElementById('phoneError').textContent = '';
+      }
+    } catch(err){
+      console.error(err);
+      document.getElementById('phoneError').textContent =
+        err?.response?.data?.message || 'Error validating phone.';
+      window.kweToast?.('danger', err?.response?.data?.message || 'Error validating phone.');
+    }
+  });
+
+  // Submit
+  document.getElementById('kilform').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      const { data } = await fx.post('/superadmin/add_lawyer', fd);
+      if (!data?.success) {
+        window.kweToast?.('danger', data?.message || 'Failed to create lawyer.');
+        return;
+      }
+      window.kweToast?.('success', data?.message || 'Lawyer created successfully.');
+      location.href = '/superadmin/view_lawyers';
+    } catch(err){
+      console.error(err);
+      const msg = err?.response?.data?.message || 'Failed to create lawyer.';
+      window.kweToast?.('danger', msg);
+    }
+  });
+})();
+</script>

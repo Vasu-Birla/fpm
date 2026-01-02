@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Access Denied</title>
+  <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
+  <style>
+    body {
+      background: #f9f9fa;
+    }
+    .access-denied-box {
+      max-width: 400px;
+      margin: 90px auto;
+      padding: 36px 32px;
+      border-radius: 16px;
+      box-shadow: 0 3px 18px rgba(200,0,0,0.09);
+      background: #fff;
+      text-align: center;
+    }
+    .access-denied-box i {
+      font-size: 55px;
+      color: #dc3545;
+      margin-bottom: 10px;
+    }
+    .access-denied-box h1 {
+      color: #dc3545;
+      margin-bottom: 18px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .back-btn {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="access-denied-box">
+    <i class="fas fa-ban"></i>
+    <h1>Access Denied</h1>
+    <p class="mb-2 text-dark">Sorry, you do not have permission to access this page.</p>
+    <button onclick="history.back()" class="btn btn-outline-danger back-btn">
+      <i class="fa fa-arrow-left"></i> Go Back
+    </button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+</body>
+</html>

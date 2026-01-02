@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+
+    <!-- ✅ Socket.IO client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- ✅ CSRF -->
+    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+    <!-- ✅ kilToast + kil-loader -->
+    <script src="https://cdn.jsdelivr.net/npm/kiltoast@1.0.16/kiltoast.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/kil-loader@1.0.3/kil-loader.min.js"></script>
+
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-alt: #020617;
+        --sidebar-bg: #020617;
+        --accent: #1b8680;
+        --accent-soft: rgba(34, 197, 94, 0.1);
+        --text-main: #e5e7eb;
+        --text-muted: #9ca3af;
+        --bubble-me: #1b8680;
+        --bubble-them: #111827;
+        --border-subtle: #1f2937;
+        --input-bg: #020617;
+      }
+      body.light {
+        --bg: #f3f4f6;
+        --bg-alt: #ffffff;
+        --sidebar-bg: #111827;
+        --accent: #16a34a;
+        --accent-soft: rgba(22, 163, 74, 0.08);
+        --text-main: #0f172a;
+        --text-muted: #6b7280;
+        --bubble-me: #16a34a;
+        --bubble-them: #e5e7eb;
+        --border-subtle: #d1d5db;
+        --input-bg: #ffffff;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #1e293b, #020617 40%);
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .app-wrapper {
+        width: min(1100px, 100vw - 2rem);
+        height: min(700px, 100vh - 2rem);
+        background: var(--bg-alt);
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 35px 80px rgba(15, 23, 42, 0.8);
+        display: flex;
+      }
+      .sidebar {
+        width: 30%;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border-subtle);
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-header {
+        padding: 1.25rem 1rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .app-title {
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      .theme-toggle {
+        border-radius: 999px;
+        padding: 0.35rem 0.65rem;
+        border: 1px solid var(--border-subtle);
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        cursor: pointer;
+      }
+      .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+      .sidebar-search { padding: 0.5rem 0.75rem 0.75rem; }
+      .search-input {
+        width: 100%;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-alt);
+        color: var(--text-main);
+        font-size: 0.8rem;
+        outline: none;
+      }
+      .search-input::placeholder { color: var(--text-muted); }
+      .chat-list { flex: 1; overflow-y: auto; padding: 0.25rem 0.25rem 0.75rem; }
+      .chat-item {
+        display: flex;
+        gap: 0.6rem;
+        padding: 0.6rem 0.6rem;
+        margin: 0.1rem 0.4rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        align-items: center;
+      }
+      .chat-item:hover { background: rgba(15, 23, 42, 0.6); }
+      .chat-item.active { background: var(--accent-soft); }
+      .avatar {
+        width: 32px; height: 32px; border-radius: 999px;
+        background: linear-gradient(135deg, #0ea5e9, #22c55e);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; font-weight: 600; color: white; flex-shrink: 0;
+      }
+      .chat-item-text { flex: 1; min-width: 0; }
+      .chat-name { font-size: 0.85rem; font-weight: 500; }
+      .chat-last-msg {
+        font-size: 0.75rem; color: var(--text-muted);
+        white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+      }
+      .chat-meta { font-size: 0.7rem; color: var(--text-muted); text-align: right; }
+      .chat-main {
+        flex: 1; display: flex; flex-direction: column;
+        background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.07), transparent 40%), var(--bg);
+      }
+      .chat-header {
+        padding: 0.9rem 1.1rem;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid var(--border-subtle);
+        backdrop-filter: blur(10px);
+        background: rgba(15, 23, 42, 0.75);
+      }
+      body.light .chat-header { background: rgba(243, 244, 246, 0.85); }
+      .chat-header-main { display: flex; align-items: center; gap: 0.75rem; }
+      .chat-header-text { display: flex; flex-direction: column; gap: 0.15rem; }
+      .chat-header-name { font-size: 0.95rem; font-weight: 500; }
+      .chat-header-status { font-size: 0.75rem; color: var(--text-muted); min-height: 14px; }
+      .chat-header-right { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; align-items: center; }
+      .pill { border-radius: 999px; border: 1px solid var(--border-subtle); padding: 0.2rem 0.55rem; font-size: 0.7rem; }
+      .messages {
+        flex: 1; padding: 1rem 1.1rem; overflow-y: auto;
+        display: flex; flex-direction: column; gap: 0.5rem;
+        scroll-behavior: smooth;
+      }
+      .day-divider {
+        text-align: center; font-size: 0.7rem; color: var(--text-muted);
+        margin: 0.75rem 0; position: relative;
+      }
+      .day-divider::before, .day-divider::after {
+        content: ""; position: absolute; top: 50%;
+        width: 30%; height: 1px; background: var(--border-subtle);
+      }
+      .day-divider::before { left: 0; }
+      .day-divider::after { right: 0; }
+      .message-row { display: flex; width: 100%; }
+      .message-row.me { justify-content: flex-end; }
+      .message-bubble {
+        max-width: 70%;
+        padding: 0.5rem 0.7rem 0.3rem;
+        border-radius: 1rem;
+        font-size: 0.8rem; line-height: 1.35;
+        position: relative;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+      .message-row.me .message-bubble {
+        background: var(--bubble-me);
+        color: #ecfdf5;
+        border-bottom-right-radius: 0.25rem;
+      }
+      .message-row.them .message-bubble {
+        background: var(--bubble-them);
+        border-bottom-left-radius: 0.25rem;
+        color: var(--text-main);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+      body.light .message-row.them .message-bubble { border-color: rgba(148, 163, 184, 0.4); }
+      .message-meta {
+        font-size: 0.65rem;
+        color: rgba(15, 23, 42, 0.8);
+        margin-top: 0.2rem;
+        text-align: right;
+        opacity: 0.85;
+      }
+      .message-row.them .message-meta { color: var(--text-muted); }
+      .chat-input-area {
+        padding: 0.6rem 0.8rem;
+        border-top: 1px solid var(--border-subtle);
+        background: rgba(15, 23, 42, 0.96);
+        display: flex; align-items: center; gap: 0.55rem;
+      }
+      body.light .chat-input-area { background: rgba(243, 244, 246, 0.95); }
+      .chat-input-container {
+        flex: 1;
+        display: flex; align-items: center; gap: 0.45rem;
+        background: var(--input-bg);
+        border-radius: 999px;
+        border: 1px solid var(--border-subtle);
+        padding: 0.4rem 0.7rem;
+      }
+      .chat-input {
+        border: none; outline: none; background: transparent; flex: 1;
+        color: var(--text-main); font-size: 0.85rem;
+      }
+      .chat-input::placeholder { color: var(--text-muted); }
+      .send-btn {
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        border: none;
+        background: var(--accent);
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+      .send-btn:disabled { opacity: 0.5; cursor: default; }
+      .send-btn span.icon { font-size: 0.9rem; }
+
+      @media (max-width: 800px) {
+        .app-wrapper { height: 100vh; width: 100vw; border-radius: 0; }
+      }
+      @media (max-width: 700px) {
+        .sidebar { display: none; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-wrapper">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="app-title">
+            <span>Chat</span>
+            <span class="badge">Live</span>
+          </div>
+          <button class="theme-toggle" id="themeToggle">☾ / ☀</button>
+        </div>
+
+        <div class="sidebar-search">
+          <input type="text" class="search-input" placeholder="Search clients..." id="searchInput" />
+        </div>
+
+        <div class="chat-list" id="chatList"></div>
+      </aside>
+
+      <!-- Main Chat -->
+      <main class="chat-main">
+        <header class="chat-header">
+          <div class="chat-header-main">
+            <div class="avatar" id="activeAvatar">--</div>
+            <div class="chat-header-text">
+              <div class="chat-header-name" id="activeName">Select a client</div>
+              <div class="chat-header-status" id="activeStatus"></div>
+            </div>
+          </div>
+          <div class="chat-header-right">
+            <span class="pill" id="activeMeta"></span>
+          </div>
+        </header>
+
+        <section class="messages" id="messages"></section>
+
+        <section class="chat-input-area">
+          <div class="chat-input-container">
+            <button class="theme-toggle" id="attachBtn" title="Attach">📎</button>
+            <input type="file" id="fileInput" style="display:none" />
+            <input type="text" class="chat-input" id="messageInput" placeholder="Type a message and press Enter…" />
+          </div>
+
+          <button class="send-btn" id="sendBtn">
+            <span class="icon">➤</span>
+            <span>Send</span>
+          </button>
+        </section>
+      </main>
+    </div>
+
+    <!-- ✅ Server injects ME -->
+    <script>
+      window.ME = <%- JSON.stringify(me || null) %>;
+    </script>
+
+    <script>
+      // ✅ Toast config (use only .info and .danger)
+      try {
+        kilToast.configure({
+          position: 'top-right',
+          duration: 3000,
+          gap: 12,
+          offset: 18,
+          mode: 'simple'
+        });
+      } catch(e) {}
+    </script>
+
+    <!-- ✅ CSRF helpers (works with axios/kFetch) -->
+    <script>
+      (function () {
+        function readCookie(name) {
+          return document.cookie.split("; ").find((r) => r.startsWith(name + "="))?.split("=").slice(1).join("=");
+        }
+
+        window.setCsrf = function (token) {
+          if (!token) return;
+          let m = document.querySelector('meta[name="csrf-token"]');
+          if (!m) {
+            m = document.createElement("meta");
+            m.setAttribute("name", "csrf-token");
+            document.head.appendChild(m);
+          }
+          m.setAttribute("content", token);
+          const hidden = document.querySelector('input[name="_csrf"]');
+          if (hidden) hidden.value = token;
+        };
+
+        window.getCsrf = function () {
+          const meta = document.querySelector('meta[name="csrf-token"]')?.content;
+          if (meta) return meta;
+          const hidden = document.querySelector('input[name="_csrf"]')?.value;
+          if (hidden) return hidden;
+          for (const key of ["XSRF-TOKEN", "_csrf", "csrfToken"]) {
+            const v = readCookie(key);
+            if (v) return decodeURIComponent(v);
+          }
+          return "";
+        };
+
+        const _fetch = window.fetch;
+        window.kFetch = function (url, opts = {}) {
+          const headers = new Headers(opts.headers || {});
+          const t = getCsrf();
+          if (t) {
+            headers.set("X-CSRF-Token", t);
+            headers.set("CSRF-Token", t);
+            headers.set("X-XSRF-TOKEN", t);
+          }
+          opts.headers = headers;
+
+          return _fetch(url, opts).then((res) => {
+            const newT =
+              res.headers.get("x-csrf-token") || res.headers.get("csrf-token") || res.headers.get("x-xsrf-token");
+            if (newT) setCsrf(newT);
+            return res;
+          });
+        };
+      })();
+    </script>
+
+    <!-- ✅ REAL CHAT LOGIC (clients list sidebar) -->
+    <script>
+      // Preferred HTTP client
+      const fx = window.axiosElaw || window.axios || null;
+
+      // Loader helpers (kil-loader auto)
+      function L(on){
+        try{
+          if(on) kilLoader.show();
+          else kilLoader.hide();
+        }catch(e){}
+      }
+
+      // CSRF headers
+      function csrfHeaders(){
+        const t = (window.getCsrf && getCsrf()) || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        return t ? { "X-CSRF-Token": t, "CSRF-Token": t, "X-XSRF-TOKEN": t } : {};
+      }
+
+      async function httpGet(url){
+        if(fx) return fx.get(url, { headers: csrfHeaders() });
+        const r = await kFetch(url, { method: "GET" });
+        return { data: await r.json() };
+      }
+
+      async function httpPost(url, body){
+        if(fx) return fx.post(url, body, { headers: { ...csrfHeaders(), "Content-Type":"application/json" } });
+        const r = await kFetch(url, { method:"POST", headers:{...csrfHeaders(),"Content-Type":"application/json"}, body: JSON.stringify(body) });
+        return { data: await r.json() };
+      }
+
+      async function httpPostForm(url, formData){
+        if(fx) return fx.post(url, formData, { headers: csrfHeaders() });
+        const r = await kFetch(url, { method:"POST", headers: csrfHeaders(), body: formData });
+        return { data: await r.json() };
+      }
+
+      // Elements
+      const chatListEl = document.getElementById("chatList");
+      const messagesEl = document.getElementById("messages");
+      const messageInputEl = document.getElementById("messageInput");
+      const sendBtnEl = document.getElementById("sendBtn");
+      const themeToggleEl = document.getElementById("themeToggle");
+      const activeNameEl = document.getElementById("activeName");
+      const activeStatusEl = document.getElementById("activeStatus");
+      const activeMetaEl = document.getElementById("activeMeta");
+      const activeAvatarEl = document.getElementById("activeAvatar");
+      const attachBtnEl = document.getElementById("attachBtn");
+      const fileInputEl = document.getElementById("fileInput");
+
+      // State
+      let clients = [];
+      let activeConvoId = null;
+      let lastMessageIdInView = 0;
+
+      // Socket
+      const socket = io();
+
+      function isMine(sender_type, sender_id) {
+        return window.ME && sender_type === window.ME.user_type && String(sender_id) === String(window.ME.user_id);
+      }
+
+      function fmtTime(dt) {
+        try {
+          const d = new Date(dt);
+          return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        } catch {
+          return "";
+        }
+      }
+
+      function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+
+      function makeInitials(title = "") {
+        const t = String(title || "").trim();
+        if (!t) return "--";
+        const parts = t.split(/\s+/).slice(0, 2);
+        return parts.map((p) => p.slice(0, 1).toUpperCase()).join("");
+      }
+
+      function safeText(x) { return String(x ?? ""); }
+
+      // Sidebar render
+      function renderClientList(filterText = "") {
+        const q = String(filterText || "").toLowerCase().trim();
+        chatListEl.innerHTML = "";
+
+        const list = q ? clients.filter(c => (c.name||"").toLowerCase().includes(q)) : clients;
+
+        if(!list.length){
+          const empty = document.createElement("div");
+          empty.style.padding = "14px";
+          empty.style.color = "var(--text-muted)";
+          empty.textContent = "No clients found.";
+          chatListEl.appendChild(empty);
+          return;
+        }
+
+        for (const c of list) {
+          const item = document.createElement("div");
+          item.className = "chat-item";
+          item.dataset.type = c.type;
+          item.dataset.id = c.id;
+
+          const avatar = document.createElement("div");
+          avatar.className = "avatar";
+          avatar.textContent = makeInitials(c.name);
+
+          const textWrap = document.createElement("div");
+          textWrap.className = "chat-item-text";
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "chat-name";
+          nameEl.textContent = c.name;
+
+          const lastMsgEl = document.createElement("div");
+          lastMsgEl.className = "chat-last-msg";
+          lastMsgEl.textContent = "Tap to start chat";
+
+          textWrap.appendChild(nameEl);
+          textWrap.appendChild(lastMsgEl);
+
+          const meta = document.createElement("div");
+          meta.className = "chat-meta";
+          meta.innerHTML = `<div></div>`;
+
+          item.appendChild(avatar);
+          item.appendChild(textWrap);
+          item.appendChild(meta);
+
+          item.addEventListener("click", async () => {
+            document.querySelectorAll(".chat-item").forEach(x => x.classList.remove("active"));
+            item.classList.add("active");
+            await openDirectTo(c.type, c.id, c.name);
+          });
+
+          chatListEl.appendChild(item);
+        }
+      }
+
+      // Append bubble
+      function appendBubble(m) {
+        const row = document.createElement("div");
+        row.className = "message-row " + (m.mine ? "me" : "them");
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+
+        if (m.type === "text") {
+          bubble.textContent = safeText(m.body);
+        } else {
+          bubble.textContent = (m.body ? safeText(m.body) + "\n" : "") + `[${String(m.type||"file").toUpperCase()}]`;
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "message-meta";
+        meta.textContent = fmtTime(m.created_at);
+
+        bubble.appendChild(meta);
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
+        scrollBottom();
+      }
+
+      // Open direct to target => get/create convo then open
+      async function openDirectTo(target_type, target_id, displayName) {
+        try{
+          L(true);
+
+          activeNameEl.textContent = displayName || "Chat";
+          activeAvatarEl.textContent = makeInitials(displayName);
+          activeMetaEl.textContent = "Direct chat";
+          activeStatusEl.textContent = "";
+
+          const { data } = await httpPost("/chat/api/direct", { target_type, target_id });
+          if(!data?.success){
+            kilToast.danger(data?.message || "Failed to open chat");
+            return;
+          }
+
+          await openConversation(data.convo_id);
+
+        }catch(e){
+          console.error(e);
+          kilToast.danger("Failed to open chat");
+        }finally{
+          L(false);
+        }
+      }
+
+      // Open convo messages
+      async function openConversation(convo_id) {
+        activeConvoId = Number(convo_id);
+        lastMessageIdInView = 0;
+
+        socket.emit("chat:join", { convo_id: activeConvoId }, (ack) => {
+          if (!ack?.ok) console.warn("chat:join failed:", ack);
+        });
+
+        const { data } = await httpGet(`/chat/api/messages/${activeConvoId}?limit=50`);
+        if(!data?.success){
+          kilToast.danger(data?.message || "Failed to load messages");
+          return;
+        }
+
+        messagesEl.innerHTML = "";
+        const divider = document.createElement("div");
+        divider.className = "day-divider";
+        divider.textContent = "Today";
+        messagesEl.appendChild(divider);
+
+        for (const m of (data.data || [])) {
+          appendBubble({
+            message_id: m.message_id,
+            sender_type: m.sender_type,
+            sender_id: m.sender_id,
+            type: m.type,
+            body: m.body,
+            created_at: m.created_at,
+            mine: isMine(m.sender_type, m.sender_id),
+          });
+          lastMessageIdInView = Math.max(lastMessageIdInView, Number(m.message_id || 0));
+        }
+
+        await markReadFast();
+      }
+
+      // Mark read
+      async function markReadFast() {
+        if (!activeConvoId || !lastMessageIdInView) return;
+
+        socket.emit("chat:read", { convo_id: activeConvoId, message_id: lastMessageIdInView });
+
+        try{
+          await httpPost("/chat/api/read", { convo_id: activeConvoId, message_id: lastMessageIdInView });
+        }catch(e){}
+      }
+
+      // Send text
+      async function sendText() {
+        const text = messageInputEl.value.trim();
+        if (!text) return;
+
+        if (!activeConvoId) {
+          kilToast.info("Select a client from left to start chat.");
+          return;
+        }
+
+        try{
+          sendBtnEl.disabled = true;
+          messageInputEl.value = "";
+
+          const { data } = await httpPost("/chat/api/send-text", { convo_id: activeConvoId, text });
+          if(!data?.success){
+            kilToast.danger(data?.message || "Send failed");
+          }
+          // message append will happen via socket
+        }catch(e){
+          console.error(e);
+          kilToast.danger("Send failed");
+        }finally{
+          sendBtnEl.disabled = false;
+        }
+      }
+
+      // Send media
+      async function sendMedia(file) {
+        if (!file) return;
+
+        if (!activeConvoId) {
+          kilToast.info("Select a client from left to start chat.");
+          return;
+        }
+
+        try{
+          L(true);
+          const fd = new FormData();
+          fd.append("convo_id", String(activeConvoId));
+          fd.append("caption", "");
+          fd.append("file_type", "file");
+          fd.append("folder_file", "chat_media");
+          fd.append("file", file);
+
+          const { data } = await httpPostForm("/chat/api/send-media", fd);
+          if(!data?.success) kilToast.danger(data?.message || "Upload failed");
+        }catch(e){
+          console.error(e);
+          kilToast.danger("Upload failed");
+        }finally{
+          L(false);
+        }
+      }
+
+      // Socket identify
+      function socketIdentify() {
+        if (!window.ME) {
+          console.warn("ME not found");
+          return;
+        }
+        socket.emit("online", { user_type: window.ME.user_type, user_id: window.ME.user_id }, (ack) => {
+          if (!ack?.ok) console.warn("online failed:", ack);
+        });
+      }
+
+      socket.on("connect", () => socketIdentify());
+
+      socket.on("chat:message", (p) => {
+        if (!p?.convo_id) return;
+        if (Number(p.convo_id) !== Number(activeConvoId)) return;
+
+        appendBubble({
+          message_id: p.message_id,
+          sender_type: p.sender_type,
+          sender_id: p.sender_id,
+          type: p.type || "text",
+          body: p.body,
+          created_at: p.created_at,
+          mine: isMine(p.sender_type, p.sender_id),
+        });
+
+        lastMessageIdInView = Math.max(lastMessageIdInView, Number(p.message_id || 0));
+        markReadFast().catch(() => {});
+      });
+
+      socket.on("chat:typing", (p) => {
+        if (Number(p?.convo_id) !== Number(activeConvoId)) return;
+        activeStatusEl.textContent = "typing...";
+        clearTimeout(window.__typingTimer);
+        window.__typingTimer = setTimeout(() => (activeStatusEl.textContent = ""), 900);
+      });
+
+      // Events
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        renderClientList(e.target.value);
+      });
+
+      sendBtnEl.addEventListener("click", sendText);
+
+      messageInputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendText();
+          return;
+        }
+        if (activeConvoId) socket.emit("chat:typing", { convo_id: activeConvoId });
+      });
+
+      themeToggleEl.addEventListener("click", () => document.body.classList.toggle("light"));
+
+      attachBtnEl.addEventListener("click", () => fileInputEl.click());
+      fileInputEl.addEventListener("change", async () => {
+        const file = fileInputEl.files?.[0];
+        fileInputEl.value = "";
+        if (file) await sendMedia(file);
+      });
+
+      // Boot
+      (async function boot() {
+        try {
+          L(true);
+          const { data } = await httpGet("/chat/api/clients");
+          if(!data?.success){
+            kilToast.danger(data?.message || "Failed to load clients");
+            return;
+          }
+          clients = data.data || [];
+          renderClientList("");
+
+          if(clients.length){
+            // auto open first client
+            const first = clients[0];
+            setTimeout(() => {
+              const firstEl = chatListEl.querySelector(".chat-item");
+              if(firstEl) firstEl.classList.add("active");
+            }, 10);
+
+            await openDirectTo(first.type, first.id, first.name);
+          } else {
+            kilToast.info("No clients available yet.");
+          }
+        } catch (e) {
+          console.error(e);
+          kilToast.danger("Failed to load clients");
+        } finally {
+          L(false);
+        }
+      })();
+    </script>
+  </body>
+</html>

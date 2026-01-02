@@ -1,0 +1,464 @@
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+<%
+  const isEdit = (mode === 'edit');
+  const c = clientdata || {};
+  const clientType = c.type || 'Individual';
+%>
+
+<!-- Banner Start -->
+<section class="main-inner-banner">
+    <!-- <span class="bg-icon"></span>
+    <div class="inner-banner-shape"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="inner-banner-content">
+                    <h1 class="h1-title">Sign Up</h1>
+                </div>
+            </div>
+        </div>
+    </div> -->
+</section>
+<!-- Banner End -->
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+    <ul>
+        <li><a href="/home" title="HOME">HOME</a></li>
+        <li>SIGN UP</li>
+    </ul>
+</div><br>
+<!-- Breadcrumb End -->
+
+<!-- Signup Form Start -->
+<section class="page-signup">
+    <div class="container">
+        <div class="row justify-content-center contact-us-cover">
+            <div class="col-lg-12">
+                <div class="contact-us-form contact-us-item-2 wow fadeInUp" data-wow-duration="0.8s" data-wow-delay="0.2s">
+                    <p>Create a new account to get started eLaw Services.</p>
+                    <div class="contact-form">
+                    
+
+
+
+                                                      <form id="kilform" method="POST" enctype="multipart/form-data" autocomplete="off" class="p-4 border rounded shadow-lg bg-light">
+      <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+      <% if (isEdit) { %>
+        <input type="hidden" name="client_id" id="client_id" value="<%= c.client_id %>">
+      <% } %>
+
+      <fieldset class="mb-4 border rounded p-3">
+        <legend class="fw-bold text-primary fs-18">Client Type</legend>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="type" id="typeIndividual" value="Individual" <%= clientType === 'Individual' ? 'checked' : '' %>>
+              <label class="form-check-label" for="typeIndividual">Individual</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="type" id="typeBusiness" value="Business" <%= clientType === 'Business' ? 'checked' : '' %>>
+              <label class="form-check-label" for="typeBusiness">Business</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-text mt-2">Choose whether client is a person or a business entity.</div>
+      </fieldset>
+
+      <fieldset class="mb-4 border rounded p-3">
+        <legend id="clientInfoLegend" class="fw-bold text-primary fs-18">
+          <%= clientType === 'Business' ? 'Primary Contact Information' : 'Personal Information' %>
+        </legend>
+
+        <div class="row">
+          <div class="col-md-6 mb-3" id="businessNameGroup"
+               style="<%= clientType === 'Business' ? '' : 'display:none;' %>">
+            <label class="form-label" for="business_name">Business Name <strong class="text-danger">*</strong></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-building"></i></span>
+              <input
+                id="business_name"
+                name="business_name"
+                type="text"
+                class="form-control"
+                placeholder="ABC Pvt. Ltd."
+                value="<%= c.business_name || '' %>">
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="first_name">
+              <span id="firstNameLabel">
+                <%= clientType === 'Business' ? 'Primary Contact First Name' : 'First Name' %>
+              </span>
+              <strong class="text-danger">*</strong>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-user"></i></span>
+              <input
+                id="first_name"
+                name="first_name"
+                type="text"
+                class="form-control"
+                required
+                placeholder="<%= clientType === 'Business' ? 'Contact first name' : 'John' %>"
+                value="<%= c.first_name || '' %>">
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="last_name">
+              <span id="lastNameLabel">
+                <%= clientType === 'Business' ? 'Primary Contact Last Name' : 'Last Name' %>
+              </span>
+              <strong class="text-danger">*</strong>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-user"></i></span>
+              <input
+                id="last_name"
+                name="last_name"
+                type="text"
+                class="form-control"
+                required
+                placeholder="<%= clientType === 'Business' ? 'Contact last name' : 'Doe' %>"
+                value="<%= c.last_name || '' %>">
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label mb-1">Client Photo (optional)</label>
+
+            <% if (c.profile_pic) { %>
+              <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <a class="btn btn-outline-primary btn-sm"
+                    href="/secure/file_stream?s3key=<%= encodeURIComponent(c.profile_pic) %>"
+                    target="_blank">
+                    <i class="ti ti-external-link me-1"></i> View
+                  </a>
+                  <label class="btn btn-outline-secondary btn-sm mb-0">
+                    <i class="ti ti-upload me-1"></i> Replace
+                    <input
+                      type="file"
+                      name="profile_pic"
+                      class="d-none"
+                      accept=".jpg,.jpeg,.png,.jfif">
+                  </label>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      data-ignore-kilvish="Yes"
+                      type="checkbox"
+                      id="remove_profile_pic"
+                      name="remove_profile_pic"
+                      value="1">
+                    <label class="form-check-label" for="remove_profile_pic">
+                      Remove
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <img
+                    src="/secure/file_stream?s3key=<%= encodeURIComponent(c.profile_pic) %>"
+                    alt="Client Photo"
+                    class="rounded border"
+                    style="width:80px;height:80px;object-fit:cover;">
+                </div>
+              </div>
+            <% } else { %>
+              <input
+                type="file"
+                name="profile_pic"
+                id="profile_pic"
+                class="form-control"
+                accept=".jpg,.jpeg,.png,.jfif">
+            <% } %>
+
+            <div class="form-text">
+              Recommended square image, max 2MB. This will be stored on S3 and served via a secure URL.
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="dob">Date of Birth</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+              <input
+                id="dob"
+                name="dob"
+                type="date"
+                class="form-control"
+                value="<%= c.dob ? String(c.dob).substring(0,10) : '' %>">
+            </div>
+            <div class="form-text">Optional, used for age-based checks.</div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="mb-4 border rounded p-3">
+        <legend class="fw-bold text-primary fs-18">Contact Information</legend>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="email">Email</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-mail"></i></span>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="form-control"
+                placeholder="client@example.com"
+                value="<%= c.email || '' %>">
+            </div>
+            <div id="emailError" class="text-danger small"></div>
+            <div class="form-text">If provided, must be unique within this firm.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="full_contact">Phone Number</label>
+            <div class="input-group kiltel-phone-wrap">
+              <button type="button" class="kiltel-country-trigger"></button>
+              <input
+                data-ignore-kilvish="Yes"
+                type="tel"
+                class="form-control"
+                id="full_contact"
+                data-kilvish-tel
+                data-kilvish-preferred="JM,IN"
+                data-kiltel-init="<%= c.country_code || 'JM' %>"
+                data-kiltel-validation="yes"
+                placeholder="+1 876 000 0000"
+                value="<%= c.full_contact || '' %>">
+              <input type="hidden" id="country_code" name="country_code" value="<%= c.country_code || '' %>">
+              <input type="hidden" id="contact"      name="contact"      value="<%= c.contact || '' %>">
+            </div>
+            <div id="phoneError" class="text-danger small"></div>
+            <div class="form-text">Phone uniqueness is checked per firm.</div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="language">Preferred Language</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-language"></i></span>
+              <input
+                id="language"
+                name="language"
+                type="text"
+                class="form-control"
+                placeholder="English"
+                value="<%= c.language || 'English' %>">
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="mb-4 border rounded p-3">
+        <legend class="fw-bold text-primary fs-18">Address Details</legend>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="parish">Parish</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-map-pin"></i></span>
+              <select id="parish" name="parish" class="form-select">
+                <option value="">Select Parish</option>
+                <% (states || []).forEach(p => {
+                     const label = p.replace(/^Saint\s/, 'St. ');
+                %>
+                  <option value="<%= p %>" <%= c.parish === p ? 'selected' : '' %>><%= label %></option>
+                <% }); %>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="postal_zone">Postal Zone</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-map-pin"></i></span>
+              <input
+                id="postal_zone"
+                name="postal_zone"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Zone 5"
+                value="<%= c.postal_zone || '' %>">
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="address">Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-home"></i></span>
+              <textarea
+                id="address"
+                name="address"
+                rows="2"
+                class="form-control"
+                placeholder="Full address"><%= c.address || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="mb-4 border rounded p-3">
+        <legend class="fw-bold text-primary fs-18">Portal & Notes</legend>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="portal_enabled"
+                name="portal_enabled"
+                value="1"
+                <%= (c.portal_enabled === true || c.portal_enabled === 1 || (!isEdit)) ? 'checked' : '' %>>
+              <label class="form-check-label fw-medium" for="portal_enabled">
+                Portal Access Enabled
+              </label>
+            </div>
+            <div class="form-text">
+              If enabled, this client can be given login access later.
+            </div>
+          </div>
+
+          <div class="col-md-8 mb-3">
+            <label class="form-label" for="notes">Notes</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-file-text"></i></span>
+              <textarea
+                id="notes"
+                name="notes"
+                rows="3"
+                class="form-control"
+                placeholder="Any important notes about this client..."><%= c.notes || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <%= isEdit ? 'Update Client' : 'Save Client' %>
+        </button>
+      </div>
+    </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section><br>
+<!-- Signup Form End -->
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->
+
+
+
+
+
+<script>
+(function(){
+  const fx        = window.axiosElaw || window.axios || null;
+  const isEdit    = <%= isEdit ? 'true' : 'false' %>;
+  const clientId  = <%= isEdit ? (c.client_id || 'null') : 'null' %>;
+
+  const typeSel          = document.getElementById('type');
+  const typeRadios       = document.querySelectorAll('input[name="type"]');
+  const clientInfoLegend = document.getElementById('clientInfoLegend');
+  const businessGroup    = document.getElementById('businessNameGroup');
+  const businessInput    = document.getElementById('business_name');
+  const firstNameLabel   = document.getElementById('firstNameLabel');
+  const lastNameLabel    = document.getElementById('lastNameLabel');
+  const emailEl          = document.getElementById('email');
+  const phoneEl          = document.getElementById('full_contact');
+  const emailErrEl       = document.getElementById('emailError');
+  const phoneErrEl       = document.getElementById('phoneError');
+  const form             = document.getElementById('kilform');
+
+  function getTypeValue() {
+    if (typeSel) return (typeSel.value || 'Individual');
+    const checked = Array.from(typeRadios).find(r => r.checked);
+    return checked ? checked.value : 'Individual';
+  }
+
+  function updateTypeUI() {
+    const val = getTypeValue();
+    if (val === 'Business') {
+      if (clientInfoLegend) clientInfoLegend.textContent = 'Primary Contact Information';
+      if (businessGroup) businessGroup.style.display   = '';
+      if (businessInput) businessInput.setAttribute('required', 'required');
+      if (firstNameLabel) firstNameLabel.textContent    = 'Primary Contact First Name';
+      if (lastNameLabel) lastNameLabel.textContent     = 'Primary Contact Last Name';
+    } else {
+      if (clientInfoLegend) clientInfoLegend.textContent = 'Personal Information';
+      if (businessGroup) businessGroup.style.display   = 'none';
+      if (businessInput) businessInput.removeAttribute('required');
+      if (firstNameLabel) firstNameLabel.textContent    = 'First Name';
+      if (lastNameLabel) lastNameLabel.textContent     = 'Last Name';
+    }
+  }
+  typeSel?.addEventListener('change', updateTypeUI);
+  typeRadios.forEach(r => r.addEventListener('change', updateTypeUI));
+  updateTypeUI();
+
+  // --- Email uniqueness (global, exclude self on edit) ---
+  emailEl?.addEventListener('change', async () => {
+    const email = (emailEl.value || '').trim().toLowerCase();
+    emailErrEl.textContent = '';
+    if (!email || !fx) return;
+
+    try {
+      const payload = { email, client_id: clientId || undefined };
+      const { data } = await fx.post('/client/check_email', payload);
+      if (data && data.exists) {
+        emailErrEl.textContent = `Email (${email}) already exists.`;
+        window.kilToast?.danger?.(`Email ${email} already exists.`);
+        emailEl.value = '';
+      } else {
+        emailErrEl.textContent = '';
+      }
+    } catch (err) {
+      console.error('check_client_email error', err);
+      emailErrEl.textContent = err?.response?.data?.message || 'Email check failed.';
+      window.kilToast?.danger?.(emailErrEl.textContent);
+    }
+  });
+
+  // --- Phone uniqueness (global, exclude self on edit) ---
+  phoneEl?.addEventListener('change', async () => {
+    const phoneNumber = (phoneEl.value || '').trim();
+    phoneErrEl.textContent = '';
+    if (!phoneNumber || !fx) return;
+
+    try {
+      const payload = { phoneNumber, client_id: clientId || undefined };
+      const { data } = await fx.post('/client/check_phone', payload);
+      if (data && data.exists) {
+        phoneErrEl.textContent = `Contact (${phoneNumber}) already exists.`;
+        window.kilToast?.danger?.(`Contact ${phoneNumber} already exists.`);
+        phoneEl.value = '';
+      } else {
+        phoneErrEl.textContent = '';
+      }
+    } catch (err) {
+      console.error('check_client_phonenumber error', err);
+      phoneErrEl.textContent = err?.response?.data?.message || 'Phone check failed.';
+      window.kilToast?.danger?.(phoneErrEl.textContent);
+    }
+  });
+
+  // --- Submit via axios (expects JSON { success, message }) ---
+//TO DO signup or  if edit update
+
+
+
+})();
+</script>

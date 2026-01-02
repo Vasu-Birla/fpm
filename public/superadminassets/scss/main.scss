@@ -1,0 +1,96 @@
+/*
+Template Name: Preclinic - Responsive Bootstrap 5 Admin Dashboard
+Version: 1.0.0
+Author: Dreams Technologies
+Author URL: https://themeforest.net/user/dreamstechnologies
+*/
+/****** Utils ******/
+@import "utils/mixins";
+
+// Core files
+@import "../plugins/bootstrap/scss/functions";
+@import "../plugins/bootstrap/scss/variables";
+
+@import "variables";
+@import "variables-custom";
+@import "theme-variables";
+
+@import "../plugins/bootstrap/scss/bootstrap";
+
+// Structure
+@import "structure/header";
+@import "structure/rtl";
+@import "structure/sidebar";
+@import "structure/layout";
+@import "structure/theme";
+
+
+// Components
+@import "components/utilities";
+@import "components/background";
+@import "components/accordions";
+@import "components/alert";
+@import "components/avatar";
+@import "components/breadcrumb";
+@import "components/buttons";
+@import "components/badge";
+@import "components/card";
+@import "components/dropdown";
+@import "components/forms";
+@import "components/modal";
+@import "components/pagination";
+@import "components/popover";
+@import "components/print";
+@import "components/progress";
+@import "components/reboot";
+@import "components/ribbons";
+@import "components/switch";
+@import "components/tables";
+@import "components/tooltip";
+@import "components/steps";
+@import "components/preloader";
+@import "components/widgets";
+@import "components/chat";
+@import "components/call";
+@import "components/incoming-call";
+@import "components/todo";
+@import "components/nav";
+
+// Plugins
+@import "plugins/apexcharts";
+@import "plugins/chartjs";
+@import "plugins/c3";
+@import "plugins/flot";
+@import "plugins/morris";
+@import "plugins/calendar";
+@import "plugins/choice";
+@import "plugins/gridjs";
+@import "plugins/swiper";
+@import "plugins/daterange";
+@import "plugins/flatpickr";
+@import "plugins/dragula";
+@import "plugins/dropzone";
+@import "plugins/form-wizard";
+@import "plugins/maps";
+@import "plugins/quill-editor";
+@import "plugins/select2";
+@import "plugins/simplebar";
+@import "plugins/leaflet-maps";
+@import "plugins/sweetalert2";
+@import "plugins/rangeslider";
+@import "plugins/datatables";
+@import "plugins/rangepicker-plugin";
+
+
+// Pages
+@import "pages/blogs";
+@import "pages/email";
+@import "pages/coming-soon";
+@import "pages/settings";
+@import "pages/appointment";
+@import "pages/login";
+@import "pages/ui-pages";
+@import "pages/doctors";
+@import "pages/widgets";
+@import "pages/invoices";
+@import "pages/notification";

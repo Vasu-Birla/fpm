@@ -1,0 +1,185 @@
+
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<!-- ========================   
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Start Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h5 class="fw-bold mb-0">
+                    <a href="#" class="text-dark"> <i class="ti ti-chevron-left me-1"></i>Client Consultation List</a>
+                    <span class="badge badge-soft-primary fw-medium border py-1 px-2 border-primary fs-13 ms-1">Total Consultation : 10</span>
+                </h5>
+            </div>
+            <div class="text-end d-flex">
+                <a href="/firmstaff/add_consultation" class="btn btn-primary ms-2 fs-13 btn-md"><i class="ti ti-plus me-1"></i>Add Consultation</a>
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!--  Start Filter -->
+        <div class=" d-flex align-items-center justify-content-between flex-wrap">
+            <div>
+                <div class="search-set mb-3">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="table-search d-flex align-items-center mb-0">
+                            <div class="search-input">
+                                <a href="javascript:void(0);" class="btn-searchset"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  End Filter -->
+
+        <!-- Start Table -->
+        <div class="table-responsive">
+            <table id="consultationTable" class="table table-striped table-bordered table-nowrap align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sr. No.</th>
+                        <th>Client Name</th>
+                        <th>Date / Time</th>
+                        <th>Advice Given</th>
+                        <th>Fee Charged</th>
+                        <th>Next Appointment</th>
+                        <th>Consultation Notes</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Rahul Mehra</td>
+                        <td>25 Oct 2025<br><small class="text-muted">03:30 PM</small></td>
+                        <td>General Health Checkup</td>
+                        <td>AED 150</td>
+                        <td>05 Nov 2025</td>
+                        <td>Advised regular exercise and balanced diet.</td>
+                        <td><span class="badge bg-success-subtle text-success border border-success">Active</span></td>
+                        <td>
+                            <div class="dropdown">
+                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1" data-bs-toggle="dropdown">
+                                    <i class="ti ti-dots-vertical"></i>
+                                </a>
+                                <ul class="dropdown-menu p-2">
+                                    <li>
+                                        <a href="/firmstaff/edit_consultation" class="dropdown-item">
+                                        <i class="ti ti-edit me-2"></i>Edit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center text-success">
+                                        <i class="ti ti-power me-2 text-success"></i>Activate
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-client-btn" data-id="1">
+                                        <i class="ti ti-trash me-2"></i>Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Priya Sharma</td>
+                        <td>26 Oct 2025<br><small class="text-muted">10:00 AM</small></td>
+                        <td>Follow-up Consultation</td>
+                        <td>AED 100</td>
+                        <td>10 Nov 2025</td>
+                        <td>Recommended blood test before next visit.</td>
+                        <td><span class="badge bg-warning-subtle text-warning border border-warning">Pending</span></td>
+                        <td>
+                            <div class="dropdown">
+                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1" data-bs-toggle="dropdown">
+                                    <i class="ti ti-dots-vertical"></i>
+                                </a>
+                                <ul class="dropdown-menu p-2">
+                                    <li>
+                                        <a href="/firmstaff/edit_consultation" class="dropdown-item">
+                                        <i class="ti ti-edit me-2"></i>Edit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center text-success">
+                                        <i class="ti ti-power me-2 text-success"></i>Activate
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-client-btn" data-id="2">
+                                        <i class="ti ti-trash me-2"></i>Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- End Table -->
+
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+// Delete Client Record
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-client-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const clientId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This client will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to delete-clienwith the ID
+                    window.location.href = '/firmstaff/delete-client?id=' + clientId;
+                }
+            });
+        });
+    });
+});
+</script>

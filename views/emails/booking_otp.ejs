@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Arial', sans-serif; background: #f5f5f5; padding: 40px; }
+        .email-container { max-width: 600px; background: #ffffff; padding: 20px; margin: auto; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        h1 { color: #ff6f00; text-align: center; }
+        .otp-box { background: #ff6f00; color: #ffffff; padding: 15px; font-size: 22px; font-weight: bold; text-align: center; border-radius: 8px; margin-top: 10px; }
+        p { color: #444; font-size: 16px; text-align: center; }
+        .footer { text-align: center; margin-top: 20px; font-size: 14px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h1>🎉 Booking Confirmation</h1>
+        <p>Hello <strong><%= username %></strong>,</p>
+        <p>Your booking has been confirmed! Your OTP for verification:</p>
+        <div class="otp-box"><%= otp %></div>
+        <p>Thank you for choosing us.</p>
+        <p class="footer">Best regards, <br> <strong>E-Law Service</strong></p>
+    </div>
+</body>
+</html>

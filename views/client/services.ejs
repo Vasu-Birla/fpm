@@ -1,0 +1,320 @@
+<!-- services.ejs (COOKIE SYSTEM) -->
+
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Banner Start -->
+<section class="main-inner-banner">
+  <!-- banner content commented -->
+</section>
+<!-- Banner End -->
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+  <ul>
+    <li>
+      <a href="/home" title="HOME">HOME</a>
+    </li>
+    <li>Services</li>
+  </ul>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Our Services Start -->
+<section class="main-service-page-list">
+  <div class="container">
+
+    <%
+      // pick a safe default service for the "Contact Us Now" buttons
+      const firstGroup = (serviceTree && serviceTree.length) ? serviceTree[0] : null;
+      const firstService = firstGroup
+        ? ((firstGroup.children && firstGroup.children.length) ? firstGroup.children[0] : firstGroup)
+        : null;
+
+      const firstServiceId = firstService?.practice_area_id || null;
+      const contactUrl = firstServiceId ? '/service_firms' : '/contact';
+    %>
+
+    <% if (serviceTree && serviceTree.length) { %>
+      <div class="services-list">
+        <% serviceTree.forEach((group) => { %>
+          <div class="services-group mb-5">
+
+            <div class="row">
+              <div class="col-12">
+                <div class="section-title">
+                  <h5 class="h3-title"><%= group.name %></h5>
+                  <p><%= group.description || group.summary || '' %></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <% const items = (group.children && group.children.length) ? group.children : [group]; %>
+
+              <% items.forEach((service, index) => { %>
+                <div class="col-md-6 col-xl-3">
+                  <div class="service-box wow fadeup-animation"
+                       data-wow-duration="0.8s"
+                       data-wow-delay="<%= ((index % 4) * 0.1 + 0.2).toFixed(1) %>s">
+
+                    <div class="icon"<%= service.color ? ` style="background:${service.color}"` : '' %>>
+                      <img src="<%= service.icon_url %>" width="35" height="35" alt="<%= service.name %>">
+                    </div>
+
+                    <h4 class="h4-title">
+                      <!-- COOKIE CLICK -->
+                      <a href="/service_firms"
+                         class="service-go"
+                         data-id="<%= service.practice_area_id %>"
+                         title="<%= service.name %>">
+                        <%= service.name %>
+                      </a>
+                    </h4>
+
+                    <p><%= service.description || service.summary || '' %></p>
+
+                    <% if (service.aliases && service.aliases.length) { %>
+                      <p class="mb-0">
+                        <small>Also known as: <%= service.aliases.join(', ') %></small>
+                      </p>
+                    <% } %>
+
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="services-list">
+        <div class="row">
+          <div class="col-12">
+            <div class="service-box">
+              <h4 class="h4-title">Services coming soon</h4>
+              <p>We are curating our practice areas. Please check back shortly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+</section>
+<!-- Our Services End -->
+
+<!-- Clients We Serve Start -->
+<section class="main-clients">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="clients-title">
+          <h4 class="h4-title">More <span>500+</span> Clients We Serve</h4>
+        </div>
+        <div class="clients-slider swiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-1.svg" width="169" height="44" alt="Client 1"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-2.svg" width="169" height="44" alt="Client 2"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-3.svg" width="169" height="44" alt="Client 3"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-4.svg" width="169" height="44" alt="Client 4"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-5.svg" width="169" height="44" alt="Client 5"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-6.svg" width="169" height="44" alt="Client 6"></div></div>
+            <div class="swiper-slide"><div class="client-box"><img src="/assets/images/Client-3.svg" width="169" height="44" alt="Client 3"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Clients We Serve End -->
+
+<!-- Free Consultation Start -->
+<section class="main-consultation">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="consultation-title text-center">
+          <span class="sub-title">LAW SOLUTION</span>
+          <h2 class="h2-title">Schedule a Free Consultation</h2>
+        </div>
+
+        <div class="consultation-step-sec">
+          <div class="row">
+
+            <div class="col-lg-4">
+              <div class="consultation-step-card wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="0.2s">
+                <div class="consultation-icon">
+                  <img src="/assets/images/Calender-Icon.svg" width="35" height="35" alt="Schedule a Time">
+                </div>
+                <h4 class="h4-title">Schedule a Time</h4>
+                <div class="consultation-text">
+                  Choose a convenient time for your free consultation and connect with our legal experts.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="consultation-step-card wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="0.3s">
+                <div class="consultation-icon">
+                  <img src="/assets/images/Consultant-Icon.svg" width="35" height="35" alt="Meet a Consultant">
+                </div>
+                <h4 class="h4-title">Meet a Consultant</h4>
+                <div class="consultation-text">
+                  Discuss your case with our experienced legal team and understand your best options.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="consultation-step-card wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="0.4s">
+                <div class="consultation-icon">
+                  <img src="/assets/images/Plan-Icon.svg" width="35" height="35" alt="Plan With Success">
+                </div>
+                <h4 class="h4-title">Plan With Success</h4>
+                <div class="consultation-text">
+                  Develop a clear legal strategy and take confident steps toward a successful resolution.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Free Consultation End -->
+
+<!-- Law Plans Start -->
+<section class="main-law-plan">
+  <div class="container">
+    <div class="row align-items-center">
+
+      <div class="col-xl-4 col-12">
+        <div class="pricing-plan-content">
+          <span class="sub-title">PRICING PLANS</span>
+          <h2 class="h2-title">Navigating Legal Plans</h2>
+          <p>
+            Choose a plan that fits your legal needs. Whether you require one-time consultation or comprehensive legal strategy, we provide transparent pricing and expert guidance at every step.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-xl-8 col-12">
+        <div class="plan-card-wp">
+          <div class="row">
+
+            <!-- Basic Plan -->
+            <div class="col-md-6">
+              <div class="law-plan-card wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="0.2s">
+                <div class="law-plan-card-info">
+                  <h4 class="h4-title">Basic Plan ( One Time)</h4>
+                  <div class="plan-price">$10<span>/ Case Consultation</span></div>
+                  <div class="plan-info">
+                    <p>Ideal for individuals seeking quick legal advice and case review.</p>
+                  </div>
+                  <div class="law-plan-btn">
+                    <% if (firstServiceId) { %>
+                      <a href="<%= contactUrl %>"
+                         class="sec-btn contact-go"
+                         data-id="<%= firstServiceId %>"
+                         title="Contact Us Now">
+                        <span>Contact Us Now</span>
+                      </a>
+                    <% } else { %>
+                      <a href="/contact" class="sec-btn" title="Contact Us Now">
+                        <span>Contact Us Now</span>
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="plan-description">
+                  <ul>
+                    <li>30-minute case consultation</li>
+                    <li>Document review and basic guidance</li>
+                    <li>Legal strategy overview</li>
+                    <li>Email follow-up support</li>
+                    <li>Access to case updates portal</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="col-md-6">
+              <div class="law-plan-card wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="0.4s">
+                <div class="law-plan-card-info">
+                  <h4 class="h4-title">Premium Plan</h4>
+                  <div class="plan-price">$199<span>/ Case Consultation</span></div>
+                  <div class="plan-info">
+                    <p>Perfect for clients who need detailed legal strategy and case management support.</p>
+                  </div>
+                  <div class="law-plan-btn">
+                    <% if (firstServiceId) { %>
+                      <a href="<%= contactUrl %>"
+                         class="sec-btn contact-go"
+                         data-id="<%= firstServiceId %>"
+                         title="Contact Us Now">
+                        <span>Contact Us Now</span>
+                      </a>
+                    <% } else { %>
+                      <a href="/contact" class="sec-btn" title="Contact Us Now">
+                        <span>Contact Us Now</span>
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="plan-description">
+                  <ul>
+                    <li>Comprehensive case assessment</li>
+                    <li>Dedicated legal consultant</li>
+                    <li>Drafting & documentation support</li>
+                    <li>Priority case handling</li>
+                    <li>Regular case progress reports</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <% if (!firstServiceId) { %>
+            <div class="mt-3">
+              <small class="text-muted">
+                Note: Services are not loaded yet, so “Contact Us” will open the general contact page.
+              </small>
+            </div>
+          <% } %>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!-- Law Plans End -->
+
+
+<!-- COOKIE SCRIPT -->
+<script>
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('.service-go, .contact-go');
+  if (!a) return;
+
+  const id = a.dataset.id;
+  if (!id) return; // if missing, fallback to normal href
+
+  e.preventDefault();
+  document.cookie = `elaw_practiceAreaId=${encodeURIComponent(id)}; path=/; SameSite=Lax`;
+  window.location.href = a.getAttribute('href') || '/service_firms';
+});
+</script>
+
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->

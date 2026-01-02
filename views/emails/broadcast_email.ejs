@@ -1,0 +1,35 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: title || 'Update from your legal team',
+  subtitle: 'Important information from ' + ((org && org.name) || (company || 'our team')),
+  badge: 'BROADCAST',
+  preheader: (message || '').replace(/<[^>]+>/g, '').slice(0, 110)
+}) %>
+
+<p class="email-title"><%= title || 'Announcement' %></p>
+
+<p class="email-lead">
+  Hello <strong><%= recipientName || 'Client' %></strong>,
+</p>
+
+<p class="text" style="white-space: pre-line;">
+  <%= message %>
+</p>
+
+<% if (link) { %>
+  <div style="margin-top: 18px;">
+    <a href="<%= link %>" target="_blank" rel="noopener"
+       class="primary-btn">
+      Learn more
+    </a>
+  </div>
+<% } %>
+
+<div class="info-box" style="margin-top: 22px;">
+  You’re receiving this message because you are a registered customer of
+  <strong><%= (org && org.name) || (company || 'our service') %></strong>.
+  If you believe this was sent to you in error, you may safely ignore it.
+</div>
+
+<%- include('_email_footer', { org }) %>

@@ -1,0 +1,748 @@
+<!-- Minimal header (no sidebar for firmstaff self-signup) -->
+<%- include('firmheader.ejs'); %>
+
+<style>
+/* Practice Area Picker */
+.pa-picker .pa-search-group .form-control { border-left: 0; }
+.pa-suggest{
+  border:1px solid #e7eaf0; border-radius:10px; background:#fff;
+  box-shadow: 0 8px 24px rgba(16,24,40,.08); max-height:30vh; overflow:auto;
+}
+.pa-suggest-item{
+  padding:10px 12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+}
+.pa-suggest-item:hover{ background:#f8fafc; }
+.pa-suggest-item .meta{ font-size:12px; color:#64748b; }
+
+.pa-card{
+  border:1px solid #e7eaf0; border-radius:12px; padding:12px 12px;
+  background:#fff; box-shadow:0 1px 2px rgba(16,24,40,.04); margin-bottom:10px;
+}
+.pa-card-head{ display:flex; align-items:center; gap:8px; }
+.pa-card-title{ font-weight:600; color:#0f172a; }
+.pa-chip-close{
+  margin-left:auto; border:none; background:transparent; color:#ef4444;
+  border-radius:8px; padding:4px 6px; cursor:pointer;
+}
+.pa-chip-close:hover{ background:#fee2e2; }
+
+.pa-children{
+  margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;
+}
+.pa-child-chip{
+  font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #dbeafe;
+  background:#eff6ff; color:#1d4ed8;
+}
+
+.pa-browse-modal{
+  text-align:left;
+}
+.pa-browse-item{
+  border:1px solid #e7eaf0; border-radius:10px; padding:10px; margin-bottom:8px;
+  display:flex; justify-content:space-between; align-items:center; background:#fff;
+}
+.pa-browse-item .label{ font-weight:600; }
+.pa-browse-actions button{ min-width: 88px; }
+</style>
+
+<style>
+  /* --- Practice Area modal list (same as your old one) --- */
+  .pa-browse-modal{ text-align:left; }
+  .pa-browse-modal .pa-browse-item{
+    border:1px solid #e7eaf0; border-radius:10px; background:#fff;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+    padding:10px; margin-bottom:8px;
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .pa-browse-modal .label{ font-weight:600; }
+  .pa-browse-modal .pa-browse-actions{ display:flex; align-items:center; }
+  .pa-browse-modal .pa-browse-actions .btn{ min-width:88px; }
+
+  /* keep it tidy on small screens */
+  @media (max-width: 576px){
+    .pa-browse-modal .pa-browse-item{ flex-wrap:wrap; }
+    .pa-browse-modal .pa-browse-actions{ width:100%; justify-content:flex-end; }
+  }
+</style>
+
+<div class="content py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <h4 class="fw-bold mb-3">Register Your Law Firm</h4>
+            <p class="text-muted">Create your firm and first Firm Admin account. We’ll verify your email via OTP.</p>
+
+            <form id="kilform" method="POST" enctype="multipart/form-data" autocomplete="off">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="otp_id" id="otp_id">
+
+              <h6 class="fw-bold mb-3">Firm Details</h6>
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label class="form-label">Firm Logo</label>
+                  <input type="file" name="firm_logo" class="form-control" accept=".jpg,.jpeg,.png,.jfif">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Firm Name <span class="text-danger">*</span></label>
+                  <input type="text" name="firm_name" id="firm_name" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Registration Number <span class="text-danger">*</span></label>
+                  <input type="text" name="registration_number" id="registration_number" data-kilvish-char="mix_-_" class="form-control" required>
+                </div>
+              </div>
+
+              <h6 class="fw-bold mb-3 border-top pt-3">Admin Contact</h6>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Email <span class="text-danger">*</span></label>
+                  <input type="email" name="email" id="emailInput" class="form-control" required>
+                  <div id="emailInputError" class="text-danger small mt-1"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Phone <span class="text-danger">*</span></label>
+                  <div class="input-group kiltel-phone-wrap col-6">
+                    <button type="button" class="kiltel-country-trigger"></button>
+                    <input data-ignore-kilvish="Yes" type="tel" class="form-control" name="full_contact" data-kilvish-tel id="kilvishcontact" data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes" required>
+                    <input type="hidden" id="country_code" name="country_code">
+                    <input type="hidden" id="contact" name="contact">
+                  </div>
+                  <div id="errorText1" class="text-danger small mt-1"></div>
+                  <div id="kiltel-error" class="text-danger small"></div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Create Password <small class="text-muted">(optional)</small></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="ti ti-key"></i></span>
+                    <input type="password" id="password" class="form-control kilpass" placeholder="Set a password (optional)">
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Confirm Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="ti ti-key"></i></span>
+                    <input data-ignore-kilvish="Yes" type="password" id="confirm_password" class="form-control kilpass" placeholder="Confirm password">
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="fw-bold mb-3 border-top pt-3">Primary Service Location</h6>
+              <input type="hidden" id="locations_json" name="locations_json">
+              <div id="locationsWrap" class="mb-3"></div>
+              <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addLocationBtn">
+                <i class="ti ti-plus me-1"></i>Add Location
+              </button>
+
+              <h6 class="fw-bold mb-3 border-top pt-3">Practice Areas</h6>
+              <input type="hidden" id="practice_area_ids" name="practice_area_ids" value="[]">
+              <div class="pa-picker card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="flex-grow-1">
+                      <div class="input-group input-group-sm pa-search-group">
+                        <span class="input-group-text bg-white"><i class="ti ti-search"></i></span>
+                        <input type="text" id="paSearchInput" class="form-control" placeholder="Search practice areas (parents only)...">
+                      </div>
+                    </div>
+                    <button type="button" id="paOpenList" class="btn btn-outline-primary btn-sm">
+                      <i class="ti ti-list-search me-1"></i>Browse All
+                    </button>
+                  </div>
+                  <div id="paSuggest" class="pa-suggest mt-2 d-none"></div>
+                  <div id="paSelectedWrap" class="mt-3"></div>
+                </div>
+              </div>
+
+              <!-- OTP block (appears after user clicks "Send OTP" below email field) -->
+              <div id="signupOtpWrap" class="mt-3" style="display:none;">
+                <label for="signupOtpInput" class="form-label fw-medium">Email OTP</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+                  <input type="text" id="signupOtpInput" name="otp" class="form-control" placeholder="Enter OTP" autocomplete="one-time-code">
+                </div>
+                <div class="d-flex justify-content-between mt-2">
+                  <small class="text-muted">We sent an OTP to your email.</small>
+                  <button type="button" id="signupResendOtp" class="btn btn-link p-0">Resend OTP</button>
+                </div>
+                <div class="text-danger mt-1" id="signupOtpError"></div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-end mt-2">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Register Firm</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <h6 class="fw-normal fs-14 text-dark mb-0">
+            Already have an account? <a href="/firmstaff/login" class="hover-a">Login</a>
+          </h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<script>
+  // ====== Globals: csrfToken, states, axiosElaw, kilToast, kFetch, Swal ======
+  const states = <%- JSON.stringify(states || []) %>;
+  const fx = window.axiosElaw || window.axios;
+</script>
+
+<!-- 🔐 RSA PUBLIC KEY + RSA-OAEP helper -->
+<script>
+  const RSA_PUBLIC_KEY = `<%- (RSA_PUBLIC_KEY || '').replace(/\r?\n/g, '\\n') %>`;
+
+  function pemToArrayBuffer(pem) {
+    if (!pem) return null;
+    const b64 = pem
+      .replace(/-----BEGIN [^-]+-----/g, '')
+      .replace(/-----END [^-]+-----/g, '')
+      .replace(/\s+/g, '');
+    const raw = atob(b64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+    return buf.buffer;
+  }
+
+  let rsaPubKeyPromise = null;
+
+  async function getRsaPubKey() {
+    if (!window.crypto || !crypto.subtle) {
+      throw new Error('WebCrypto not available');
+    }
+    if (!rsaPubKeyPromise) {
+      rsaPubKeyPromise = (async () => {
+        const keyData = pemToArrayBuffer(RSA_PUBLIC_KEY);
+        if (!keyData) throw new Error('Missing RSA_PUBLIC_KEY');
+        return await crypto.subtle.importKey(
+          'spki',
+          keyData,
+          { name: 'RSA-OAEP', hash: 'SHA-256' },
+          false,
+          ['encrypt']
+        );
+      })().catch(err => {
+        console.error('RSA import failed:', err);
+        rsaPubKeyPromise = null;
+        throw err;
+      });
+    }
+    return rsaPubKeyPromise;
+  }
+
+  // Encrypt text -> base64 RSA-OAEP ciphertext
+  async function rsaEncrypt(plain) {
+    if (!plain) return '';
+    try {
+      const key = await getRsaPubKey();
+      const data = new TextEncoder().encode(String(plain));
+      const enc = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, data);
+      const bytes = new Uint8Array(enc);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    } catch (e) {
+      console.error('RSA encrypt error:', e);
+      return '';
+    }
+  }
+</script>
+
+<script>
+  // Uniqueness checks (same as before; plain email/phone)
+  (function(){
+    const emailInput = document.getElementById('emailInput');
+    const emailErr = document.getElementById('emailInputError');
+    emailInput?.addEventListener('change', async ()=>{
+      const email = (emailInput.value||'').trim();
+      if(!email) return;
+      try{
+        const {data} = await fx.post('/superadmin/check_firm_email', { email }, { headers:{'CSRF-Token': csrfToken }});
+        if(data?.exists){
+          emailErr.textContent=`Email (${email}) already exists.`;
+          kilToast?.danger?.('Email already exists');
+          emailInput.value='';
+        } else emailErr.textContent='';
+      }catch(e){
+        emailErr.textContent='Error validating email.';
+      }
+    });
+
+    const phone = document.getElementById('kilvishcontact');
+    phone?.addEventListener('change', async ()=>{
+      const phoneNumber = (phone.value||'').trim();
+      const countryCode = document.getElementById('country_code')?.value||'';
+      const err1 = document.getElementById('errorText1');
+      if(!phoneNumber) return;
+      try{
+        const {data} = await fx.post('/superadmin/check_firm_phonenumber', { phoneNumber, countryCode }, { headers:{'CSRF-Token': csrfToken }});
+        if(data?.exists){
+          err1.textContent=`Phone (${phoneNumber}) already exists.`;
+          kilToast?.danger?.('Phone already exists');
+          phone.value='';
+        } else err1.textContent='';
+      }catch(e){
+        err1.textContent='Error validating phone.';
+      }
+    });
+  })();
+
+  // Locations widget (same as superadmin)
+  (function(){
+    const wrap = document.getElementById('locationsWrap');
+    const addBtn = document.getElementById('addLocationBtn');
+    const hidden = document.getElementById('locations_json');
+    let rows=[{ parish:'', address:'', is_primary:true, _deleted:false }];
+
+    function parishOptions(selected){
+      return ['<option value="">Select Parish</option>']
+        .concat(states.map(p=>{
+          const label=p.replace(/^Saint\s/,'St. ');
+          return `<option value="${p}" ${p===selected?'selected':''}>${label}</option>`;
+        })).join('');
+    }
+    function serialize(){
+      hidden.value = JSON.stringify(
+        rows.filter(r=>!r._deleted).map(r=>({
+          parish:r.parish.trim(),
+          address:r.address.trim(),
+          is_primary:!!r.is_primary
+        }))
+      );
+    }
+    function render(){
+      wrap.innerHTML='';
+      rows.forEach((r,idx)=>{
+        if(r._deleted) return;
+        const el=document.createElement('div');
+        el.className='card mb-2';
+        el.innerHTML=`<div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label">Parish<span class="text-danger">*</span></label>
+              <select class="form-select parish-inp" data-idx="${idx}">${parishOptions(r.parish)}</select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Address<span class="text-danger">*</span></label>
+              <input data-ignore-kilvish="Yes" type="text" class="form-control address-inp" data-idx="${idx}" placeholder="Full address" value="${(r.address||'').replace(/"/g,'&quot;')}">
+            </div>
+            <div class="col-md-2 d-flex align-items-center gap-2">
+              <div class="form-check">
+                <input class="form-check-input primary-radio" type="radio" name="primaryLoc" data-idx="${idx}" ${r.is_primary?'checked':''}>
+                <label class="form-check-label">Primary</label>
+              </div>
+              <button type="button" class="btn btn-outline-danger btn-sm remove-loc" data-idx="${idx}">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>`;
+        wrap.appendChild(el);
+      });
+      serialize();
+    }
+    wrap.addEventListener('change',(e)=>{
+      const idx=+e.target.dataset.idx;
+      if(e.target.classList.contains('parish-inp')){ rows[idx].parish=e.target.value; serialize(); }
+      if(e.target.classList.contains('address-inp')){ rows[idx].address=e.target.value; serialize(); }
+      if(e.target.classList.contains('primary-radio')){ rows.forEach((r,i)=>r.is_primary=(i===idx)); render(); }
+    });
+    wrap.addEventListener('click',(e)=>{
+      const btn=e.target.closest('.remove-loc'); if(!btn) return;
+      const idx=+btn.dataset.idx;
+      rows.splice(idx,1);
+      if(!rows.length) rows.push({parish:'',address:'',is_primary:true,_deleted:false});
+      if(!rows.some(r=>r.is_primary)) rows[0].is_primary=true;
+      render();
+    });
+    addBtn?.addEventListener('click',()=>{
+      rows.push({parish:'',address:'',is_primary:rows.every(r=>!r.is_primary),_deleted:false});
+      render();
+    });
+    render();
+    document.getElementById('kilform')?.addEventListener('submit', serialize);
+  })();
+
+  // Practice Areas widget (same as superadmin)
+  (function(){
+    const hidden = document.getElementById('practice_area_ids');
+    const searchInp = document.getElementById('paSearchInput');
+    const suggestBox = document.getElementById('paSuggest');
+    const selectedWrap = document.getElementById('paSelectedWrap');
+    const browseBtn = document.getElementById('paOpenList');
+    const fxLocal = window.axiosElaw || window.axios;
+    let parents=[], selectedIds=[];
+
+    function escapeHtml(s=''){
+      return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    }
+    function setHidden(){ hidden.value = JSON.stringify(selectedIds); }
+    function renderSelected(){
+      setHidden();
+      selectedWrap.innerHTML = selectedIds.map(id=>{
+        const p=parents.find(x=>x.id===id); if(!p) return '';
+        const childChips=(p.children||[]).slice(0,12).map(c=>`<span class="pa-child-chip">${escapeHtml(c.name)}</span>`).join('');
+        const more=(p.children?.length>12)?`<span class="pa-child-chip">+${p.children.length-12}</span>`:'';
+        return `<div class="pa-card" data-id="${p.id}">
+          <div class="pa-card-head">
+            <div class="pa-card-title">${escapeHtml(p.name)}</div>
+            <button type="button" class="pa-chip-close" data-remove="${p.id}"><i class="ti ti-x"></i></button>
+          </div>
+          ${p.children?.length?`<div class="pa-children">${childChips}${more}</div>`:''}
+        </div>`;
+      }).join('') || `<div class="text-muted">No practice areas selected.</div>`;
+    }
+    function showSuggest(items){
+      if(!items.length){
+        suggestBox.classList.add('d-none');
+        suggestBox.innerHTML='';
+        return;
+      }
+      suggestBox.innerHTML=items.map(p=>`
+        <div class="pa-suggest-item" data-id="${p.id}">
+          <div>${escapeHtml(p.name)}</div>
+          <div class="meta">${p.children.length?`${p.children.length} sub-area${p.children.length>1?'s':''}`:'No sub-areas'}</div>
+        </div>`).join('');
+      suggestBox.classList.remove('d-none');
+    }
+    function filterSuggest(q){
+      q=(q||'').trim().toLowerCase();
+      if(!q){showSuggest([]);return;}
+      const list=parents
+        .filter(p=>p.name.toLowerCase().includes(q)||p.slug?.toLowerCase().includes(q))
+        .filter(p=>!selectedIds.includes(p.id))
+        .slice(0,15);
+      showSuggest(list);
+    }
+    searchInp.addEventListener('input',()=>filterSuggest(searchInp.value));
+    document.addEventListener('click',(e)=>{
+      const item=e.target.closest('.pa-suggest-item');
+      if(item){
+        const id=+item.dataset.id;
+        if(!selectedIds.includes(id)) selectedIds.push(id);
+        renderSelected();
+        suggestBox.classList.add('d-none');
+        searchInp.value='';
+        return;
+      }
+      if(!e.target.closest('.pa-suggest') && e.target!==searchInp){
+        suggestBox.classList.add('d-none');
+      }
+    });
+    selectedWrap.addEventListener('click',(e)=>{
+      const btn=e.target.closest('[data-remove]'); if(!btn) return;
+      const id=+btn.dataset.remove;
+      selectedIds=selectedIds.filter(x=>x!==id);
+      renderSelected();
+    });
+
+    browseBtn.addEventListener('click', async () => {
+      const html = parents.map(p => `
+        <div class="pa-browse-item">
+          <div class="label">${escapeHtml(p.name)}</div>
+          <div class="pa-browse-actions">
+            ${selectedIds.includes(p.id)
+              ? `<button type="button" class="btn btn-outline-danger btn-sm" data-parem="${p.id}" data-action="remove">Remove</button>`
+              : `<button type="button" class="btn btn-outline-primary btn-sm" data-parem="${p.id}" data-action="add">Add</button>`
+            }
+          </div>
+        </div>
+      `).join('');
+
+      await Swal.fire({
+        title: 'Browse Practice Areas (Parents)',
+        html: `<div class="pa-browse-modal">${html}</div>`,
+        width: 700,
+        showCancelButton: true,
+        confirmButtonText: 'Done',
+        didOpen: () => {
+          const modal = Swal.getHtmlContainer();
+          modal.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const id = +btn.dataset.parem;
+            const action = btn.dataset.action;
+
+            if (action === 'add' && !selectedIds.includes(id)) {
+              selectedIds.push(id);
+              btn.outerHTML = `<button type="button" class="btn btn-outline-danger btn-sm" data-parem="${id}" data-action="remove">Remove</button>`;
+            } else if (action === 'remove') {
+              selectedIds = selectedIds.filter(x => x !== id);
+              btn.outerHTML = `<button type="button" class="btn btn-outline-primary btn-sm" data-parem="${id}" data-action="add">Add</button>`;
+            }
+          });
+        }
+      });
+
+      renderSelected();
+    });
+
+    (async function init(){
+      try{
+        const {data}=await fxLocal.get('/superadmin/practice_areas_json');
+        if(!data?.success) throw new Error(data?.message||'Failed to load areas');
+        const flat = data.tree||[];
+        const parentsOnly=[];
+        (function dfs(list){
+          for(const n of list){
+            if(!n.parent_id){
+              parentsOnly.push({
+                id:+n.practice_area_id,
+                name:n.name,
+                slug:n.slug,
+                children:(n.children||[]).map(c=>({id:+c.practice_area_id,name:c.name}))
+              });
+            }
+            if(n.children?.length) dfs(n.children);
+          }
+        })(flat);
+        parentsOnly.sort((a,b)=>a.name.localeCompare(b.name));
+        parents=parentsOnly;
+        renderSelected();
+      }catch(e){
+        kilToast?.danger?.(e?.message||'Failed to load practice areas');
+      }
+    })();
+  })();
+</script>
+
+<script>
+/* ==========================
+   OTP flow (KWE style) + RSA encryption
+========================== */
+(function(){
+  // --- DOM handles ---
+  const form            = document.getElementById('kilform');
+  const submitBtn       = document.getElementById('submitBtn');
+  const emailInput      = document.getElementById('emailInput');
+
+  const otpWrap         = document.getElementById('signupOtpWrap');
+  const otpInput        = document.getElementById('signupOtpInput');
+  const resendBtn       = document.getElementById('signupResendOtp');
+  const otpErr          = document.getElementById('signupOtpError');
+  const otpIdHidden     = document.getElementById('otp_id');
+
+  // KilTel hidden fields
+  const countryCodeEl   = document.getElementById('country_code');
+  const contactEl       = document.getElementById('contact');
+
+  // Optional password fields
+  const pass1           = document.getElementById('password');
+  const pass2           = document.getElementById('confirm_password');
+
+  // Persist stage on form dataset (survives minor reflows)
+  const isAwaitingOtp = () => form?.dataset.awaitingOtp === '1';
+  const setAwaitingOtp = (v) => { if(form) form.dataset.awaitingOtp = v ? '1' : '0'; };
+
+  let resendTimer = null;
+  function disable(el, yes){
+    if(!el) return;
+    el.disabled = !!yes;
+    el.setAttribute('aria-busy', yes?'true':'false');
+  }
+  function countdown(btn, seconds){
+    if(!btn) return;
+    let t = seconds;
+    clearInterval(resendTimer);
+    disable(btn, true);
+    btn.textContent = `Resend OTP (${t}s)`;
+    resendTimer = setInterval(()=>{
+      t--;
+      if(t<=0){
+        clearInterval(resendTimer);
+        btn.textContent = 'Resend OTP';
+        disable(btn, false);
+      }else{
+        btn.textContent = `Resend OTP (${t}s)`;
+      }
+    }, 1000);
+  }
+
+  async function sendOtp(){
+    const email = (emailInput?.value || '').trim();
+    if(!email){
+      emailInput?.focus();
+      window.kilToast?.warning?.('Please enter your email first.');
+      return false;
+    }
+
+    // RSA encrypt email for OTP send
+    const encEmail = await rsaEncrypt(email);
+    if (!encEmail){
+      window.kilToast?.danger?.('Encryption failed. Please refresh and try again.');
+      return false;
+    }
+
+    const payload = {
+      type: 'Customer',
+      purpose: 'register',
+      email: encEmail,
+      country_code: null,
+      contact: null,
+    };
+
+    try {
+      const fx = (window.axiosElaw) || window.axios;
+      const { data: json } = await fx.post(
+        '/firmstaff/send_register_otp',
+        payload,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      if (!json?.success) {
+        window.kilToast?.danger?.(json?.message || 'Failed to send OTP.');
+        return false;
+      }
+      if (json.otp_id) otpIdHidden.value = json.otp_id;
+
+      otpWrap.style.display = '';
+      otpInput?.focus();
+      countdown(resendBtn, 30);
+      window.kilToast?.success?.(json?.message || 'OTP sent.', { duration: 0 });
+      return true;
+    } catch (e) {
+      console.log('sendOtp axios error:', e);
+      window.kilToast?.danger?.(e?.response?.data?.message || 'Failed to send OTP.');
+      return false;
+    }
+  }
+
+  // Resend handler
+  resendBtn?.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const ok = await sendOtp();
+    if(ok) window.kilToast?.success?.('OTP resent.');
+  });
+
+  // Main submit: first → OTP, second → final
+  form?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    otpErr.textContent = '';
+
+    // FIRST submit → only send OTP
+    if(!isAwaitingOtp()){
+      disable(submitBtn, true);
+      const ok = await sendOtp();
+      disable(submitBtn, false);
+      if(ok){
+        setAwaitingOtp(true);
+        window.kilToast?.warning?.('Enter the OTP we sent, then submit again to complete signup.');
+      }
+      return;
+    }
+
+    // SECOND submit → finalize registration
+    const code = (otpInput?.value || '').trim();
+    if(!code){
+      otpErr.textContent = 'Please enter the OTP.';
+      window.kilToast?.warning?.('Please enter the OTP.');
+      otpInput?.focus();
+      return;
+    }
+
+    // Passwords (optional)
+    const p1 = (pass1?.value || '').trim();
+    const p2 = (pass2?.value || '').trim();
+    if(p1 && p1 !== p2){
+      window.kilToast?.warning?.('Password and confirm password do not match.');
+      return;
+    }
+
+    // Prepare payload from form
+    const fd     = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+
+    const email = (emailInput?.value || '').trim();
+    const cc    = (countryCodeEl?.value || '').trim();
+    const num   = (contactEl?.value || '').trim();
+
+    // RSA encrypt sensitive fields
+    try {
+      if(email){
+        const encEmail = await rsaEncrypt(email);
+        if (!encEmail) throw new Error('Encrypt email failed');
+        payload.email = encEmail;
+      }
+      if(cc){
+        const encCc = await rsaEncrypt(cc);
+        if (!encCc) throw new Error('Encrypt country code failed');
+        payload.country_code = encCc;
+      }
+      if(num){
+        const encNum = await rsaEncrypt(num);
+        if (!encNum) throw new Error('Encrypt contact failed');
+        payload.contact = encNum;
+      }
+      if(p1){
+        const encP1 = await rsaEncrypt(p1);
+        if (!encP1) throw new Error('Encrypt password failed');
+        payload.password = encP1;
+      }
+      if(p2){
+        const encP2 = await rsaEncrypt(p2);
+        if (!encP2) throw new Error('Encrypt confirm password failed');
+        payload.confirm_password = encP2;
+      }
+      const encOtp = await rsaEncrypt(code);
+      if (!encOtp) throw new Error('Encrypt OTP failed');
+      payload.otp = encOtp;
+    } catch (errEnc) {
+      console.error('RSA encrypt error (signup):', errEnc);
+      window.kilToast?.danger?.('Encryption failed. Please refresh and try again.');
+      return;
+    }
+
+    try{
+      disable(submitBtn, true);
+
+      const fx = (window.axiosElaw) || window.axios || null;
+      const fxFetch = window.kFetch || window.fetch;
+      let json;
+      if(fx?.post){
+        const { data } = await fx.post('/firmstaff/signup', payload, {
+          headers: { 'Accept':'application/json' },
+          timeout: 20000
+        });
+        json = data;
+      }else{
+        const res = await fxFetch('/firmstaff/signup', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
+          body: JSON.stringify(payload)
+        });
+        json = await res.json();
+      }
+
+      if(!json?.success){
+        const msg = json?.message || 'Registration failed.';
+        otpErr.textContent = msg;
+        window.kilToast?.danger?.(msg);
+        return;
+      }
+
+      window.kilToast?.success?.('Registration complete. Logging you in…');
+      location.assign(json.redirect || '/firmstaff');
+
+    }catch(err){
+      const msg = err?.response?.data?.message || err?.message || 'Registration failed.';
+      otpErr.textContent = msg;
+      window.kilToast?.danger?.(msg);
+    }finally{
+      disable(submitBtn, false);
+    }
+  });
+
+  // If user reloads via bfcache, keep OTP stage UI in sync
+  window.addEventListener('pageshow', ()=>{
+    if(isAwaitingOtp() && otpWrap) otpWrap.style.display = '';
+  });
+})();
+</script>

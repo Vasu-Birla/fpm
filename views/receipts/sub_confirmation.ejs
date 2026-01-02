@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Subscription Payment Confirmation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{ --brand:#0d6efd; --ok:#22a06b; --muted:#6c757d; --ink:#212529; --bg:#f8f9fa; --card:#fff; --line:#e9ecef; }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial; background:var(--bg); margin:0; color:var(--ink)}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.06);overflow:hidden}
+    .hd{display:flex;gap:16px;align-items:center;padding:20px;border-bottom:1px solid var(--line)}
+    .tick{width:52px;height:52px;border-radius:50%;background:#e9f8f1;display:grid;place-items:center;color:var(--ok);font-size:28px}
+    .muted{color:var(--muted)}
+    .sec{padding:18px 20px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+    .kv{display:grid;grid-template-columns:180px 1fr;gap:8px 12px;font-size:14px}
+    .kv div:nth-child(odd){color:var(--muted)}
+    .cta{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:#fbfbfd}
+    .btn{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600;text-decoration:none}
+    .btn.alt{background:#fff;color:var(--brand)}
+    @media (max-width:720px){ .grid2{grid-template-columns:1fr} .kv{grid-template-columns:130px 1fr} }
+  </style>
+</head>
+<body>
+
+  <!-- Full-width brand bar at the top (web mode) -->
+  <%- include('../partials/brandbar.ejs', { org, logoSrc, mode: 'web' }) %>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="hd">
+        <div class="tick">✔</div>
+        <div>
+          <h1 style="margin:0">Thank you! <span class="muted">Your subscription payment has been received</span></h1>
+          <div class="muted" style="font-size:13px">A receipt is attached to your email. You can also open the PDF below.</div>
+        </div>
+      </div>
+
+      <div class="sec grid2">
+        <div>
+          <h3 style="margin:0 0 8px">Receipt</h3>
+          <div class="kv">
+            <div>Receipt Number</div><div><strong><%= receipt.receiptNo || '—' %></strong></div>
+            <div>Firm</div><div><%= receipt.firmName || '—' %></div>
+            <div>Date &amp; Time of Payment</div><div><%= receipt.paidAt || '—' %></div>
+            <div>Payment Ref</div><div><%= receipt.paymentRef || '—' %></div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 8px">Plan</h3>
+          <div class="kv">
+            <div>Plan</div><div><%= receipt.planName || ('#'+receipt.planId) %></div>
+            <div>Billing Period</div><div><%= receipt.billingPeriod || '—' %></div>
+            <div>Amount</div><div><%= receipt.amountFmt %> (<%= receipt.currencyLabel %>)</div>
+            <div>Transaction ID</div><div><%= receipt.transactionId || '—' %></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta">
+        <% if (receipt.pdfKey) { %>
+          <a class="btn alt"
+             href="/secure/file_stream?s3key=<%= encodeURIComponent(receipt.pdfKey) %>"
+             target="_blank" rel="noopener">Open PDF Receipt</a>
+        <% } %>
+        <a class="btn" href="/">Go to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

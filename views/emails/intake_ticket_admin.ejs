@@ -1,0 +1,178 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'New intake ticket',
+  preheader: 'New intake ticket from ' + (clientName || 'a client') + '.'
+}) %>
+
+<p class="email-title">New intake ticket received</p>
+
+<p class="email-lead">
+  Hi <strong><%= adminName || 'Firm Admin' %></strong>,
+</p>
+
+<p class="text">
+  A new intake ticket was submitted for <strong><%= firmName || 'your firm' %></strong>.
+  Review the summary below.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="border-collapse:collapse;margin:16px 0 12px 0;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+  <tr>
+    <td style="padding:14px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Ticket ID
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= ticketId || 'N/A' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Service
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= serviceName || 'N/A' %>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Submitted at
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= submittedAt || 'N/A' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Status
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= status || 'new' %>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td width="50%" style="padding:6px 6px 0 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Source
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= sourceLabel || 'N/A' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 0 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Submitted by
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= actorType || 'Guest' %><% if (actorEmail) { %> (<%= actorEmail %>)<% } %>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="border-collapse:collapse;margin:0 0 12px 0;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+  <tr>
+    <td style="padding:14px 16px;">
+      <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">
+        Client contact
+      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Name
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= clientName || 'N/A' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Email
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <% if (clientEmail) { %>
+                <a href="mailto:<%= clientEmail %>" style="color:#2563eb;text-decoration:none;"><%= clientEmail %></a>
+              <% } else { %>
+                N/A
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:6px 0 0 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Phone
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= clientPhone || 'N/A' %>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<% if (message) { %>
+  <div style="margin:12px 0 12px 0;">
+    <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">
+      Message
+    </div>
+    <div style="font-size:14px;color:#111827;background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:10px;">
+      <%= (message || '').replace(/\r?\n/g, '<br>') %>
+    </div>
+  </div>
+<% } %>
+
+<% if (fields && fields.length) { %>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="border-collapse:collapse;margin:0 0 10px 0;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+    <tr>
+      <td style="padding:14px 16px;">
+        <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">
+          Additional details
+        </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+          <% fields.forEach(function(row){ %>
+            <tr>
+              <td width="40%" style="padding:6px 6px 6px 0;font-size:13px;color:#6b7280;vertical-align:top;">
+                <%= row.label %>
+              </td>
+              <td width="60%" style="padding:6px 0 6px 6px;font-size:14px;color:#111827;font-weight:600;vertical-align:top;">
+                <%= row.value %>
+              </td>
+            </tr>
+          <% }) %>
+        </table>
+      </td>
+    </tr>
+  </table>
+<% } %>
+
+<% if (dashboardUrl) { %>
+  <div style="margin-top: 12px;">
+    <a href="<%= dashboardUrl %>" target="_blank" rel="noopener" class="btn-primary">
+      View intake list
+    </a>
+  </div>
+<% } %>
+
+<div class="info-box" style="margin-top:18px;">
+  Please review this ticket and respond to the client within your standard response time.
+</div>
+
+<%- include('_email_footer', { org }) %>

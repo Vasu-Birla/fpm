@@ -1,0 +1,338 @@
+
+<style>
+/* Active link look */
+#sidebar-menu a.active {
+  background: #001489;          /* Bootstrap primary */
+  color: #fff !important;   
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Parent submenu label highlight */
+#sidebar-menu .submenu > a.active {
+  color: #0d6efd;
+}
+
+/* Ensure opened submenu is visible */
+#sidebar-menu .submenu.menu-open > ul {
+  display: block;
+}
+
+.sidebar .sidebar-menu > ul li.menu-title {
+    font-weight: 600;
+    color: #00d3c7;
+    font-size: 14px;
+}
+</style>
+
+<!-- Sidenav Menu Start -->
+<div class="sidebar" id="sidebar">
+    
+    <!-- Start Logo -->   
+    <div class="sidebar-logo">   
+        <div>    
+            <!-- Logo Normal -->
+            <a href="/firmstaff" class="logo logo-normal">
+                <img src="../superadminassets/img/logo.png" alt="Logo" style="width: 49px;">
+            </a>
+
+            <!-- Logo Small -->
+            <a href="/firmstaff" class="logo-small">
+                <img src="../superadminassets/img/logo.png" alt="Logo" >
+            </a>
+
+            <!-- Logo Dark -->
+            <a href="/firmstaff" class="dark-logo">
+                <img src="../superadminassets/img/logo.png" alt="Logo" style="width: 49px;">
+            </a>
+        </div>
+        <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn"> 
+            <i class="ti ti-arrow-left"></i>
+        </button>
+
+        <!-- Sidebar Menu Close -->
+        <button class="sidebar-close">
+            <i class="ti ti-x align-middle"></i>
+        </button>                
+    </div>
+    <!-- End Logo -->
+
+    <!-- Sidenav Menu -->
+    <div class="sidebar-inner" data-simplebar>                
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <!-- <li class="menu-title"><span>Main Menu</span></li> -->
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/firmstaff">
+                                <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="menu-title"><span>Firm Section </span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-gavel"></i><span>Firm Staff</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                        
+                                <li><a href="/firmstaff/firm_staff">Firm Staff List</a></li>    
+                                <li><a href="/firmstaff/add_firm_staff">Add Firm Staff</a></li>
+                                
+                            </ul>
+                        </li>             
+                    </ul>
+                </li>
+                <!-- <li>
+                    <ul>
+                        <li>
+                            <a href="billing.php">
+                                <i class="ti ti-file-invoice"></i><span>Billing & Invoicing</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li> -->
+
+                <li class="menu-title"><span>Lawyer's Section</span></li>
+     
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/firmstaff/case_list">
+                                <i class="ti ti-scale"></i><span>Case</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-users"></i><span>Clients</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/firmstaff/client_list"> Client List</a></li>
+                                <li><a href="/firmstaff/add_client"> Add Client</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-user-heart"></i><span>Client Consultation</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/firmstaff/consultation_list"> Consultation List</a></li>
+                                <li><a href="/firmstaff/add_consultation"> Add Consultation</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+           
+<!--           
+
+                <li class="menu-title"><span>Paralegal's Section </span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-file-description"></i><span>Document Drafting</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="documentdrafting-list.php"> Document Drafting List</a></li>
+                                <li><a href="documentdrafting-create.php"> Add Document Drafting</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li> -->
+
+              
+
+                <li class="menu-title"><span>Finance Panel</span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-file-invoice"></i><span>Invoice</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/firmstaff/invoice_list"> Invoice List</a></li>
+                                <li><a href="/firmstaff/add_invoice"> Add Invoice</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+       
+
+
+                <!-- ------------- can be use in future---------------- -->
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-wallet"></i><span>Disbursement</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/firmstaff/disbursement_list"> Disbursement List</a></li>
+                                <li><a href="/firmstaff/add_disbursement"> Add Disbursement</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+
+                <!-- <li>
+                    <ul>
+                        <li>
+                            <a href="clientledger-list.php">
+                                <i class="ti ti-clipboard-list"></i><span>Client Ledger</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li> -->
+         
+
+                <li class="menu-title"><span>Intake / Support Panel</span></li>
+      
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/firmstaff/client_intake_list">
+                                <i class="ti ti-file-import"></i><span>Client Intake List</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-calendar-check"></i><span>Appointment</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/firmstaff/add_appointment"> Appointment List</a></li>
+                                <li><a href="/firmstaff/appointment_list"> Add Appointment</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li> -->
+             
+                <!-- <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-headset"></i><span>Task Support</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="tasksupport-list.php"> Task Support List</a></li>
+                                <li><a href="tasksupport-create.php"> Add Task Support</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li> -->
+
+                <li class="menu-title"><span>Setting</span></li>
+                <li>
+                    <ul>
+                        <!-- <li>
+                            <a href="/firmstaff/documents_and_sign">
+                                <i class="ti ti-bell"></i><span>Documents & E-Sign</span>
+                            </a>
+                        </li> -->
+                        <li>
+                            <ul>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-notes"></i><span>Task & Time</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="/firmstaff/task_list"> Task & Time List</a></li>
+                                        <li><a href="/firmstaff/add_task"> Add Task & Time</a></li>
+                                    </ul>
+                                </li>                
+                            </ul>    
+                        </li>
+                        <li>
+                            <a href="/firmstaff/elaw_calendar">
+                                <i class="ti ti-calendar-x"></i><span> Calendar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/firmstaff/notifications">
+                                <i class="ti ti-bell"></i><span> Notifications</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/firmstaff/support_system">
+                                <i class="ti ti-headset"></i><span> Support & Help</span>
+                            </a>
+                        </li>
+
+                           <li>
+                            <a href="/firmstaff/logout">
+                             
+                                      <i class="ti ti-logout"></i><span>Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>                        
+            </ul>                   
+        </div>
+    </div>
+
+</div>
+<!-- Sidenav Menu End -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get current path without query/hash
+    let currentPath = window.location.pathname.split("/").pop().toLowerCase();
+
+    // If blank (like "/"), assume "/firmstaff"
+    if (currentPath === "" || currentPath === "/") {
+        currentPath = "/firmstaff";
+    }
+
+    // Select all sidebar links
+    const links = document.querySelectorAll("#sidebar-menu a[href]");
+
+    links.forEach(link => {
+        let linkPath = link.getAttribute("href").split("/").pop().toLowerCase();
+
+        if (linkPath === currentPath) {
+            // Add active class to this link
+            link.classList.add("active");
+
+            // Open submenu if inside one
+            const submenu = link.closest(".submenu");
+            if (submenu) {
+                submenu.classList.add("menu-open");
+                const parentLink = submenu.querySelector(":scope > a");
+                if (parentLink) parentLink.classList.add("active");
+                const subUl = submenu.querySelector("ul");
+                if (subUl) subUl.style.display = "block";
+            }
+        }
+    });
+});
+</script>

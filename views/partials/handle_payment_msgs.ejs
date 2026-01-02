@@ -1,0 +1,88 @@
+<%
+// Expected locals:
+//  title:       string
+//  subtitle:    string (optional)
+//  orderInfo:   { orderId, transactionId, amount, currency, method, payRef, authCode }
+//  steps:       [{ label, status, detail }]  status ∈ 'success'|'warning'|'error'
+
+function iconFor(s){
+  if (s === 'success') return '✅';
+  if (s === 'warning') return '⚠️';
+  return '❌';
+}
+function colorFor(s){
+  if (s === 'success') return '#155724';
+  if (s === 'warning') return '#856404';
+  return '#721c24';
+}
+%>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title><%= title %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol"; margin:0; background:#f8f9fa; }
+    .wrap{ max-width: 760px; margin: 32px auto; background:#fff; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,.08); overflow:hidden }
+    .hd{ padding:20px 24px; border-bottom:1px solid #eee; }
+    .title{ margin:0 0 4px; font-size:20px; font-weight:700; }
+    .subtitle{ margin:0; color:#6c757d; font-size:14px; }
+    .sec{ padding:16px 24px; }
+    .kv{ display:grid; grid-template-columns: 180px 1fr; gap:8px 16px; font-size:14px; }
+    .kv div:nth-child(odd){ color:#6c757d; }
+    .steps{ list-style:none; margin:0; padding:0; }
+    .step{ display:flex; gap:10px; padding:10px 0; border-bottom:1px dashed #eee; align-items:flex-start; }
+    .step:last-child{ border-bottom:none; }
+    .ico{ font-size:20px; line-height:1; margin-top:2px; }
+    .lbl{ font-weight:600; }
+    .det{ color:#6c757d; margin-top:2px; white-space:pre-wrap; word-break:break-word; }
+    .cta{ padding:16px 24px; display:flex; justify-content:flex-end; gap:12px; background:#fdfdfe; border-top:1px solid #eee; }
+    .btn{ appearance:none; border:1px solid #0d6efd; background:#0d6efd; color:#fff; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn.alt{ background:#fff; color:#0d6efd; }
+    .pill{ display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; margin-left:8px; border:1px solid #eee; background:#f8f9fa; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hd">
+      <h1 class="title"><%= title %></h1>
+      <% if (subtitle) { %><p class="subtitle"><%= subtitle %></p><% } %>
+    </div>
+
+    <div class="sec">
+      <h3 style="margin:0 0 12px">Payment Details</h3>
+      <div class="kv">
+        <div>Order ID</div><div><%= orderInfo.orderId %></div>
+        <div>Transaction ID</div><div><%= orderInfo.transactionId %></div>
+        <div>Amount</div><div><%= orderInfo.currency %> <%= Number(orderInfo.amount||0).toFixed(2) %></div>
+        <% if (orderInfo.method) { %><div>Method</div><div><%= orderInfo.method %></div><% } %>
+        <% if (orderInfo.payRef) { %><div>Payment Ref</div><div><%= orderInfo.payRef %></div><% } %>
+        <% if (orderInfo.authCode) { %><div>Auth Code</div><div><%= orderInfo.authCode %></div><% } %>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3 style="margin:0 0 12px">Processing Steps</h3>
+      <ul class="steps">
+        <% steps.forEach(s => { %>
+          <li class="step">
+            <div class="ico" style="color:<%= colorFor(s.status) %>"><%= iconFor(s.status) %></div>
+            <div>
+              <div class="lbl"><%= s.label %>
+                <!-- <span class="pill"><%= s.status.toUpperCase() %></span> -->
+              </div>
+              <% if (s.detail) { %><div class="det"><%= s.detail %></div><% } %>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+
+    <div class="cta">
+
+      <button class="btn" onclick="location.href='<%= redirectTo || "/" %>'">OK</button>
+    </div>
+  </div>
+</body>
+</html>

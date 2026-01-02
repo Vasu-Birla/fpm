@@ -1,0 +1,417 @@
+<%- include('firmheader.ejs'); %>
+<%- include('firmsidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+      <div class="flex-grow-1">
+        <h5 class="fw-bold mb-0">
+          Client Intake
+          <span id="intakeTotalBadge" class="badge badge-soft-primary fw-medium border py-1 px-2 border-primary fs-13 ms-2">
+            Total: 0
+          </span>
+        </h5>
+        <div class="text-muted small mt-1">
+          Track walk-ins, calls, and web intake submissions in one place.
+        </div>
+      </div>
+      <div class="text-end d-flex gap-2">
+        <a href="/firmstaff/add_client_intake" class="btn btn-primary fs-13 btn-md">
+          <i class="ti ti-plus me-1"></i> Add Intake
+        </a>
+        <a href="/firmstaff/add_client_intake?show_template=true" class="btn btn-outline-primary fs-13 btn-md">
+          <i class="ti ti-template me-1"></i> Add Intake Template
+        </a>
+      </div>
+    </div>
+
+    <% if (output && output.message) { %>
+      <div class="alert alert-<%= output.type || 'info' %>"><%= output.message %></div>
+    <% } %>
+
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <div class="fw-semibold">Intake templates</div>
+          <div class="text-muted small">
+            Customize intake questions per service. If none are created, the system default intake form is used.
+          </div>
+        </div>
+        <div class="text-muted small">
+          Templates: <strong><%= templatesCount || 0 %></strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-end gap-2">
+        <div class="me-2">
+          <label class="form-label mb-1" for="intakeStatusFilter">Status</label>
+          <select id="intakeStatusFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="new">New</option>
+            <option value="in_review">In Review</option>
+            <option value="assigned">Assigned</option>
+            <option value="consult_scheduled">Consult Scheduled</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+            <option value="spam">Spam</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-1" for="intakeChannelFilter">Channel</label>
+          <select id="intakeChannelFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="service_page">Service Page</option>
+            <option value="contact_us">Contact Us</option>
+            <option value="phone">Phone</option>
+            <option value="email">Email</option>
+            <option value="walk_in">Walk-In</option>
+            <option value="referral">Referral</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-1" for="intakeServiceFilter">Service</label>
+          <select id="intakeServiceFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <% (practiceAreas || []).forEach(pa => { %>
+              <option value="<%= pa.practice_area_id %>"><%= pa.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="ms-auto">
+          <label class="form-label mb-1" for="intakeSearch">Search</label>
+          <input id="intakeSearch" type="text" class="form-control"
+                 placeholder="Name, email, phone..."
+                 data-ignore-kilvish="yes">
+        </div>
+
+        <div>
+          <button id="resetIntakeFilters" class="btn btn-outline-secondary">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="clientintakeTable" class="table table-striped table-bordered table-nowrap w-100">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Contact</th>
+                <th>Service</th>
+                <th>Channel</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody><!-- DataTables will fill --></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<div class="modal fade" id="intakeDetailModal" tabindex="-1" aria-labelledby="intakeDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="intakeDetailModalLabel">Intake Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="intakeDetailBody"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function($){
+  const fx = window.axiosElaw || window.axios;
+  if (!fx || !$.fn.DataTable) return;
+
+  const $tbl     = $('#clientintakeTable');
+  const $status  = $('#intakeStatusFilter');
+  const $channel = $('#intakeChannelFilter');
+  const $service = $('#intakeServiceFilter');
+  const $search  = $('#intakeSearch');
+  const $reset   = $('#resetIntakeFilters');
+  const $total   = document.getElementById('intakeTotalBadge');
+  const $detailBody = document.getElementById('intakeDetailBody');
+
+  const rowCache = new Map();
+
+  function escHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function fmtDate(d) {
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '-';
+      const pad = n => (n < 10 ? '0' + n : '' + n);
+      return (
+        dt.getFullYear() + '-' +
+        pad(dt.getMonth() + 1) + '-' +
+        pad(dt.getDate()) + ' ' +
+        pad(dt.getHours()) + ':' +
+        pad(dt.getMinutes())
+      );
+    } catch {
+      return '-';
+    }
+  }
+
+  function statusBadge(st) {
+    const map = {
+      new: 'primary',
+      in_review: 'warning',
+      assigned: 'info',
+      consult_scheduled: 'info',
+      accepted: 'success',
+      rejected: 'danger',
+      spam: 'dark',
+      closed: 'secondary'
+    };
+    const tone = map[st] || 'secondary';
+    const label = (st || 'new').replace(/_/g, ' ');
+    return `<span class="badge bg-${tone}-subtle text-${tone} border border-${tone}">${escHtml(label)}</span>`;
+  }
+
+  function channelLabel(ch) {
+    return (ch || 'other').replace(/_/g, ' ');
+  }
+
+  const dt = $tbl.DataTable({
+    responsive: true,
+    dom:
+      "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+      { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+      { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+    ],
+    pageLength: 50,
+    searching: false,
+    serverSide: false,
+    ajax: function(data, cb){
+      const payload = {
+        status: $status.val() || '',
+        channel: $channel.val() || '',
+        practice_area_id: $service.val() || '',
+        q: $search.val() || ''
+      };
+
+      fx.post('/firmstaff/client_intake_json', payload)
+        .then(({ data }) => {
+          if (!data?.success) {
+            window.kilToast?.danger?.(data?.message || 'Failed to load intake tickets.');
+            cb({ data: [] });
+            return;
+          }
+
+          rowCache.clear();
+
+          const rows = (data.rows || []).map((r, idx) => {
+            rowCache.set(r.intake_id, r);
+            const client = `
+              <div class="fw-semibold">${escHtml(r.full_name || 'Guest')}</div>
+              <div class="text-muted small">${escHtml(r.email || '')}</div>
+            `;
+            const contact = escHtml(r.full_phone || r.phone || '-');
+            const serviceName = r.practiceArea?.name || 'General';
+            const templateName =
+              r.template?.name ||
+              r.template?.template_key ||
+              r.payload_json?._meta?.template_key ||
+              'default';
+            const service = `
+              <div>${escHtml(serviceName)}</div>
+              <div class="text-muted small">Template: ${escHtml(templateName)}</div>
+            `;
+
+            return {
+              idx: idx + 1,
+              client,
+              contact,
+              service,
+              channel: escHtml(channelLabel(r.channel)),
+              status: statusBadge(r.status),
+              submitted: fmtDate(r.submitted_at || r.createdAt),
+              actions: `
+                <button type="button" class="btn btn-outline-primary btn-sm intake-view" data-id="${r.intake_id}">
+                  View
+                </button>
+              `
+            };
+          });
+
+          if ($total) $total.textContent = `Total: ${data.total || rows.length}`;
+          cb({ data: rows });
+        })
+        .catch(err => {
+          console.error('client_intake_json error:', err);
+          window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to load intake tickets.');
+          cb({ data: [] });
+        });
+    },
+    columns: [
+      { data: 'idx' },
+      { data: 'client' },
+      { data: 'contact' },
+      { data: 'service' },
+      { data: 'channel' },
+      { data: 'status' },
+      { data: 'submitted' },
+      { data: 'actions', orderable: false, searchable: false }
+    ]
+  });
+
+  const $wrapper = $tbl.closest('.dataTables_wrapper');
+  $('.dataTables_filter', $wrapper).hide();
+
+  function reloadWithDelay(){
+    clearTimeout(window.__intake_timer);
+    window.__intake_timer = setTimeout(() => dt.ajax.reload(), 250);
+  }
+
+  $status.on('change', reloadWithDelay);
+  $channel.on('change', reloadWithDelay);
+  $service.on('change', reloadWithDelay);
+  $search.on('input', reloadWithDelay);
+
+  $reset.on('click', function(e){
+    e.preventDefault();
+    $status.val('');
+    $channel.val('');
+    $service.val('');
+    $search.val('');
+    dt.ajax.reload();
+  });
+
+  function formatLabel(key){
+    return String(key || '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function formatValue(value){
+    if (Array.isArray(value)) return value.join(', ');
+    if (value && typeof value === 'object') return JSON.stringify(value);
+    return String(value ?? '');
+  }
+
+  function buildDetailHtml(row){
+    const serviceName = row.practiceArea?.name || 'General';
+    const payload = row.payload_json || {};
+    const hiddenKeys = new Set(['_meta', 'website']);
+    const preferred = [
+      'full_name',
+      'email',
+      'country_code',
+      'phone',
+      'full_phone',
+      'tell_us_about_the_matter',
+      'message'
+    ];
+
+    const keys = Object.keys(payload)
+      .filter(key => !hiddenKeys.has(key))
+      .filter(key => {
+        const val = payload[key];
+        if (val === null || val === undefined) return false;
+        if (Array.isArray(val)) return val.length > 0;
+        return String(val).trim() !== '';
+      });
+
+    const sortedKeys = [
+      ...preferred.filter(k => keys.includes(k)),
+      ...keys.filter(k => !preferred.includes(k)).sort()
+    ];
+
+    const fieldRows = sortedKeys.map(key => {
+      const value = formatValue(payload[key]);
+      return `
+        <tr>
+          <th class="text-muted fw-semibold align-top" style="width:32%;">${escHtml(formatLabel(key))}</th>
+          <td class="text-break">${escHtml(value)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const templateName =
+      row.template?.name ||
+      row.template?.template_key ||
+      row.payload_json?._meta?.template_key ||
+      'default';
+
+    return `
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="border rounded-3 p-3 h-100 bg-light">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="fw-semibold">Client Summary</div>
+              <span class="badge bg-primary-subtle text-primary border border-primary">#${escHtml(row.intake_id)}</span>
+            </div>
+            <div class="small text-muted mb-2">Template: ${escHtml(templateName)}</div>
+            <div><strong>Client:</strong> ${escHtml(row.full_name || 'Guest')}</div>
+            <div><strong>Email:</strong> ${escHtml(row.email || '-')}</div>
+            <div><strong>Phone:</strong> ${escHtml(row.full_phone || row.phone || '-')}</div>
+            <div><strong>Service:</strong> ${escHtml(serviceName)}</div>
+            <div><strong>Channel:</strong> ${escHtml(channelLabel(row.channel))}</div>
+            <div><strong>Status:</strong> ${escHtml((row.status || 'new').replace(/_/g,' '))}</div>
+            <div><strong>Submitted:</strong> ${escHtml(fmtDate(row.submitted_at || row.createdAt))}</div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="border rounded-3 p-3 h-100">
+            <div class="fw-semibold mb-2">Intake Details</div>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <tbody>
+                  ${fieldRows || `<tr><td class="text-muted">No intake details found.</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  $tbl.on('click', '.intake-view', function(){
+    const id = Number(this.dataset.id || 0);
+    const row = rowCache.get(id);
+    if (!row) return;
+    if ($detailBody) {
+      $detailBody.innerHTML = buildDetailHtml(row);
+    }
+    const modalEl = document.getElementById('intakeDetailModal');
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  });
+
+})(jQuery);
+</script>

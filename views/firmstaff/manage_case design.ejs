@@ -1,0 +1,1483 @@
+
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<style>
+    .case-tabs-wrapper .nav-tabs {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid #dee2e6;
+    }
+
+    .case-tabs-wrapper .nav-item {
+    flex: 1;
+    text-align: center;
+    }
+
+    .case-tabs-wrapper .nav-link {
+    width: 100%;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #495057;
+    font-weight: 500;
+    padding: 12px 0;
+    transition: all 0.2s ease-in-out;
+    }
+
+    .case-tabs-wrapper .nav-link:hover {
+    color: #2E37A4;
+    background-color: #f8f9fa;
+    }
+
+    .case-tabs-wrapper .nav-link.active {
+    border-bottom: 3px solid #2E37A4;
+    color: #2E37A4;
+    font-weight: 600;
+    }
+</style>
+
+<!-- ========================
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center"> 
+                        <a href="#" class="text-dark"> 
+                            <i class="ti ti-chevron-left me-1"></i>Case Management
+                        </a>
+                    </h5>
+                </div>
+                <!-- page header end -->
+
+                <div class="case-tabs-wrapper mb-3">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#case" role="tab">Case</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#research-log" role="tab">Research Log</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#court-filing-tracker" role="tab">Court Filing Tracker</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#evidence" role="tab">Evidence</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#research-assistant" role="tab">Research Assistant</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#document-drafting" role="tab">Document</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#e-signature" role="tab">E-Signature</a></li>
+                    </ul>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="tab-content" id="invoiceTabContent">
+
+                    <!-- Case -->
+                    <div class="tab-pane fade show active" id="case" role="tabpanel">
+
+                        <!-- card start -->
+                        <form action="#" method="POST">
+                            <div class="card">
+                                <div class="card-body pb-0">
+                                    <div class="form">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="case_type" class="form-label mb-1 fw-medium">Case Type<span class="text-danger ms-1">*</span></label>
+                                                    <select class="form-select select2" id="case_type" name="case_type" required>
+                                                        <option selected disabled> Select any one </option>
+                                                        <option value="Civil">Civil</option>
+                                                        <option value="Criminal">Criminal</option>
+                                                        <option value="Corporate">Corporate</option>
+                                                        <option value="Family">Family</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="jurisdiction" class="form-label mb-1 fw-medium">Jurisdiction (Court) <span class="text-danger ms-1">*</span></label>
+                                                    <input type="text" id="jurisdiction" name="jurisdiction" class="form-control" placeholder="Enter the name" required>
+                                                </div>
+                                            </div>
+                                            <!-- Assigned To Lawyer -->
+                                            <div class="col-md-4">
+                                                <div class="mb-3 dropdown">
+                                                    <label class="form-label mb-1 fw-medium">Assigned To Lawyer<span class="text-danger ms-1">*</span></label>
+                                                    <button class="btn btn-light dropdown-toggle text-start form-control" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="lawyerBtn">
+                                                    --- Choose Lawyer ---
+                                                    </button>
+                                                    <ul class="dropdown-menu w-100 px-2" id="lawyerMenu">
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="1">Lawyer1</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="2">Lawyer2</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="3">Lawyer3</label></li>
+                                                    </ul>
+                                                    <input type="hidden" name="lawyer_id[]" id="lawyerInput">
+                                                </div>
+                                            </div>
+                                            <!-- Assigned To Paralegal -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3 dropdown">
+                                                    <label class="form-label mb-1 fw-medium">Assigned To Paralegal<span class="text-danger ms-1">*</span></label>
+                                                    <button class="btn btn-light  w-100 dropdown-toggle text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="paralegalBtn">
+                                                        --- Choose Paralegal ---
+                                                    </button>
+                                                    <ul class="dropdown-menu w-100 px-2" id="paralegalMenu">
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="1">Paralegal1</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="2">Paralegal2</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="3">Paralegal3</label></li>
+                                                    </ul>
+                                                    <input type="hidden" name="paralegal_id[]" id="paralegalInput">
+                                                </div>
+                                            </div>
+                                            <!-- Assigned To Finance -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3 dropdown">
+                                                    <label class="form-label mb-1 fw-medium">Assigned To Finance<span class="text-danger ms-1">*</span></label>
+                                                    <button class="btn btn-light w-100 dropdown-toggle text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="financeBtn">
+                                                        --- Choose Finance ---
+                                                    </button>
+                                                    <ul class="dropdown-menu w-100 px-2" id="financeMenu">
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="1">Finance1</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="2">Finance2</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="3">Finance3</label></li>
+                                                    </ul>
+                                                    <input type="hidden" name="finance_id[]" id="financeInput">
+                                                </div>
+                                            </div>
+                                            <!-- Assigned To Intake -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3 dropdown">
+                                                    <label class="form-label mb-1 fw-medium">Assigned To Intake<span class="text-danger ms-1">*</span></label>
+                                                    <button class="btn btn-light w-100 dropdown-toggle text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="intakeBtn">
+                                                        --- Choose Intake ---
+                                                    </button>
+                                                    <ul class="dropdown-menu w-100 px-2" id="intakeMenu">
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="1">Intake1</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="2">Intake2</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="3">Intake3</label></li>
+                                                    </ul>
+                                                    <input type="hidden" name="intake_id[]" id="intakeInput">
+                                                </div>
+                                            </div>
+                                            <!-- Assigned To FirmStaff -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3 dropdown">
+                                                    <label class="form-label mb-1 fw-medium">Assigned To FirmStaff<span class="text-danger ms-1">*</span></label>
+                                                    <button class="btn btn-light w-100 dropdown-toggle text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="firmstaffBtn">
+                                                        --- Choose FirmStaff ---
+                                                    </button>
+                                                    <ul class="dropdown-menu w-100 px-2" id="firmstaffMenu">
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="1">FirmStaff1</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="2">FirmStaff2</label></li>
+                                                        <li><label><input class="form-check-input me-2" type="checkbox" value="3">FirmStaff3</label></li>
+                                                    </ul>
+                                                    <input type="hidden" name="firmstaff_id[]" id="firmstaffInput">
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="case_priority" class="form-label mb-1 fw-medium">Case Priority<span class="text-danger ms-1">*</span></label>
+                                                    <select class="form-select" id="case_priority" name="case_priority" required>
+                                                        <option value="">Choose any one</option>
+                                                        <option value="low">Low</option>
+                                                        <option value="normal">Normal</option>
+                                                        <option value="high">High</option>
+                                                        <option value="critical">Critical</option>
+                                                    </select>
+                                                </div>
+                                            </div> -->
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <label for="evidence_description" class="form-label mb-1 fw-medium">Evidence Description<span class="text-danger ms-1">*</span></label>
+                                                    <textarea class="form-control" id="evidence_description" name="evidence_description" rows="3" placeholder="Enter the descriptions....."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="documentContainer">
+                                            <div class="row document-row align-items-end mb-3">
+                                                <div class="col-md-5">
+                                                    <label class="form-label fw-medium">Document Title <span class="text-danger">*</span></label>
+                                                    <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-medium">Attach Documents (PDF, DOCX, etc.) <span class="text-danger">*</span></label>
+                                                    <input type="file" name="documents[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-primary ms-2 fs-13 btn-md addMore w-100">
+                                                        <i class="ti ti-plus"></i> Add More
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+        
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- card end -->
+
+                            <div class="d-flex align-items-center justify-content-end">
+                                <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Add Case</button>
+                            </div>
+                        </from>
+                        
+                        <hr/><br>
+                        
+                        <!-- Start Table -->
+                        <div class="table-responsive">
+                            <table id="casesTable" class="table table-striped table-bordered table-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No.</th>
+                                        <th>Case Type</th>
+                                        <th>Lawyer Name</th>
+                                        <th>Jurisdiction</th>
+                                        <th>Evidence Description</th>
+                                        <th>Attach Documents</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Civil</td>
+                                        <td>Adv. Suresh Mehra</td>
+                                        <td>New Delhi, India</td>
+                                        <td>Evidence</td>
+                                        <td>
+                                            <table class="table table-bordered align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 5%;">#</th>
+                                                        <th>Document Title</th>
+                                                        <th>Attached File</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>Client Agreement</td>
+                                                        <td><a href="uploads/client-agreement.pdf" target="_blank" class="text-primary">client-agreement.pdf</a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2</td>
+                                                        <td>Case Summary</td>
+                                                        <td><a href="uploads/case-summary.docx" target="_blank" class="text-primary">case-summary.docx</a></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-case-btn" data-id="1">
+                                                            <i class="ti ti-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Family</td>
+                                        <td>Adv. Nisha Kapoor</td>
+                                        <td>Mumbai, India</td>
+                                        <td>Evidence</td>
+                                        <td>
+                                            <table class="table table-bordered align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 5%;">#</th>
+                                                        <th>Document Title</th>
+                                                        <th>Attached File</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td>Client Agreement</td>
+                                                        <td><a href="uploads/client-agreement.pdf" target="_blank" class="text-primary">client-agreement.pdf</a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>2</td>
+                                                        <td>Case Summary</td>
+                                                        <td><a href="uploads/case-summary.docx" target="_blank" class="text-primary">case-summary.docx</a></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-case-btn" data-id="2">
+                                                            <i class="ti ti-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                    </div>
+                    <!-- Case -->
+
+                    <!-- Research Log -->
+                    <div class="tab-pane fade" id="research-log" role="tabpanel">
+
+                        <!-- Form Start -->
+                        <form action="#" method="POST" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body pb-0">
+                                    <div class="form">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="research_title" class="form-label mb-1 fw-medium">Research Title <span class="text-danger">*</span></label>
+                                                    <input type="text" id="research_title" name="research_title" class="form-control" placeholder="Enter research title" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="case_citation" class="form-label mb-1 fw-medium">Case Citation / Statute Reference <span class="text-danger">*</span></label>
+                                                    <input type="text" id="case_citation" name="case_citation" class="form-control" placeholder="Enter case or statute reference" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <label for="summary" class="form-label mb-1 fw-medium">Summary <span class="text-danger">*</span></label>
+                                                    <textarea class="form-control" id="summary" name="summary" rows="4" placeholder="Write short summary..." required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="references" class="form-label mb-1 fw-medium">Upload References (PDF) <span class="text-danger">*</span></label>
+                                                    <input type="file" id="references" name="references" class="form-control" accept=".pdf" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="tags" class="form-label mb-1 fw-medium">Tags / Keywords <span class="text-danger">*</span></label>
+                                                    <input type="text" id="tags" name="tags" class="form-control" placeholder="e.g. Contract Law, Damages, Evidence" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex align-items-center justify-content-end mt-3">
+                                <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Research Log</button>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+                        
+                        <hr/>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="researchlogTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sr. No.</th>
+                                        <th>Research Title</th>
+                                        <th>Case Citation / Statute</th>
+                                        <th>Summary</th>
+                                        <th>Tags</th>
+                                        <th>Reference</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Contractual Obligations under UAE Law</td>
+                                        <td>UAE Civil Code Art. 129</td>
+                                        <td>Analysis of key obligations and remedies for breach under UAE law.</td>
+                                        <td><span class="badge bg-info-subtle text-info border border-info">Contract</span></td>
+                                        <td>
+                                            <a href="#uploads/research1.pdf" target="_blank" class="text-primary">
+                                                <i class="ti ti-file-text me-1"></i>View
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-research-btn" data-id="1">
+                                                            <i class="ti ti-trash me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Doctrine of Res Judicata</td>
+                                        <td>CPC Section 11</td>
+                                        <td>Summary of case laws supporting principle of finality of judgments.</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary border border-secondary">Litigation</span></td>
+                                        <td>
+                                            <a href="#uploads/research2.pdf" target="_blank" class="text-primary">
+                                                <i class="ti ti-file-text me-1"></i>View
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-research-btn" data-id="2">
+                                                            <i class="ti ti-trash me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                    </div>
+                    <!-- Research Log -->
+
+                    <!-- Court Filing Tracker -->
+                    <div class="tab-pane fade" id="court-filing-tracker" role="tabpanel">
+
+                        <!-- Form Start -->
+                        <form action="#" method="post" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="court_type" class="form-label fw-medium">Court Type</label>
+                                            <select id="court_type" name="court_type" class="form-select select2" required>
+                                                <option value="">Select Court Type</option>
+                                                <option>Supreme Court</option>
+                                                <option>Parish Court</option>
+                                                <option>Appeal Court</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="filing_type" class="form-label fw-medium">Filing Type</label>
+                                            <select id="filing_type" name="filing_type" class="form-select select2" required>
+                                                <option value="">Select Filing Type</option>
+                                                <option>Statement</option>
+                                                <option>Motion</option>
+                                                <option>Appeal</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="filing_date" class="form-label fw-medium">Filing Date</label>
+                                            <input type="date" id="filing_date" name="filing_date" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="reference_no" class="form-label fw-medium">Reference Number</label>
+                                            <input type="text" id="reference_no" name="reference_no" class="form-control" placeholder="Enter Reference Number" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="receipt_upload" class="form-label fw-medium">Receipt Upload (PDF)</label>
+                                            <input type="file" id="receipt_upload" name="receipt_upload" accept=".pdf" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="statuss" class="form-label fw-medium">Status</label>
+                                            <select id="statuss" name="statuss" class="form-select select2" required>
+                                                <option value="">Select Status</option>
+                                                <option>Filed</option>
+                                                <option>Pending</option>
+                                                <option>Returned</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-4">
+                                        <button type="submit" class="btn btn-primary">Save Filing</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+
+                        <hr/>
+                        
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="courtfilingTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Court Type</th>
+                                        <th>Filing Type</th>
+                                        <th>Filing Date</th>
+                                        <th>Reference No.</th>
+                                        <th>Status</th>
+                                        <th>Receipt</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Supreme Court</td>
+                                        <td>Statement</td>
+                                        <td>2025-10-10</td>
+                                        <td>REF-98765</td>
+                                        <td><span class="badge bg-success-subtle text-success border border-success">Filed</span></td>
+                                        <td><a href="#uploads/receipt1.pdf" target="_blank"><i class="ti ti-file-text"></i> View</a></td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a href="#" class="shadow-sm border rounded-2 p-1 d-inline-flex" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-court-btn" data-id="1">
+                                                            <i class="ti ti-trash me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                    </div>
+                    <!-- Court Filing Tracker -->
+
+                    <!-- Evidence -->
+                    <div class="tab-pane fade" id="evidence" role="tabpanel">
+
+                        <!-- Form Start -->
+                        <form action="#" method="post" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="exhibit_no" class="form-label">Exhibit No. <span class="text-danger">*</span></label>
+                                            <input type="text" id="exhibit_no" name="exhibit_no" class="form-control" placeholder="Enter Exhibit Number" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="date_collected" class="form-label">Date Collected <span class="text-danger">*</span></label>
+                                            <input type="date" id="date_collected" name="date_collected" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter Description" required></textarea>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="source" class="form-label">Source <span class="text-danger">*</span></label>
+                                            <select id="source" name="source" class="form-select select2" required>
+                                                <option value="" disabled selected>Select Source</option>
+                                                <option value="Client">Client</option>
+                                                <option value="Witness">Witness</option>
+                                                <option value="Police">Police</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="stored_location" class="form-label">Stored Location <span class="text-danger">*</span></label>
+                                            <input type="text" id="stored_location" name="stored_location" class="form-control" placeholder="Enter Storage Location" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="linked_case" class="form-label">Linked Case <span class="text-danger">*</span></label>
+                                            <input type="text" id="linked_case" name="linked_case" class="form-control" placeholder="Enter Linked Case" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="chain_upload" class="form-label">Chain of Custody Upload (PDF) <span class="text-danger">*</span></label>
+                                            <input type="file" id="chain_upload" name="chain_upload" class="form-control" accept=".pdf" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-end">
+                                <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Evidence</button>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+
+                        <hr/>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table id="evidenceTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Exhibit No.</th>
+                                        <th>Description</th>
+                                        <th>Source</th>
+                                        <th>Date Collected</th>
+                                        <th>Linked Case</th>
+                                        <th>Stored Location</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>EXH-001</td>
+                                        <td>Weapon evidence with serial no. 234X</td>
+                                        <td>Police</td>
+                                        <td>2025-10-20</td>
+                                        <td>CASE-2025-009</td>
+                                        <td>Locker Room A-2</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-evidence-btn" data-id="1">
+                                                            <i class="ti ti-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table -->
+
+                    </div>
+                    <!-- Evidence -->
+
+                    <!-- Research Assistant -->
+                    <div class="tab-pane fade" id="research-assistant" role="tabpanel">
+                        
+                        <!-- Form Start -->
+                        <form action="#" method="post" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="topic_keyword" class="form-label">Topic / Keyword</label>
+                                            <input type="text" id="topic_keyword" name="topic_keyword" class="form-control" placeholder="Enter Topic or Keyword" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="assigned_by" class="form-label">Assigned By</label>
+                                            <input type="text" id="assigned_by" name="assigned_by" class="form-control" placeholder="Enter Assigning Person Name" required>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="summary_findings" class="form-label">Summary / Findings</label>
+                                            <textarea id="summary_findings" name="summary_findings" class="form-control" rows="4" placeholder="Enter Summary or Findings" required></textarea>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="upload_report" class="form-label">Upload Report (PDF)</label>
+                                            <input type="file" id="upload_report" name="upload_report" class="form-control" accept=".pdf" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="related_case" class="form-label">Related Case</label>
+                                            <input type="text" id="related_case" name="related_case" class="form-control" placeholder="Enter Related Case ID or Name" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-end mb-3">
+                                <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Research Assistant</button>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+
+                        <hr/>
+
+                        <!--  Start Table -->
+                        <div class="table-responsive">
+                            <table id="researchassistantTable" class="table table-striped table-bordered table-nowrap align-middle" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Topic / Keyword</th>
+                                        <th>Assigned By</th>
+                                        <th>Related Case</th>
+                                        <th>Summary</th>
+                                        <th>Uploaded Report</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Criminal Procedure Act - Section 12</td>
+                                        <td>Adv. Johnson</td>
+                                        <td>CASE-2025-012</td>
+                                        <td>Procedural framework on appeal filing...</td>
+                                        <td><a href="#" class="text-primary">report.pdf</a></td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                                                    <i class="ti ti-dots-vertical"></i>
+                                                </a>
+                                                <ul class="dropdown-menu p-2">
+                                                    <li>
+                                                        <a href="javascript:void(0);" class="dropdown-item text-danger delete-research-btn" data-id="1">
+                                                            <i class="ti ti-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--  End Table -->
+                    
+                    </div>
+                    <!-- Research Assistant -->
+
+                    <!-- Document Drafting -->
+                    <div class="tab-pane fade" id="document-drafting" role="tabpanel">
+                        
+                        <!-- Form Start -->
+                        <form action="#" method="post" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body pb-0">
+
+                                    <!-- Case Select -->
+                                    <div class="mb-3">
+                                        <label for="doc_case_id" class="form-label">Case</label>
+                                        <select id="doc_case_id" name="case_id" class="form-select select2">
+                                            <option selected disabled>Select Case</option>
+                                            <option value="1">Case 1</option>
+                                            <option value="2">Case 2</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Title -->
+                                    <div class="mb-3">
+                                        <label for="doc_title" class="form-label fw-medium">Title</label>
+                                        <input type="text" id="doc_title" name="title" class="form-control" placeholder="Document title" required>
+                                    </div>
+
+                                    <!-- Kind -->
+                                    <div class="mb-3">
+                                        <label for="doc_kind" class="form-label fw-medium">Kind</label>
+                                        <select id="doc_kind" name="kind" class="form-select select2" required>
+                                            <option value="">Select Kind</option>
+                                            <option value="general">General</option>
+                                            <option value="evidence">Evidence</option>
+                                            <option value="contract">Contract</option>
+                                            <option value="pleading">Pleading</option>
+                                            <option value="order">Order</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="documentContainerNew">
+                                        <div class="row document-row-new align-items-end mb-3">
+                                            <div class="col-md-5">
+                                                <label class="form-label fw-medium">Document Title <span class="text-danger">*</span></label>
+                                                <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="form-label fw-medium">Upload File (PDF/DOCX/Image; Max 10 MB) <span class="text-danger">*</span></label>
+                                                <input type="file" name="documents[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-success addMoreNew w-100">
+                                                    <i class="ti ti-plus"></i> Add More
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Access Level -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-medium">Access Level</label>
+                                        <div class="btn-group" role="group">
+                                            <input type="radio" class="btn-check" name="access_level" id="FirmOnly" value="FirmOnly" checked>
+                                            <label class="btn btn-outline-primary" for="FirmOnly">Firm Only</label>
+                                            <input type="radio" class="btn-check" name="access_level" id="CaseTeam" value="CaseTeam">
+                                            <label class="btn btn-outline-primary" for="CaseTeam">Case Team</label>
+                                            <input type="radio" class="btn-check" name="access_level" id="ClientShared" value="ClientShared">
+                                            <label class="btn btn-outline-primary" for="ClientShared">Client Shared</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tags Input -->
+                                    <div class="mb-3">
+                                        <label for="tags" class="form-label fw-medium">Tags</label>
+                                        <input type="text" id="tags" name="tags" class="form-control" data-role="tagsinput" placeholder="Add tags">
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Upload</button>
+                                    </div>
+                        
+                                    <!-- <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Linked Case</label>
+                                            <select class="form-select select2" name="linked_case" required>
+                                                <option value="">Select Case</option>
+                                                <option>Case #001 - Property Dispute</option>
+                                                <option>Case #002 - Contract Review</option>
+                                                <option>Case #003 - Employment Law</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Document Name</label>
+                                            <input type="text" class="form-control" name="document_name" placeholder="Enter Document Name" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Template</label>
+                                            <select class="form-select select2" name="template_type" required>
+                                                <option value="">Select Template</option>
+                                                <option value="standard">Standard</option>
+                                                <option value="firm">Firm</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Draft Upload (PDF/DOC)</label>
+                                            <input type="file" class="form-control" name="draft_upload" accept=".pdf,.doc,.docx" required>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-medium">Version Comment</label>
+                                            <textarea class="form-control" name="version_comment" rows="3" placeholder="Add version details or remarks"></textarea>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Sent for Review</label>
+                                            <select class="form-select select2" name="sent_review" required>
+                                                <option value="No">No</option>
+                                                <option value="Yes">Yes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-4 mb-3">
+                                        <button type="submit" class="btn btn-primary">Save Document Drafting</button>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Form End -->
+                        
+                        <hr/>
+
+                        <!-- Table Start -->
+                        <div class="table-responsive">
+                            <table id="documentsTable" class="table table-striped table-bordered table-nowrap" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No.</th>
+                                        <th>Title</th>
+                                        <th>Case</th>
+                                        <th>Kind</th>
+                                        <th>Filename</th>
+                                        <th>Access Level</th>
+                                        <th>Tags</th>
+                                        <th>E-Sign Provider</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    // Example array for demo; replace with database
+                                    $documents = [
+                                        [
+                                            'id' => 1,
+                                            'title' => 'Contract A',
+                                            'case' => 'Case 1',
+                                            'kind' => 'contract',
+                                            'filename' => 'contract_A.pdf',
+                                            'access_level' => 'FirmOnly',
+                                            'tags' => 'urgent, clientA',
+                                            'provider' => 'docusign',
+                                            'status' => 'Signed'
+                                        ],
+                                        [
+                                            'id' => 2,
+                                            'title' => 'Evidence Photos',
+                                            'case' => 'Case 2',
+                                            'kind' => 'evidence',
+                                            'filename' => 'evidence_photos.zip',
+                                            'access_level' => 'CaseTeam',
+                                            'tags' => 'evidence, photos',
+                                            'provider' => 'hellosign',
+                                            'status' => 'Envelope Sent'
+                                        ]
+                                    ];
+                                    $count = 1;
+                                        foreach ($documents as $doc) {
+                                            echo '<tr>';
+                                            echo '<td>' . $count++ . '</td>';
+                                            echo '<td>' . htmlspecialchars($doc['title']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($doc['case']) . '</td>';
+                                            echo '<td>' . ucfirst(htmlspecialchars($doc['kind'])) . '</td>';
+                                            echo '<td><a href="#uploads/' . htmlspecialchars($doc['filename']) . '" target="_blank">' . htmlspecialchars($doc['filename']) . '</a></td>';
+                                            echo '<td>' . htmlspecialchars($doc['access_level']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($doc['tags']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($doc['provider']) . '</td>';
+                                            echo '<td><span class="badge badge-soft-success">' . htmlspecialchars($doc['status']) . '</span></td>';
+                                            echo '<td>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <a href="/firmstaff/documents-edit?id=' . $doc['id'] . '" class="btn btn-sm btn-outline-primary"><i class="ti ti-edit"></i></a>
+                                                    <a href="javascript:void(0);" class="btn btn-sm btn-outline-danger delete-document-btn" data-id="' . $doc['id'] . '"><i class="ti ti-trash"></i></a>
+                                                </div>
+                                            </td>';
+                                            echo '</tr>';
+                                        }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Table End -->
+                        
+                    </div>
+                    <!-- Document Drafting -->
+
+                    <!-- E-Signature -->
+                    <div class="tab-pane fade" id="e-signature" role="tabpanel">
+
+                        <!-- card start -->
+                        <form action="#" method="POST">
+                            <div class="card">
+                                <div class="card-body pb-0">
+                                    <div class="mb-3">
+                                        <label for="provider" class="form-label fw-medium">Provider</label>
+                                        <select id="provider" name="provider" class="form-select select2" required>
+                                            <option value="docusign">DocuSign</option>
+                                            <option value="hellosign">HelloSign</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="es_doc_id" class="form-label fw-medium">Document</label>
+                                        <select id="es_doc_id" name="document_id" class="form-select select2" required>
+                                            <option value="">Select Document</option>
+                                            <option value="123">Contract - Client A</option>
+                                            <option value="124">Order - Client B</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Recipients Repeater -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-medium">Recipients</label>
+                                        <div id="recipients-container">
+                                            <div class="row mb-2 recipient-item align-items-center">
+                                                <div class="col-3">
+                                                    <select name="recipients[0][type]" class="form-select select2">
+                                                        <option value="FirmUser">Firm User</option>
+                                                        <option value="Client">Client</option>
+                                                        <option value="External">External</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" name="recipients[0][id_email]" class="form-control" placeholder="ID / Email"/>
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" name="recipients[0][name]" class="form-control" placeholder="Name"/>
+                                                </div>
+                                                <div class="col-2">
+                                                    <select name="recipients[0][role]" class="form-select select2">
+                                                        <option value="signer">Signer</option>
+                                                        <option value="cc">CC</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-1">
+                                                    <button type="button" class="btn btn-danger btn-sm remove-recipient">Remove</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary btn-sm" id="addRecipientBtn">Add Recipient</button>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="es_message" class="form-label">Message</label>
+                                        <textarea id="es_message" name="message" class="form-control" placeholder="E-Sign request message"></textarea>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="send_now" name="send_now">
+                                        <label class="form-check-label" for="send_now">Send Now</label>
+                                    </div>
+                                    <!-- <div class="form">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                <label for="document_type" class="form-label mb-1 fw-medium">
+                                                    Document Type<span class="text-danger ms-1">*</span>
+                                                </label>
+                                                <select id="document_type" name="document_type" class="form-select select2" required>
+                                                    <option value="">Select Document Type</option>
+                                                    <option value="Contract">Contract</option>
+                                                    <option value="Will">Will</option>
+                                                    <option value="Pleading">Pleading</option>
+                                                    <option value="Affidavit">Affidavit</option>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                <label for="template" class="form-label mb-1 fw-medium">
+                                                    Template Select<span class="text-danger ms-1">*</span>
+                                                </label>
+                                                <select id="template" name="template" class="form-select select2" required>
+                                                    <option value="">Select Template</option>
+                                                    <option value="Basic Template">Basic Template</option>
+                                                    <option value="Advanced Template">Advanced Template</option>
+                                                    <option value="Custom Template">Custom Template</option>
+                                                </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                <label for="draft_content" class="form-label mb-1 fw-medium">
+                                                    Draft Editor<span class="text-danger ms-1">*</span>
+                                                </label>
+                                                <textarea id="draft_content" name="draft_content" class="form-control" rows="8" placeholder="Write or paste your document draft here..." required></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="version_history" class="form-label mb-1 fw-medium">
+                                                        Version History
+                                                    </label>
+                                                    <input type="text" id="version_history" name="version_history" class="form-control" placeholder="e.g., v1.0 / Initial Draft / Updated Version">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label for="reviewed_by" class="form-label mb-1 fw-medium"> Reviewed By </label>
+                                                    <select id="reviewed_by" name="reviewed_by" class="form-select select2">
+                                                        <option value="">Select Reviewer</option>
+                                                        <option value="Paralegal">Paralegal</option>
+                                                        <option value="Lawyer">Lawyer</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <!-- card end -->
+
+                            <div class="d-flex align-items-center justify-content-end">
+                                <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Send Envelope</button>
+                            </div>
+                        </form>
+                        <!-- card start -->
+
+                    </div>
+                    <!-- E-Signature -->
+
+                </div>
+
+            </div>
+        </div>
+        <!-- row end -->               
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+function handleDropdown(menuId, btnId, inputId) {
+  $(`#${menuId} input[type=checkbox]`).on('change', function() {
+    const selected = $(`#${menuId} input:checked`).map(function() {
+      return $(this).parent().text().trim();
+    }).get();
+    $(`#${btnId}`).text(selected.length ? selected.join(', ') : '--- Choose ---');
+    $(`#${inputId}`).val(selected.join(','));
+  });
+}
+
+// Initialize for all dropdowns
+handleDropdown('lawyerMenu', 'lawyerBtn', 'lawyerInput');
+handleDropdown('paralegalMenu', 'paralegalBtn', 'paralegalInput');
+handleDropdown('financeMenu', 'financeBtn', 'financeInput');
+handleDropdown('intakeMenu', 'intakeBtn', 'intakeInput');
+handleDropdown('firmstaffMenu', 'firmstaffBtn', 'firmstaffMenu');
+</script>
+
+<!-- JS Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const containerNew = document.getElementById("documentContainerNew");
+
+  containerNew.addEventListener("click", function (e) {
+
+    // Add More button
+    if (e.target.closest(".addMoreNew")) {
+      const newRow = document.createElement("div");
+      newRow.className = "row document-row-new align-items-end mb-3";
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+        </div>
+        <div class="col-md-5">
+          <input type="file" name="documents[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn removeBtnNew w-100" style="background-color: #dc3545;color: #fff;">
+            <i class="ti ti-x"></i> Remove
+          </button>
+        </div>
+      `;
+      containerNew.appendChild(newRow);
+    }
+
+    // Remove button
+    if (e.target.closest(".removeBtnNew")) {
+      const rowNew = e.target.closest(".document-row-new");
+      rowNew.remove();
+    }
+  });
+});
+</script>
+
+<!-- JS Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("documentContainer");
+
+  container.addEventListener("click", function (e) {
+    // Add More button
+    if (e.target.closest(".addMore")) {
+      const newRow = document.createElement("div");
+      newRow.className = "row document-row align-items-end mb-3";
+      newRow.innerHTML = `
+        <div class="col-md-5">
+          <input type="text" name="document_title[]" class="form-control" placeholder="Enter Document Title" required>
+        </div>
+        <div class="col-md-6">
+          <input type="file" name="documents[]" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn removeBtn w-100" style="background-color: #dc3545;color: #fff;">
+            <i class="ti ti-x"></i> Remove
+          </button>
+        </div>
+      `;
+      container.appendChild(newRow);
+    }
+
+    // Remove button
+    if (e.target.closest(".removeBtn")) {
+      const row = e.target.closest(".document-row");
+      row.remove();
+    }
+  });
+});
+</script>
+
+
+<script>
+// Recipients repeater
+document.addEventListener('DOMContentLoaded', function () {
+    let recipientIndex = 1;
+    const recipientsContainer = document.getElementById('recipients-container');
+    document.getElementById('addRecipientBtn').addEventListener('click', () => {
+        const recipientItem = document.createElement('div');
+        recipientItem.classList.add('row', 'mb-2', 'recipient-item', 'align-items-center');
+        recipientItem.innerHTML = `
+            <div class="col-3">
+                <select name="recipients[${recipientIndex}][type]" class="form-select">
+                    <option value="FirmUser">Firm User</option>
+                    <option value="Client">Client</option>
+                    <option value="External">External</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <input type="text" name="recipients[${recipientIndex}][id_email]" class="form-control" placeholder="ID / Email"/>
+            </div>
+            <div class="col-3">
+                <input type="text" name="recipients[${recipientIndex}][name]" class="form-control" placeholder="Name"/>
+            </div>
+            <div class="col-2">
+                <select name="recipients[${recipientIndex}][role]" class="form-select">
+                    <option value="signer">Signer</option>
+                    <option value="cc">CC</option>
+                </select>
+            </div>
+            <div class="col-1">
+                <button type="button" class="btn btn-danger btn-sm remove-recipient">Remove</button>
+            </div>
+        `;
+        recipientsContainer.appendChild(recipientItem);
+        recipientIndex++;
+    });
+
+    recipientsContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-recipient')) {
+            e.target.closest('.recipient-item').remove();
+        }
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Case Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-case-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const caseId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This case will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-case?id=' + caseId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Legal Drafting Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-legal-drafting-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const docId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This legal drafting record will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to delete page
+                    window.location.href = '/firmstaff/delete-document?id=' + docId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Research Log Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-research-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const researchId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This research log will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-research?id=' + researchId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Court Filing Tracker Script --> 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-court-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This court filing record will be deleted permanently.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then(result => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-filing.id=' + id;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Evidence Script --> 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-evidence-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const caseId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This evidence will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-case?id=' + caseId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Research Assistant Script --> 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-research-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const caseId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This research assistant will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '#delete-case?id=' + caseId;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!--******************************************-->
+<!-- Delete Confirmation Document Drafting Script --> 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This document drafting will be permanently deleted.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '#delete-document?id=' + id;
+                }
+            });
+        });
+    });
+});
+</script>

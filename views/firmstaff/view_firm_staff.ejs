@@ -1,0 +1,408 @@
+<!-- ---------  views/firmstaff/view_firm_staff.ejs--------- -->
+
+<!-- Header -->
+<%- include('firmheader.ejs'); %>
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<style>
+  /* let dropdowns escape the scroll box; and make sure they stack above DT */
+  .fu-table { overflow: visible; }
+  .fu-table .dropdown-menu { z-index: 1080; }
+</style>
+
+
+<%
+function maskValue(str, maskChar='*'){
+  str = (str==null)?'':String(str);
+  const len = str.length;
+  if (!len) return '';
+  if (str.includes('@')) {
+    const [local,domain] = str.split('@');
+    if (!domain) return maskChar.repeat(len);
+    if (local.length <= 2) return maskChar.repeat(local.length) + '@' + domain;
+    return local.slice(0,1) + maskChar.repeat(Math.max(local.length-2,1)) + local.slice(-1) + '@' + domain;
+  }
+  if (len <= 4) return str[0] + maskChar.repeat(Math.max(len-2,0)) + (len>1? str[len-1] : '');
+  return str.slice(0,2) + maskChar.repeat(len-4) + str.slice(-2);
+}
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function fmt(d){
+  try { const dt=new Date(d); if (isNaN(dt)) return '';
+    return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate())+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());
+  } catch { return ''; }
+}
+%>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <h4 class="fw-bold mb-0">Firm Users</h4>
+      <div class="d-flex gap-2">
+        <a href="/firmstaff/add_firm_staff" class="btn btn-primary btn-md fs-13"><i class="ti ti-plus me-1"></i> Add User</a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-end gap-2">
+        <div class="me-2">
+          <label class="form-label mb-1">Law Firm</label>
+          <select id="filterFirm" class="form-select" data-ignore-kilvish="yes"  >
+            <!-- <option value="">All Firms</option> -->
+            <% (firms||[]).forEach(f => { %>
+              <option value="<%= f.firm_id %>"><%= f.firm_name %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-1">Role</label>
+          <select id="filterRole" class="form-select" disabled data-ignore-kilvish="yes" >
+            <option value="">All Roles</option>
+          </select>
+        </div>
+
+        <div class="ms-auto">
+          <label class="form-label mb-1">Search</label>
+          <input id="filterSearch" type="text" class="form-control" placeholder="Name, email, phone..." data-ignore-kilvish="yes" >
+        </div>
+
+        <div>
+          <button id="resetFilters" class="btn btn-outline-secondary">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+<div class="table-responsive fu-table">
+  <table id="firmUsersTable" class="table table-striped table-bordered table-nowrap">
+
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Firm</th>
+            <th>Role</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Created</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody> </tbody>
+      </table>
+    </div>
+
+
+
+
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function($){
+  const fx = window.axiosElaw;
+
+
+  const $tbl = $('#firmUsersTable');
+  const $firm = $('#filterFirm');
+  const $role = $('#filterRole');
+  const $search = $('#filterSearch');
+
+  async function loadRolesForFirm(fid){
+    $role.html(`<option value="">All Roles</option>`).prop('disabled', true);
+    if (!fid) return; // All firms
+    try {
+      const { data } = await fx.post('/firmstaff/firm_roles_json', { firm_id: fid });
+      if (!data?.success) throw new Error(data?.message || 'Failed to load roles.');
+      $role.html(`<option value="">All Roles</option>` + (data.roles||[]).map(r => `<option value="${r.firm_role_id}">${r.name}</option>`)).prop('disabled', false);
+    } catch (e) {
+      console.error(e);    
+      kilToast.danger(e?.response?.data?.message || e?.message || 'Failed to load roles.')
+    }
+  }
+
+  // DataTable with AJAX source
+  const dt = $tbl.DataTable({
+    responsive: true,
+    dom:
+      "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excel', className: 'btn btn-primary me-2' },
+      { extend: 'csv', className: 'btn btn-primary me-2' },
+    ],
+    pageLength: 10,
+    serverSide: false, // lightweight client filtering; backend caps 1000 rows
+    searching: false,  // we use our own search box
+    ajax: function(data, cb){
+      const payload = {
+        firm_id: $firm.val() || '',
+        firm_role_id: $role.val() || '',
+        q: $search.val() || ''
+      };
+      fx.post('/firmstaff/firm_staff_json', payload).then(({data})=>{
+        if (!data?.success) {
+ 
+
+           kilToast.danger(data?.message || 'Failed to load users.')
+
+          cb({ data: [] }); return;
+        }
+        const rows = (data.rows || []).map((r, i) => {
+          const maskedEmail = (function(str){
+            str = (str==null)?'':String(str);
+            const len = str.length;
+            if (!len) return '';
+            if (str.includes('@')) {
+              const [local,domain] = str.split('@');
+              if (!domain) return '*'.repeat(len);
+              if (local.length <= 2) return '*'.repeat(local.length) + '@' + domain;
+              return local.slice(0,1) + '*'.repeat(Math.max(local.length-2,1)) + local.slice(-1) + '@' + domain;
+            }
+            if (len <= 4) return str[0] + '*'.repeat(Math.max(len-2,0)) + (len>1? str[len-1] : '');
+            return str.slice(0,2) + '*'.repeat(len-4) + str.slice(-2);
+          })(r.email);
+
+          const created = (function(d){
+            try {
+              const dt = new Date(d);
+              if (isNaN(dt)) return '';
+              const pad = n=> n<10? '0'+n : ''+n;
+              return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate())+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());
+            } catch { return ''; }
+          })(r.createdAt);
+
+          const statusBadge =
+            r.status === 'Active' ? '<span class="badge bg-success-subtle text-success">Active</span>' :
+            (r.status === 'Invited' ? '<span class="badge bg-info-subtle text-info">Invited</span>' :
+             '<span class="badge bg-danger-subtle text-danger">Inactive</span>');
+
+          return {
+            _idx: i+1,
+            firm: `<div class="fw-semibold">${r.firm_name||''}</div>`,
+            role: r.role_name || '',
+            user: `<div class="fw-semibold">${r.first_name||''} ${r.last_name||''}</div>`,
+            email: maskedEmail || '—',
+            phone: (r.country_code||'') + (r.contact||''),
+            created: created || '—',
+            status: statusBadge,
+        actions: `
+  <div class="dropdown">
+    <a href="javascript:void(0);"
+       id="fu-actions-${r.staff_id}"
+       class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1"
+       data-bs-toggle="dropdown"
+       data-bs-auto-close="outside"
+       aria-expanded="false">
+      <i class="ti ti-dots-vertical"></i>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="fu-actions-${r.staff_id}">
+      <li>
+        <a href="javascript:void(0);" class="dropdown-item firmuser-edit" data-id="${r.staff_id}">
+          <i class="ti ti-edit me-2"></i> Edit
+        </a>
+      </li>
+      <li>
+        <a href="javascript:void(0);" class="dropdown-item firmuser-status"
+           data-id="${r.staff_id}" data-status="${r.status==='Active'?'Inactive':'Active'}">
+          <i class="ti ti-power me-2"></i> Set ${r.status==='Active'?'Inactive':'Active'}
+        </a>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <a href="javascript:void(0);" class="dropdown-item text-danger firmuser-delete" data-id="${r.staff_id}">
+          <i class="ti ti-trash me-2"></i> Delete
+        </a>
+      </li>
+    </ul>
+  </div>
+`
+
+          };
+        });
+        cb({ data: rows });
+      }).catch(err=>{
+        console.error(err);
+
+        kilToast.danger(err?.response?.data?.message || 'Failed to load users.')
+        cb({ data: [] });
+      });
+    },
+    columns: [
+      { data: '_idx' },
+      { data: 'firm' },
+      { data: 'role' },
+      { data: 'user' },
+      { data: 'email' },
+      { data: 'phone' },
+      { data: 'created' },
+      { data: 'status' },
+      { data: 'actions', orderable: false, searchable: false },
+    ]
+  });
+
+
+
+  // Run on page load ALSO for Single Firm only   not in superadmin
+$(document).ready(function () {
+  const initialValue = $firm.val();
+  if (initialValue) {
+    loadRolesForFirm(initialValue);
+    dt.ajax.reload();
+  }
+});
+
+  // filters
+  $firm.on('change', function(){
+    loadRolesForFirm(this.value);
+    dt.ajax.reload();
+  });
+  $role.on('change', function(){ dt.ajax.reload(); });
+  $search.on('input', function(){
+    clearTimeout(window.__fu_timer);
+    window.__fu_timer = setTimeout(()=> dt.ajax.reload(), 250);
+  });
+  $('#resetFilters').on('click', function(){
+    $firm.val(''); $role.html(`<option value="">All Roles</option>`).prop('disabled', true);
+    $search.val('');
+    dt.ajax.reload();
+  });
+
+  // Actions
+
+
+  //------------ Edit ---------------
+  $tbl.on('click','.firmuser-edit', function(){
+    const id = this.dataset.id;
+    document.cookie = `elaw_firmUserId=${id}`;
+    location.href = `/firmstaff/edit_firm_staff`;
+  });
+
+
+
+  //------------ Update Status ---------------
+  $tbl.on('click','.firmuser-status', async function(){
+    const id = this.dataset.id;
+    const status = this.dataset.status;
+    try {
+      const { data } = await fx.post('/firmstaff/update_firm_staff_status', { staff_id: id, status });
+      if (!data?.success) {
+        
+         kilToast.danger( data?.message || 'Failed to update status.'); return;
+        }
+     
+      kilToast.success( data?.message || 'Status changed.')
+      dt.ajax.reload(null, false);
+    } catch (err) {
+     
+      kilToast.danger( err?.response?.data?.message || 'Failed to update status.')
+    }
+  });
+
+
+    //------------ Delete  ---------------
+
+
+    // Event delegation on the table
+$tbl.on('click', '.firmuser-delete', function (e) {
+  e.preventDefault();
+
+  const staffId   = this.dataset.id;                 // data-id="..."
+  const staffName = this.dataset.name ||             // data-name="..."
+                    this.dataset.email ||            // fallback
+                    'this user';
+
+  deleteFirmUser(staffId, staffName);
+});
+
+async function deleteFirmUser(staffId, staffName) {
+  try {
+    const res = await Swal.fire({
+      title: 'Delete User?',
+      html: `
+        <div style="text-align:left">
+          <p>You're about to delete <strong>${staffName}</strong> (ID: ${staffId}).</p>
+          <p>This action cannot be undone.</p>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+            <input type="checkbox" id="hardDelChk"/>
+            <span><strong>Hard delete</strong> (permanent, DB-level)</span>
+          </label>
+
+          <div id="hardDelWarn"
+               style="display:none;margin-top:10px;padding:10px;border:1px solid #dc3545;background:#ffe9ec;color:#a1101a;border-radius:6px;">
+            <strong>FINAL WARNING:</strong> All records related to this user
+            (logins, cases they own, notes, etc. depending on your cascade rules)
+            may be <u>permanently deleted</u> and <u>cannot be recovered</u>.
+          </div>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Soft Delete',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      didOpen: () => {
+        const chk  = document.getElementById('hardDelChk');
+        const warn = document.getElementById('hardDelWarn');
+        const btn  = Swal.getConfirmButton();
+
+        chk?.addEventListener('change', () => {
+          if (chk.checked) {
+            warn.style.display = 'block';
+            btn.textContent = 'Hard Delete';
+            btn.style.backgroundColor = '#dc3545'; // red
+          } else {
+            warn.style.display = 'none';
+            btn.textContent = 'Soft Delete';
+            btn.style.backgroundColor = ''; // reset default
+          }
+        });
+      },
+      preConfirm: () => {
+        const chk = document.getElementById('hardDelChk');
+        return { hard: !!chk?.checked };
+      }
+    });
+
+    if (!res.isConfirmed) return;
+
+    const { hard } = res.value || { hard: false };
+
+    const { data } = await fx.post('/firmstaff/delete_firm_staff', {
+      staff_id: staffId,
+      hard
+    });
+
+    if (!data?.success) {
+      kilToast.danger(data?.message || 'Failed to delete user.');
+      return;
+    }
+
+    kilToast.success(data?.message || 'User deleted.');
+
+    // For this page we just refresh the DataTable instead of redirect
+    if (dt && typeof dt.ajax?.reload === 'function') {
+      dt.ajax.reload(null, false); // stay on same page
+    }
+  } catch (err) {
+    console.error('delete_firm_staff error:', err);
+    const msg = err?.response?.data?.message || 'Failed to delete user.';
+    kilToast.danger(msg);
+  }
+}
+
+
+  
+
+})(jQuery);
+</script>

@@ -1,0 +1,36 @@
+<!-- views/error/error429.ejs -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title><%= pageTitle || 'Too Many Requests' %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root{--bg:#0b1020;--card:#111935;--line:#1b254a;--muted:#a7b0c3;--pill:#24345f;--pill2:#2f4682}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(135deg,var(--bg),#0a0f1f);color:#e8f1f2;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;display:grid;place-items:center;min-height:100vh;padding:18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 35px rgba(0,0,0,.35);max-width:640px;width:100%;padding:26px 24px}
+    .badge{display:inline-block;background:var(--pill);border:1px solid var(--pill2);border-radius:999px;padding:3px 10px;font-size:12px;margin-bottom:10px}
+    h1{margin:0 0 6px;font-size:22px}
+    p{margin:0;color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+    .btn{appearance:none;border:1px solid var(--line);background:transparent;color:#e8f1f2;border-radius:10px;padding:8px 12px;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">HTTP 429</div>
+    <h1>Too many requests</h1>
+    <p>
+      <%= message || 'You’ve hit a rate limit.' %>
+      <% if (retryAfterHuman) { %>
+        · Try again in ~<strong><%= retryAfterHuman %></strong>
+      <% } %>
+    </p>
+    <div class="row">
+      <a class="btn" href="javascript:location.reload()">Reload</a>
+      <!-- <a class="btn" href="/" >Go Home</a> -->
+    </div>
+  </div>
+</body>
+</html>

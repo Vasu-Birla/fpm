@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>404 • KWL E-Service</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+    <meta name="csrf-token" content="<%= csrfToken %>"/>
+  <% } %>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --bg:#070b14;
+      --card:#0b1220ee;
+      --line:#0d1326;
+      --text:#eaf2ff;
+      --muted:#a9b4d6;
+      --cy:#00e5ff;
+      --mg:#ff4dff;
+      --neon:#8af7ff;
+      --btn:#0f172a;
+      --glow: drop-shadow(0 0 12px rgba(0,238,255,.55)) drop-shadow(0 0 24px rgba(255,77,255,.35));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; 
+      font-family: "Space Grotesk", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 15% 10%, #0b1a3a 0%, transparent 60%),
+                  radial-gradient(800px 400px at 85% 80%, #280b3a 0%, transparent 60%),
+                  conic-gradient(from 200deg at 50% 50%, #060912, #090f1e, #060912);
+      overflow-x:hidden;
+    }
+
+    /* Subtle animated grid */
+    .grid{
+      position:fixed; inset:0; pointer-events:none; opacity:.12; mix-blend-mode:screen;
+      background-image:
+        linear-gradient(transparent 31px, rgba(255,255,255,.06) 32px),
+        linear-gradient(90deg, transparent 31px, rgba(255,255,255,.06) 32px);
+      background-size:32px 32px;
+      mask-image: radial-gradient(70% 70% at 50% 50%, black 30%, transparent 100%);
+      animation: drift 16s linear infinite;
+    }
+    @keyframes drift{to{background-position:0 32px,32px 0}}
+
+    /* Floating particles */
+    .particles{position:fixed; inset:0; pointer-events:none; overflow:hidden}
+    .dot{
+      position:absolute; width:6px; height:6px; border-radius:50%;
+      background: radial-gradient(circle, var(--neon), transparent 65%);
+      opacity:.7; filter: blur(.5px);
+      animation: float var(--dur) linear infinite;
+      left: var(--x); top: 110%;
+    }
+    @keyframes float{
+      to{ transform: translateY(-130vh) translateX(var(--mx)); opacity:.15}
+    }
+
+    .container-kwl{
+      min-height:100dvh;
+      display:grid; place-items:center; padding:24px;
+    }
+
+    .card-neon{
+      background: linear-gradient(180deg, rgba(16,25,44,.9), rgba(9,13,24,.9));
+      border:1px solid #1a2442;
+      border-radius:22px;
+      box-shadow:
+        0 10px 40px rgba(0,0,0,.45),
+        0 0 0 1px rgba(0,234,255,.06) inset;
+      overflow:hidden;
+      position:relative;
+      isolation:isolate;
+    }
+
+    /* Glow edge */
+    .card-neon::before{
+      content:""; position:absolute; inset:-2px;
+      background: conic-gradient(from 210deg, rgba(0,229,255,.9), rgba(255,77,255,.9), rgba(0,229,255,.9));
+      filter: blur(18px); opacity:.15; z-index:0;
+      mask: linear-gradient(black, transparent 35%);
+      pointer-events:none;
+    }
+
+    /* Scanline + shine */
+    .shine{
+      position:absolute; inset:0; z-index:0; pointer-events:none; mix-blend-mode:screen;
+      background:
+        repeating-linear-gradient(transparent 0 2px, rgba(255,255,255,.02) 2px 3px),
+        radial-gradient(1200px 200px at -20% -10%, rgba(255,255,255,.04), transparent 60%),
+        radial-gradient(800px 240px at 120% 110%, rgba(255,255,255,.04), transparent 60%);
+      animation: scan 5.5s ease-in-out infinite;
+      opacity:.5;
+    }
+    @keyframes scan{
+      0%,100%{background-position:0 0, 0 0, 0 0}
+      50%{background-position:0 6px, 30px 0, -30px 0}
+    }
+
+    .content{position:relative; z-index:1}
+
+    /* Neon 404 */
+    .big-404{
+      font-family:"JetBrains Mono", monospace;
+      font-weight:700;
+      font-size: clamp(44px, 9vw, 120px);
+      letter-spacing:.02em;
+      background: linear-gradient(90deg, var(--cy), var(--mg), #8fffab);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter: var(--glow);
+      animation: flicker 3.2s infinite steps(1, end);
+    }
+    @keyframes flicker{
+      0%, 97%, 100%{ opacity:1 }
+      10%{ opacity:.85 }
+      20%{ opacity:.95 }
+      40%{ opacity:.8 }
+      41%{ opacity:1 }
+      60%{ opacity:.9 }
+      75%{ opacity:.6 }
+      76%{ opacity:1 }
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:clamp(14px, 1.8vw, 16px);
+    }
+
+    /* Fun bot/ghost */
+    .mascot{
+      font-size: clamp(40px, 7vw, 72px);
+      line-height:1;
+      display:inline-block;
+      filter: drop-shadow(0 6px 20px rgba(0,229,255,.45));
+      animation: bob 3.5s ease-in-out infinite;
+    }
+    @keyframes bob{
+      0%,100%{ transform: translateY(0) rotate(-2deg) }
+      50%{ transform: translateY(-8px) rotate(2deg) }
+    }
+
+    /* Buttons */
+    .btn-neon{
+      --ring: rgba(0,229,255,.45);
+      position:relative;
+      border-radius:14px !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+      background: linear-gradient(180deg, #0e162d, #0a1224);
+      color: var(--text) !important;
+      padding:.72rem 1.05rem !important;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+      text-decoration:none !important;
+    }
+    .btn-neon:hover{
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 0 6px var(--ring),
+        0 12px 32px rgba(0,0,0,.6),
+        0 0 24px rgba(0,229,255,.2);
+      border-color: rgba(0,229,255,.55) !important;
+    }
+    .btn-outline-neon{
+      background: transparent;
+      border:1px solid rgba(255,255,255,.2) !important;
+    }
+    .btn-outline-neon:hover{
+      border-color: rgba(255,77,255,.55) !important;
+      box-shadow:
+        0 0 0 6px rgba(255,77,255,.25),
+        0 12px 32px rgba(0,0,0,.6),
+        0 0 24px rgba(255,77,255,.2);
+    }
+
+    hr.divider{
+      border:0; height:1px; width:100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      margin: 1.25rem 0;
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce){
+      .grid, .shine, .dot, .mascot, .big-404 { animation: none !important }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid" aria-hidden="true"></div>
+  <div class="particles" aria-hidden="true" id="p"></div>
+
+  <main class="container-kwl">
+    <div class="col-12 col-md-9 col-lg-7">
+      <div class="card-neon p-4 p-md-5 text-center">
+        <div class="shine" aria-hidden="true"></div>
+
+        <div class="content">
+          <div class="mascot mb-2" aria-hidden="true">🤖</div>
+          <div class="big-404">404</div>
+
+          <h1 class="h4 mt-2 mb-2">Page not found</h1>
+          <p class="sub mb-3">
+            Our little bot looked everywhere but couldn’t locate that route.
+            It might does not exists OR  have moved OR been removed.
+          </p>
+
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
+            <!-- <a class="btn btn-neon px-3" href="/">Go Home</a> -->
+            <a class="btn btn-neon btn-outline-neon px-3" href="javascript:history.back()">Go Back</a>
+          </div>
+
+          <hr class="divider">
+
+          <small class="sub">
+            If you believe this is an error, <a class="text-decoration-underline" href="/support">contact support</a> with the URL above.
+          </small>
+             <div class="footer-left">
+            <i class="fas fa-copyright"></i> COPYRIGHT &copy; 2025 Design & Developed by
+            <a href="https://www.myamberinnovations.com/"> Amber Innovations </a>
+        </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Tiny particle spawner (no libs) -->
+  <script>
+    (function(){
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if(prefersReduced) return;
+      const p = document.getElementById('p');
+      const N = 28;
+      for(let i=0;i<N;i++){
+        const d = document.createElement('span');
+        d.className = 'dot';
+        d.style.setProperty('--x', Math.random()*100 + 'vw');
+        d.style.setProperty('--mx', (Math.random() * 40 - 20) + 'vw');
+        d.style.setProperty('--dur', (12 + Math.random()*10) + 's');
+        d.style.opacity = (0.25 + Math.random()*0.75).toFixed(2);
+        p.appendChild(d);
+      }
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- your common footer can still inject axiosKwe + kweToast here -->
+</body>
+</html>

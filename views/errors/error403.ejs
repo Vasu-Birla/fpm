@@ -1,0 +1,234 @@
+<style>
+/* ===== 403 - centered, professional, lightly playful ===== */
+:root{
+  --bg: #0b1220;
+  --card: #0f172a;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --line: rgba(148,163,184,.25);
+  --accent: #3b82f6;   /* blue */
+  --accent2:#22c55e;   /* green */
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #475569;
+    --line: rgba(15,23,42,.12);
+  }
+}
+
+.page-403{
+  min-height: 100svh;           /* fills viewport on iOS/Android too */
+  display: grid;
+  place-items: center;           /* perfectly centered */
+  padding: clamp(16px, 3vw, 28px);
+  background:
+    radial-gradient(60% 60% at 15% 0%, rgba(34,197,94,.08), transparent 60%),
+    radial-gradient(60% 60% at 85% 0%, rgba(59,130,246,.08), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+}
+
+.card-403{
+  width: min(980px, 100%);
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(2,6,23,.25), inset 0 1px 0 rgba(255,255,255,.04);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+/* hero layout */
+.hero{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(18px, 3vw, 28px);
+  padding: clamp(20px, 3.8vw, 38px);
+  align-items: center;
+}
+@media (min-width: 880px){
+  .hero{ grid-template-columns: 1.05fr .95fr; }
+}
+
+/* copy */
+.h-eyebrow{
+  display:inline-block;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+.h-title{
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.05;
+  margin: 10px 0 8px;
+  letter-spacing:-.015em;
+}
+.h-sub{
+  font-size: clamp(14px, 2.2vw, 16px);
+  color: var(--muted);
+  margin: 0;
+}
+
+/* actions */
+.actions{
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 16px;
+}
+.btn{
+  display:inline-flex; align-items:center; gap:.5rem;
+  border-radius: 999px; padding: 12px 18px;
+  text-decoration:none; font-weight:700; cursor:pointer;
+  transition: transform .06s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
+}
+.btn-primary{
+  background: var(--accent);
+  color: #0b0f14;
+  box-shadow: 0 8px 20px rgba(59,130,246,.25);
+}
+.btn-primary:hover{ transform: translateY(-1px); }
+.btn-ghost{
+  background: transparent; color: var(--text);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover{ background: rgba(148,163,184,.08); }
+
+/* footer */
+.foot{
+  padding: 14px clamp(16px, 3vw, 22px);
+  border-top: 1px dashed var(--line);
+  display: grid; grid-template-columns: 1fr; gap: 8px;
+  align-items: center;
+}
+@media (min-width: 680px){
+  .foot{ grid-template-columns: auto 1fr auto }
+}
+.foot small{ color: var(--muted) }
+.kbd{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; padding: 3px 7px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted);
+}
+
+/* illustration */
+.illo{
+  width: min(540px, 100%);
+  margin-inline: auto;
+  display: block;
+}
+.float{
+  transform-origin: 50% 50%;
+  animation: float 5s ease-in-out infinite;
+}
+@keyframes float{
+  0%,100%{ transform: translateY(0) }
+  50%{ transform: translateY(-6px) }
+}
+blink{
+  animation: blink 4s infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes blink{
+  0%, 92%, 100% { transform: scaleY(1) }
+  95% { transform: scaleY(0.2) }
+}
+spark{ opacity:0; }
+spark:nth-child(1){ animation: tw 2.4s .2s ease-in-out infinite; }
+spark:nth-child(2){ animation: tw 2.4s .9s ease-in-out infinite; }
+spark:nth-child(3){ animation: tw 2.4s 1.6s ease-in-out infinite; }
+@keyframes tw { 0%,100%{opacity:0; transform:scale(.85)} 50%{opacity:.9; transform:scale(1)} }
+
+@media (prefers-reduced-motion: reduce){
+  .float, blink, spark{ animation: none; }
+}
+</style>
+
+<section class="page-403" role="main" aria-labelledby="t403">
+  <article class="card-403">
+    <div class="hero">
+      <!-- copy (minimal words) -->
+      <div>
+        <span class="h-eyebrow">403 · Access Restricted</span>
+        <h1 id="t403" class="h-title">Locked for your account</h1>
+        <p class="h-sub">You don’t have permission to view this page.</p>
+        <div class="actions" aria-label="Actions">
+          <a href="/" class="btn btn-primary">Go to Dashboard</a>
+          <!-- <a href="/support" class="btn btn-ghost">Contact Support</a>
+          <a href="/logout" class="btn btn-ghost">Sign out</a> -->
+        </div>
+      </div>
+
+      <!-- illustration: subtle humor via graphics, not words -->
+      <div aria-hidden="true">
+        <svg class="illo" viewBox="0 0 680 460" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bgfade" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="currentColor" stop-opacity=".08"/>
+              <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- soft backdrop card -->
+          <rect x="30" y="30" width="620" height="400" rx="22" fill="url(#bgfade)"/>
+
+          <!-- door + lock (floating) -->
+          <g class="float">
+            <!-- door -->
+            <rect x="250" y="110" width="180" height="240" rx="14" fill="currentColor" opacity=".10"/>
+            <rect x="262" y="122" width="156" height="216" rx="12" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="2"/>
+            <!-- handle -->
+            <circle cx="398" cy="230" r="6" fill="currentColor" opacity=".7"/>
+
+            <!-- lock face -->
+            <g transform="translate(295 150)">
+              <!-- body -->
+              <rect x="0" y="46" width="110" height="110" rx="14" fill="currentColor" opacity=".10"/>
+              <rect x="8" y="54" width="94" height="94" rx="12" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="2"/>
+
+              <!-- shackle -->
+              <path d="M25 54v-12c0-22 18-40 40-40s40 18 40 40v12"
+                    fill="none" stroke="currentColor" stroke-width="8" stroke-opacity=".6" stroke-linecap="round"/>
+
+              <!-- tiny funny face (subtle) -->
+              <g transform="translate(30 86)">
+                <ellipse cx="20" cy="14" rx="8" ry="8" fill="currentColor" opacity=".75"/>
+                <ellipse cx="60" cy="14" rx="8" ry="8" fill="currentColor" opacity=".75"/>
+                <blink>
+                  <rect x="17" y="12" width="6" height="4" rx="2" fill="currentColor"/>
+                  <rect x="57" y="12" width="6" height="4" rx="2" fill="currentColor"/>
+                </blink>
+                <path d="M18 34c10 8 24 8 34 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+              </g>
+
+              <!-- keyhole -->
+              <circle cx="55" cy="120" r="8" fill="currentColor" opacity=".8"/>
+              <rect x="52" y="128" width="6" height="18" rx="3" fill="currentColor" opacity=".8"/>
+            </g>
+          </g>
+
+          <!-- sparkles add a playful hint -->
+          <g fill="currentColor">
+            <spark><circle cx="160" cy="120" r="4"/></spark>
+            <spark><circle cx="520" cy="90" r="5"/></spark>
+            <spark><circle cx="540" cy="280" r="4"/></spark>
+          </g>
+
+          <!-- corner emojis for personality, small & subtle -->
+          <text x="50" y="70" font-size="24">🧭</text>
+          <text x="600" y="62" font-size="22">🛡️</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="foot">
+      <small>Tip: If your access was just updated, refresh or sign out/in.</small>
+      <div></div>
+      <div><span class="kbd">Error code: 403</span></div>
+    </div>
+  </article>
+</section>

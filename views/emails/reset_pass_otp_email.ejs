@@ -1,0 +1,37 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'Password reset requested',
+  subtitle: 'Use the one-time code below to reset your password.',
+  badge: 'PASSWORD RESET',
+  preheader: 'Use this one-time code to reset your password. If you did not request it, you can safely ignore this email.'
+}) %>
+
+<p class="email-title">Reset your password</p>
+
+<p class="email-lead">
+  Hello <strong><%= username %></strong>,
+</p>
+
+<p class="text">
+  We received a request to reset the password for your
+  <strong><%= (org && org.name) || 'account' %></strong>.  
+  To continue, please enter the one-time password (OTP) shown below on the
+  password reset page:
+</p>
+
+<div class="otp-pill">
+  <%= otp %>
+</div>
+
+<div class="info-box">
+  <strong>Security tip:</strong> Never share this code with anyone, including people
+  claiming to be from support. Our team will <em>never</em> ask you for your OTP.
+</div>
+
+<p class="text" style="margin-top:16px;">
+  If you did <strong>not</strong> request a password reset, you can safely ignore this
+  email and your password will remain unchanged.
+</p>
+
+<%- include('_email_footer', { org }) %>

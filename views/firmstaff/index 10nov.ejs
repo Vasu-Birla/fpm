@@ -1,0 +1,358 @@
+<!-- Header Start -->
+    <?php include('header.php'); ?>
+<!-- Header End -->
+
+<!-- Sidebar Start -->
+    <?php include('sidebar.php'); ?>
+<!-- Sidebar End -->
+
+<!-- ========================  
+    Start Page Content
+========================= -->
+
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content pb-0">
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-sm-center justify-content-between flex-wrap gap-2 mb-4">
+            <div>
+                <h4 class="fw-bold mb-0">Lawyer Dashboard </h4>
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!-- start row -->
+        <div class="row">
+            <!-- end col -->
+            <div class="col-xl-3 col-md-6">
+                <a href="client-list.php">
+                    <div class="position-relative border card rounded-2 shadow-sm">
+                        <img src="../superadminassets/img/bg/bg-03.svg" alt="img" class="position-absolute start-0 top-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2 justify-content-between">
+                                <span class="avatar bg-info rounded-circle"><i class="ti ti-users-group fs-24"></i></span>
+                                <div class="text-end">
+                                
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="mb-1">Total Clients</p>
+                                    <h3 class="fw-bold mb-0">10</h3>
+                                </div>
+                                <div>
+                                    <div id="s-col-3" class="chart-set"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- end col -->
+            <div class="col-xl-3 col-md-6">
+                <a href="client-list.php">
+                    <div class="position-relative border card rounded-2 shadow-sm">
+                        <img src="../superadminassets/img/bg/bg-04.svg" alt="img" class="position-absolute start-0 top-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2 justify-content-between">
+                                <span class="avatar bg-success rounded-circle"><i class="ti ti-users-group fs-24"></i></span>
+                                <div class="text-end">
+                                
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between overflow-hidden">
+                                <div>
+                                    <p class="mb-1">Active Clients</p>
+                                    <h3 class="fw-bold mb-0 text-truncate">5</h3>
+                                </div>
+                                <div>
+                                    <div id="s-col-4" class="chart-set"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- end col -->
+            <div class="col-xl-3 col-md-6">
+                <a href="cases-list.php">
+                    <div class="position-relative border card rounded-2 shadow-sm">
+                        <img src="../superadminassets/img/bg/bg-01.svg" alt="img" class="position-absolute start-0 top-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2 justify-content-between">
+                                <span class="avatar bg-primary rounded-circle"><i class="ti ti-scale fs-24"></i></span>
+                                <div class="text-end">
+                                
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="mb-1">Total Cases</p>
+                                    <h3 class="fw-bold mb-0">5</h3>
+                                </div>
+                                <div>
+                                    <div id="s-col" class="chart-set"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- end col -->
+            <div class="col-xl-3 col-md-6">
+                <a href="cases-list.php">
+                    <div class="position-relative border card rounded-2 shadow-sm">
+                        <img src="../superadminassets/img/bg/bg-02.svg" alt="img" class="position-absolute start-0 top-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2 justify-content-between">
+                                <span class="avatar bg-danger rounded-circle"><i class="ti ti-scale fs-24"></i></span>
+                                <div class="text-end">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="mb-1">Active Cases</p>
+                                    <h3 class="fw-bold mb-0">10</h3>
+                                </div>
+                                <div>
+                                    <div id="s-col-2" class="chart-set"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+
+        <!-- row start -->
+        <div class="row">
+            <!-- col start -->
+            <div class="col-xl-8">
+
+                <!-- card start -->
+                <div class="card shadow-sm flex-fill w-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="fw-bold mb-0">Cases Statistics</h5> 
+                    </div>
+                    <div class="card-body pb-0">
+                        <div class="row row-gap-3 mb-2">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="bg-light border p-2 text-center rounded-2">
+                                    <p class="mb-1 text-truncate"><i class="ti ti-point-filled me-1 text-primary"></i>All Cases</p>
+                                    <h5 class="fw-bold mb-0">10</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="bg-light border p-2 text-center rounded-2">
+                                    <p class="mb-1"><i class="ti ti-point-filled me-1 text-success"></i>Completed</p>
+                                    <h5 class="fw-bold mb-0">5</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="bg-light border p-2 text-center rounded-2">
+                                    <p class="mb-1"><i class="ti ti-point-filled me-1 text-warning"></i>Pending</p>
+                                    <h5 class="fw-bold mb-0">2</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="bg-light border p-2 text-center rounded-2">
+                                    <p class="mb-1"><i class="ti ti-point-filled me-1 text-danger"></i>Cancelled</p>
+                                    <h5 class="fw-bold mb-0">3</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-set" id="cases"></div>
+                    </div>
+                </div>
+                <!-- card end -->
+
+            </div>
+            <!-- col end -->
+
+            <!-- col start -->
+            <div class="col-xl-4">
+                <div class="card shadow-sm flex-fill w-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="fw-bold mb-0">Clients Growth Overview</h5> 
+                    </div>
+                    <div class="card-body">
+                        <div id="circle-chart-client" class="chart-set"></div>  
+                        <div class="d-flex align-items-center flex-wrap justify-content-center gap-2 mt-3">
+                            <p class="d-flex align-items-center mb-0 fs-13"><i class="ti ti-circle-filled text-success fs-10 me-1"></i><span class="text-dark fw-semibold me-1">20</span> Active</p>
+                            <p class="d-flex align-items-center mb-0 fs-13"><i class="ti ti-circle-filled text-warning fs-10 me-1"></i><span class="text-dark fw-semibold me-1">10</span> Pending</p>
+                            <p class="d-flex align-items-center mb-0 fs-13"><i class="ti ti-circle-filled text-danger fs-10 me-1"></i><span class="text-dark fw-semibold me-1">5</span> Inactive</p>
+                        </div>
+                    </div>                        
+                </div>
+            </div>
+            <!-- col end -->
+
+        </div>
+        <!-- end row -->
+                        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Footer Start -->
+    <?php include ('footer.php'); ?>
+<!-- Footer End -->
+
+<script>
+// Cases Graph
+ if ($('#cases').length > 0) {
+  var sCol = {
+    chart: {
+      type: 'bar',
+      height: 250,
+      stacked: true,
+      toolbar: { show: false },
+      sparkline: { enabled: false }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: '25%',
+        borderRadius: 3,
+        distributed: false
+      }
+    },
+    dataLabels: { enabled: false },
+    stroke: {
+      show: true,
+      width: 0,
+      colors: ['#fff']
+    },
+    series: [
+      {
+        name: 'Completed',
+        data: [800, 1000, 1200, 1300, 1500, 700, 900, 1000, 1600, 1500, 1200, 1100]
+      },
+      {
+        name: 'Pending',
+        data: [700, 900, 1100, 1000, 1100, 600, 800, 950, 1300, 1200, 1000, 950]
+      },
+      {
+        name: 'Cancelled',
+        data: [600, 700, 1100, 1100, 1900, 500, 700, 850, 1500, 1600, 900, 850]
+      }
+    ],
+    colors: ['#27ae60', '#e2b93b', '#ef1e1e'],
+    xaxis: {
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      labels: {
+        style: {
+          fontSize: '14px',
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      },
+      tickPlacement: 'between'
+    },
+    yaxis: {
+      labels: {
+        style: {
+          fontSize: '14px'
+        },
+        formatter: function (val) {
+          return (val / 1000) + 'K';
+        },
+        offsetX: -10 // Move y-axis labels 10px left
+      }
+    },
+    legend: {
+      position: 'bottom'
+    },
+    grid: {
+      show: true,
+      strokeDashArray: 4,
+      padding: {
+        left: 0,  // Set to 0 or higher to avoid label clipping
+        right: -10
+      }
+    },
+    tooltip: { enabled: true }
+  };
+
+  var chart = new ApexCharts(document.querySelector("#cases"), sCol);
+  chart.render();
+}
+</script>
+
+<script>
+    // circle chart
+  if ($('#circle-chart-client').length > 0) {
+    var sCol = {
+      chart: {
+        type: 'donut',
+        height: 270,
+        width: '100%'
+      },
+      series: [20, 10, 5],  // Replace with your values
+      labels: ['Active', 'Pending', 'Inactive'],
+      colors: ['#27ae60', '#e2b93b', '#ef1e1e'], // Match to your image colors
+      legend: {
+        show: false
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        width: 2,
+        colors: ['#fff']
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '60%',
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: '16px',
+                fontWeight: 400,
+                offsetY: -10,
+                color: '#0A1B39'
+              },
+              value: {
+                show: true,
+                fontSize: '18px',
+                fontWeight: 700,
+                offsetY: 10,
+                color: '#0A1B39'
+              },
+              total: {
+                show: true,
+                label: 'Total Clients',
+                fontSize: '14px',
+                color: '#0A1B39',
+                formatter: function (w) {
+                  return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                }
+              }
+            }
+          }
+        }
+      },
+      tooltip: {
+        enabled: true
+      }
+    };
+  
+    var chart = new ApexCharts(document.querySelector("#circle-chart-client"), sCol);
+    chart.render();
+  }
+</script>

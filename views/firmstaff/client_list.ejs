@@ -1,0 +1,477 @@
+<!-- views/firmstaff/client_list.ejs -->
+
+<%- include('firmheader.ejs'); %>
+<%- include('firmsidebar.ejs'); %>
+
+<%
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtDateTime(d){
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt)) return '';
+    return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate())
+      + ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+  } catch { return ''; }
+}
+%>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <div>
+        <h4 class="fw-bold mb-0">Clients</h4>
+        <% if (firm && firm.firm_name) { %>
+          <div class="text-muted small mt-1">
+            Firm: <strong><%= firm.firm_name %></strong>
+          </div>
+        <% } %>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/firmstaff/add_client" class="btn btn-primary btn-md fs-13">
+          <i class="ti ti-user-plus me-1"></i> Add Client
+        </a>
+      </div>
+    </div>
+
+    <% if (output && output.message) { %>
+      <div class="alert alert-<%= output.type || 'info' %>"><%= output.message %></div>
+    <% } %>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-end gap-2">
+
+        <!-- Type filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="clientTypeFilter">Client Type</label>
+          <select id="clientTypeFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="Individual">Individual</option>
+            <option value="Business">Business</option>
+          </select>
+        </div>
+
+        <!-- Portal filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="portalFilter">Portal Access</label>
+          <select id="portalFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="1">Enabled</option>
+            <option value="0">Disabled</option>
+          </select>
+        </div>
+
+        <!-- Parish filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="parishFilter">Parish</label>
+          <select id="parishFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <% (parishes || []).forEach(p => { %>
+              <option value="<%= p %>"><%= p %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <!-- Status filter -->
+     <!-- Status filter -->
+<div class="me-2">
+  <label class="form-label mb-1" for="clientStatusFilter">Status</label>
+  <select id="clientStatusFilter" class="form-select" data-ignore-kilvish="yes">
+    <option value="">All</option>
+    <option value="active">Active</option>
+    <option value="admin_disabled">Disabled (Admin)</option>
+    <option value="self_disabled">Disabled (Client)</option>
+  </select>
+</div>
+
+
+        <!-- Search box -->
+        <div class="ms-auto">
+          <label class="form-label mb-1" for="clientSearch">Search</label>
+          <input id="clientSearch" type="text" class="form-control"
+                 placeholder="Name, business, TRN, email, phone..."
+                 data-ignore-kilvish="yes">
+        </div>
+
+        <div>
+          <button id="resetClientFilters" class="btn btn-outline-secondary">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <%- include('../partials/view_clients_table.ejs'); %>
+
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+
+
+
+<script>
+(function($){
+  const fx = window.axiosElaw;
+  if (!fx || !$.fn.DataTable) return;
+
+  const $tbl     = $('#clientTable');
+  const $type    = $('#clientTypeFilter');
+  const $portal  = $('#portalFilter');
+  const $parish  = $('#parishFilter');
+  const $status  = $('#clientStatusFilter');
+  const $search  = $('#clientSearch');
+  const $reset   = $('#resetClientFilters');
+
+  // If already initialized somewhere, cleanly destroy
+  if ($.fn.DataTable.isDataTable($tbl)) {
+    $tbl.DataTable().clear().destroy();
+  }
+
+  // -------------------------------------------------
+  // =========== START Page Level Datatable Script ===========
+  // -------------------------------------------------
+
+  // --- helpers ---
+
+  function maskEmail(str) {
+    str = (str == null) ? '' : String(str);
+    const len = str.length;
+    if (!len) return '';
+
+    if (str.includes('@')) {
+      const parts  = str.split('@');
+      const local  = parts[0];
+      const domain = parts.slice(1).join('@');
+      if (!domain) return '*'.repeat(len);
+
+      if (local.length <= 2) {
+        return '*'.repeat(local.length) + '@' + domain;
+      }
+      return (
+        local.slice(0, 1) +
+        '*'.repeat(Math.max(local.length - 2, 1)) +
+        local.slice(-1) +
+        '@' +
+        domain
+      );
+    }
+
+    // no @ => basic masking
+    if (len <= 4) {
+      return str[0] + '*'.repeat(Math.max(len - 2, 0)) + (len > 1 ? str[len - 1] : '');
+    }
+    return str.slice(0, 2) + '*'.repeat(len - 4) + str.slice(-2);
+  }
+
+  function fmtDate(d) {
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '—';
+      const pad = n => (n < 10 ? '0' + n : '' + n);
+      return (
+        dt.getFullYear() + '-' +
+        pad(dt.getMonth() + 1) + '-' +
+        pad(dt.getDate()) + ' ' +
+        pad(dt.getHours()) + ':' +
+        pad(dt.getMinutes())
+      );
+    } catch {
+      return '—';
+    }
+  }
+
+  function portalBadge(on) {
+    return on
+      ? '<span class="badge bg-success-subtle text-info">Enabled</span>'
+      : '<span class="badge bg-secondary-subtle text-secondary">Disabled</span>';
+  }
+
+  // ✅ map enum → human labels
+  function statusBadge(st) {
+    if (st === 'active') {
+      return '<span class="badge bg-success-subtle text-success">Active</span>';
+    }
+    if (st === 'admin_disabled') {
+      return '<span class="badge bg-danger-subtle text-danger">Disabled (Admin)</span>';
+    }
+    if (st === 'self_disabled') {
+      return '<span class="badge bg-secondary-subtle text-secondary">Disabled (Client)</span>';
+    }
+    // fallback
+    return '<span class="badge bg-light text-muted">Unknown</span>';
+  }
+
+  const dt = $tbl.DataTable({
+    responsive: true,
+    dom:
+      "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+      { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+      { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+    ],
+    pageLength: 50,
+    searching: false,
+    serverSide: false,
+    ajax: function(data, cb){
+      const payload = {
+        type:           $type.val()   || '',
+        portal_enabled: $portal.val() || '',
+        parish:         $parish.val() || '',
+        // ✅ send enum status straight through
+        status:         $status.val() || '',
+        q:              $search.val() || ''
+      };
+
+      fx.post('/firmstaff/client_json', payload)
+        .then(({ data }) => {
+          if (!data?.success) {
+            window.kilToast?.danger?.(data?.message || 'Failed to load clients.');
+            cb({ data: [] });
+            return;
+          }
+
+          const rows = (data.rows || []).map((r, idx) => {
+            const displayName =
+              r.type === 'Business'
+                ? `
+                    <div class="fw-semibold">${r.business_name || ''}</div>
+                    <div class="text-muted small">${(r.first_name || '')} ${(r.last_name || '')}</div>
+                  `
+                : `<div class="fw-semibold">${(r.first_name || '')} ${(r.last_name || '')}</div>`;
+
+            const location = [r.parish || '', r.postal_zone || '']
+              .filter(Boolean)
+              .join(' • ');
+
+            // Decide next status when toggling:
+            // if currently active → admin_disabled
+            // else (admin/self disabled) → active
+            const nextStatus = (r.status === 'active') ? 'admin_disabled' : 'active';
+            const nextStatusLabel = (r.status === 'active') ? 'Admin Disabled' : 'Active';
+
+            return {
+              idx:      idx + 1,
+              type:     r.type || 'Individual',
+              trn:      r.trn_number || '-',
+              name:     displayName,
+              email:    maskEmail(r.email),
+              phone:    (r.country_code || '') + (r.contact || ''),
+              location: location || '—',
+              portal:   portalBadge(!!r.portal_enabled),
+              created:  fmtDate(r.createdAt),
+              status:   statusBadge(r.status || 'active'),
+              actions: `
+                <div class="dropdown">
+                  <a href="javascript:void(0);"
+                     id="client-actions-${r.client_id}"
+                     class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1"
+                     data-bs-toggle="dropdown"
+                     data-bs-auto-close="outside"
+                     aria-expanded="false">
+                    <i class="ti ti-dots-vertical"></i>
+                  </a>
+
+                  <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="client-actions-${r.client_id}">
+                    <li>
+                      <a href="javascript:void(0);" class="dropdown-item client-edit" data-id="${r.client_id}">
+                        <i class="ti ti-edit me-2"></i> Edit
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0);"
+                         class="dropdown-item client-status"
+                         data-id="${r.client_id}"
+                         data-status="${nextStatus}">
+                        <i class="ti ti-power me-2"></i>
+                        Set ${nextStatusLabel}
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a href="javascript:void(0);" class="dropdown-item text-danger client-delete"
+                         data-id="${r.client_id}"
+                         data-name="${(r.business_name || (r.first_name||'') + ' ' + (r.last_name||''))}">
+                        <i class="ti ti-trash me-2"></i> Delete
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              `
+            };
+          });
+
+          cb({ data: rows });
+        })
+        .catch(err => {
+          console.error('client_json ajax error:', err);
+          window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to load clients.');
+          cb({ data: [] });
+        });
+    },
+    columns: [
+      { data: 'idx' },
+      { data: 'type' },
+      { data: 'trn' },
+      { data: 'name' },
+      { data: 'email' },
+      { data: 'phone' },
+      { data: 'location' },
+      { data: 'portal' },
+      { data: 'created' },
+      { data: 'status' },
+      { data: 'actions', orderable: false, searchable: false }
+    ]
+  });
+
+  // Hide DataTables default search (we use our own)
+  const $wrapper = $tbl.closest('.dataTables_wrapper');
+  $('.dataTables_filter', $wrapper).hide();
+
+  function reloadWithDelay(){
+    clearTimeout(window.__client_timer);
+    window.__client_timer = setTimeout(() => dt.ajax.reload(), 250);
+  }
+
+  $type.on('change', reloadWithDelay);
+  $portal.on('change', reloadWithDelay);
+  $parish.on('change', reloadWithDelay);
+  $status.on('change', reloadWithDelay);
+  $search.on('input', reloadWithDelay);
+
+  $reset.on('click', function(e){
+    e.preventDefault();
+    $type.val('');
+    $portal.val('');
+    $parish.val('');
+    $status.val('');
+    $search.val('');
+    dt.ajax.reload();
+  });
+
+  // -------------------------------------------------
+  // =========== END Page Level Datatable Script ===========
+  // -------------------------------------------------
+
+
+  // -------------------------------------------------
+  // =========== START Page Level Actions Script ===========
+  // -------------------------------------------------
+
+  // Edit
+  $tbl.on('click', '.client-edit', function(){
+    const id = this.dataset.id;
+    document.cookie = `elaw_clientId=${id}`;
+    location.href = '/firmstaff/edit_client';
+  });
+
+  // Status toggle
+  $tbl.on('click', '.client-status', async function(){
+    const id = this.dataset.id;
+    const status = this.dataset.status; // enum value: 'active' / 'admin_disabled'
+    try {
+      const { data } = await fx.post('/firmstaff/update_client_status', { client_id: id, status });
+      if (!data?.success) {
+        window.kilToast?.danger?.(data?.message || 'Failed to update status.');
+        return;
+      }
+      window.kilToast?.success?.(data?.message || 'Status changed.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('update_client_status error:', err);
+      window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to update status.');
+    }
+  });
+
+  // Delete
+  $tbl.on('click', '.client-delete', function(e){
+    e.preventDefault();
+    const id   = this.dataset.id;
+    const name = this.dataset.name || 'this client';
+    deleteClient(id, name);
+  });
+
+  async function deleteClient(clientId, clientName) {
+    try {
+      const res = await Swal.fire({
+        title: 'Delete Client?',
+        html: `
+          <div style="text-align:left">
+            <p>You're about to delete <strong>${clientName}</strong> (ID: ${clientId}).</p>
+            <p>This action cannot be undone.</p>
+
+            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+              <input type="checkbox" id="clientHardDelChk"/>
+              <span><strong>Hard delete</strong> (permanent, DB-level)</span>
+            </label>
+
+            <div id="clientHardDelWarn"
+                 style="display:none;margin-top:10px;padding:10px;border:1px solid #dc3545;background:#ffe9ec;color:#a1101a;border-radius:6px;">
+              <strong>FINAL WARNING:</strong> Related records for this client
+              (cases, notes, etc. depending on cascade rules)
+              may be <u>permanently deleted</u> and <u>cannot be recovered</u>.
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Soft Delete',
+        cancelButtonText: 'Cancel',
+        focusConfirm: false,
+        didOpen: () => {
+          const chk  = document.getElementById('clientHardDelChk');
+          const warn = document.getElementById('clientHardDelWarn');
+          const btn  = Swal.getConfirmButton();
+
+          chk?.addEventListener('change', () => {
+            if (chk.checked) {
+              warn.style.display = 'block';
+              btn.textContent = 'Hard Delete';
+              btn.style.backgroundColor = '#dc3545';
+            } else {
+              warn.style.display = 'none';
+              btn.textContent = 'Soft Delete';
+              btn.style.backgroundColor = '';
+            }
+          });
+        },
+        preConfirm: () => {
+          const chk = document.getElementById('clientHardDelChk');
+          return { hard: !!chk?.checked };
+        }
+      });
+
+      if (!res.isConfirmed) return;
+
+      const { hard } = res.value || { hard: false };
+      const { data } = await fx.post('/firmstaff/delete_client', {
+        client_id: clientId,
+        hard
+      });
+
+      if (!data?.success) {
+        window.kilToast?.danger?.(data?.message || 'Failed to delete client.');
+        return;
+      }
+
+      window.kilToast?.success?.(data?.message || 'Client deleted.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('delete_client error:', err);
+      const msg = err?.response?.data?.message || 'Failed to delete client.';
+      window.kilToast?.danger?.(msg);
+    }
+  }
+
+  // -------------------------------------------------
+  // =========== END Page Level Actions Script ===========
+  // -------------------------------------------------
+
+})(jQuery);
+</script>

@@ -1,0 +1,468 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+<style>
+  .card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  .card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.5rem;
+  }
+  .form-control {
+    padding: 0.8rem 1.2rem;
+    border-radius: 0 10px 10px 0;
+    transition: all 0.3s;
+  }
+  .input-group-text {
+    background-color: #f8f9fa;
+    border-radius: 10px 0 0 10px;
+    width: 45px;
+    justify-content: center;
+  }
+  .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd;
+  }
+  .btn {
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  .form-label {
+    margin-bottom: 0.7rem;
+    color: #344767;
+  }
+  .input-group:focus-within .input-group-text {
+    border-color: #0d6efd;
+  }
+  .custom-signin-btn {
+        background-color: #eaecf2 !important;
+    color: #000 !important;
+    border: none;
+  }
+
+  .custom-signin-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  @media (max-width: 768px) {
+    .card-body {
+      padding: 1.5rem;
+    }
+    .btn {
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+  }
+</style>
+
+   
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-0 d-flex align-items-center"> <a href="/superadmin/view_customers" class="text-dark"> <i class="ti ti-chevron-left me-1"></i>Edit Customer</a></h6>
+                </div>
+                <!-- page header end -->
+
+                <!-- card start -->
+           
+
+            <form method="POST" id="kilform" class="p-4 border rounded shadow-lg bg-light">
+                     
+                           <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>" >
+
+                                  <input type="hidden" name="customer_id" value="<%= customer.customer_id || '0' %>">
+
+                           
+
+                    <div class="card-body pb-0">
+                        <div class="contact-us-item-2">
+
+                            <!-- Customer Type -->
+                            <fieldset class="mb-4 border rounded p-3">
+                                <legend class="fw-bold text-primary fs-18">Customer Type</legend>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="customer_type" id="individual" value="Individual Customer"  <%= ((customer.customer_type||'').toLowerCase().includes('individual')) ? 'checked' : '' %> >
+                                            <label class="form-check-label" for="individual">Individual Customer</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="customer_type" id="business" value="Business Customer"   <%= ((customer.customer_type||'').toLowerCase().includes('business')) ? 'checked' : '' %> >
+                                            <label class="form-check-label" for="business">Business Customer</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 business-fields d-none">
+                                          <br>
+                                        <br>
+                                        <legend class="fw-bold text-primary fs-16">Business Details</legend>
+                                        <label for="business_name" class="form-label">Business Name <span class="text-danger">*</span></label>
+                                        <input type="text" id="business_name" value="<%= customer.business_name || '' %>" name="business_name" class="form-control" placeholder="Enter business name"    <%= ((customer.customer_type||'').toLowerCase().includes('business')) ? 'required' : '' %>  >
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- TRN & Email -->
+                            <fieldset class="mb-4 border rounded p-3">
+                                <legend class="fw-bold text-primary fs-18">Identification & Contact</legend>
+                                <div class="row">
+
+                                    <div class="col-md-4">
+                                         <div class="form-group">
+                                        <label for="trn" class="form-label">TRN </label>
+                                        <div class="input-group">
+                                           
+                                            <input data-kil-trn="True" readonly  value="<%= customer.trn_number || '' %>" data-kilvish-num='exact_9' data-kilvish-char1="mix_-_"  type="text" id="trnInput" name="trn_number" class="form-control" placeholder="Enter your TRN" required autofocus>
+                                       
+                                        </div>
+
+                                         <div id="trnInputError" style="color: red;"></div>
+
+                                        </div>
+
+
+                                        
+                                    </div>
+
+                                    <div class="col-md-4">
+                                         <div class="form-group">
+                                        <label for="email" class="form-label">Email </label>
+                                        <div class="input-group">
+                                           
+                                            <input type="email" readonly  value="<%= customer.email || '' %>" id="emailInput" name="email" class="form-control" placeholder="Enter your email" required>
+                                          
+                                        </div>
+                                         <div id="emailInputError" style="color: red;"></div>
+                                        </div>
+
+                                         
+                                        
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="full_contact" class="form-label mb-1 fw-medium">Mobile Number </label>
+                                        <div class="input-group kiltel-phone-wrap col-6">
+                                            <button type="button" class="kiltel-country-trigger"></button>
+                                            <input type="tel" class="form-control" value="<%= customer.full_contact || '' %>" data-kilvish-name="Mobile Number" name="full_contact" data-kilvish-tel  id="kilvishcontact" data-kilvish-preferred="JM,IN"  data-kiltel-init="US" data-kiltel-validation="yes" required>
+                                            <input type="hidden" id="country_code" name="country_code">
+                                            <input type="hidden" id="contact" name="contact">
+                                        </div>
+                                        <div id="errorText1" style="color: red;"></div>
+                                        <div id="kiltel-error" style="color:red; font-size:0.93em; margin-top:5px;"></div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- First & Last Name & Address -->
+                            <fieldset class="mb-4 border rounded p-3">
+                                <legend class="fw-bold text-primary fs-18">Personal Information</legend>
+
+                                <div class="row">
+
+
+                                    <div class="col-md-6 mb-3 ">
+                                         <div class="form-group">
+                                        <label for="first_name" class="form-label">First Name </label>
+                                        <div class="input-group">
+                                          
+                                            <input type="text" value="<%= customer.first_name || '' %>" id="first_name" name="first_name" class="form-control" placeholder="Enter your first name" required>
+                                            
+                                        </div>
+
+                                        </div>
+                                    </div>
+                                     
+
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="last_name" class="form-label">Last Name </label>
+                                        <div class="input-group">
+                                           
+                                            <input type="text"   value="<%= customer.last_name || '' %>" id="last_name" name="last_name" class="form-control" placeholder="Enter your last name" required>
+                                             
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="address" class="form-label">Address</label>
+                                        <div class="input-group">
+                                           
+                                            <input type="text" id="address" value="<%= customer.customer_address || '' %>" name="customer_address" class="form-control" placeholder="Enter address" required>
+                                           
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+
+
+                          
+                                 <div class="col-md-6 mb-3">
+
+
+                                    <div class="form-group">
+                                    <label for="parish" class="form-label">Parish</label>
+                                    <select id="parish" name="parish" class="form-control" required>
+                                        <option value="">Select Parish</option>
+                                        <% (states || []).forEach(function(p) { 
+                                            // display "St." but keep DB value as "Saint ..." for consistency
+                                            const label = p.replace(/^Saint\s/, 'St. ');
+                                        %>
+                                        <option value="<%= p %>"  <%= (customer.parish === p) ? 'selected' : '' %> ><%= label %></option>
+                                        <% }) %>
+                                       
+                                    </select>
+
+                                    
+
+                                    </div>
+                                    </div>
+
+
+
+                                    <div class="col-md-6 mb-3">
+                                         <div class="form-group">
+                                        <label for="postal_code" class="form-label">Postal Code </label>
+
+                                         
+                                        <div class="input-group">
+                                            
+                                            <input type="text" data-kilvish-char="mix" id="postal_code"  value="<%= customer.postal_code || '' %>" name="postal_code" class="form-control" placeholder="Enter postal code" required>
+                                           
+                                        </div>
+
+                                        </div>
+                                    </div>
+
+
+
+
+                                </div>
+                            </fieldset>
+
+                          
+                        
+
+                        </div>
+                    </div>
+                 
+
+                          <div class="d-flex align-items-center justify-content-end">
+                    
+                        <button type="submit" name="submit" id="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Customer</button>
+                    </div>
+
+   </form>
+
+
+            </div>
+        </div>
+        <!-- row end -->            
+
+    </div>
+    <!-- End Content -->
+
+</div>
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+
+
+     document.addEventListener("DOMContentLoaded", function () {
+          //  document.cookie = 'staff_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          document.cookie = 'elaw_msg' + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+          document.cookie = 'elaw_msg' + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          //document.cookie = 'elaw_msg_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
+        });
+
+
+let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+</script>
+
+
+      
+<script>
+
+
+
+
+
+
+
+ $(document).ready(function () {
+  $('#trnInput').on('change', function () { 
+  
+    var trn_number = $(this).val();
+    var trnInput = document.getElementById('trnInput');
+    $.ajax({
+      type: 'POST',
+      url: '/superadmin/checktrn',
+      headers: { 'CSRF-Token': csrfToken },
+      data: { trn_number: trn_number },
+      success: function (data) {
+          alert(data.exists)
+        if (data.exists == true) {
+          $('#trnInputError').text("A record with the given TRN (" + trn_number + ") already exists. Enter another unique TRN and try again.");
+          trnInput.value = "";
+        } else {
+          $('#trnInputError').text("");
+        }
+      }
+    });
+  });
+});
+
+
+
+
+
+   //======================== Check Email Uniqueness    ====================================  
+
+        $(document).ready(function () {
+                    $('#emailInput').on('change', function () {
+                        var email = $(this).val();
+                        var emailInput = document.getElementById('emailInput');
+                        $.ajax({
+                            type: 'POST',
+                            url: '/superadmin/checkemail',
+                            headers: { 'CSRF-Token': csrfToken },
+                            data: { email: email },
+                            success: function (data) {
+
+                                if (data.exists == true) {
+                                    $('#emailInputError').text("A record with the given Email ID( " + email + " ) already exist, Enter another unnique Email ID and try again.");
+                               
+                                    emailInput.value = "";
+                                }
+                                else {
+                                    if (emailInput.value == "") {
+                                    
+                                        $('#emailInputError').text("");
+                                    } else {
+                                     
+                                        $('#emailInputError').text("");
+                                    }
+
+                                }
+                            }
+                        });
+                    });
+                });
+
+
+
+
+ //======================== Check Email Uniqueness    ====================================  
+
+
+
+
+
+            //===================kilcheck contact Number ==============================================
+
+           $(document).ready(function () {
+                    $('#kilvishcontact').on('change', function () {
+                        var phoneNumber = $(this).val();
+
+                        var countryCode = document.querySelector("#country_code").value;
+                        var contactInput = document.getElementById('kilvishcontact');
+                        var errorText1 = document.getElementById('errorText1');
+
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '/superadmin/checkphonenumber',
+                            headers: { 'CSRF-Token': csrfToken },
+                            data: { phoneNumber: phoneNumber, countryCode: countryCode },
+                            success: function (data) {
+
+                                console.log(data)
+                                if (data.exists == true) {
+
+                                    errorText1.textContent = "A record with the given Contact Number ( " + phoneNumber + " ) already exists. Enter another unique Contact Number and try again";
+                                    contactInput.style.borderColor = "red";
+                                    contactInput.value = "";
+                                }
+                                else {
+                                    if (contactInput.value == "") {
+
+                                        $('#errorText1').text("");
+                                    } else {
+
+                                        $('#errorText1').text("");
+                                    }
+
+                                }
+                            }
+                        });
+
+                    });
+                });
+
+
+                  //===================kilcheck contact Number ==============================================
+
+
+
+
+
+
+
+</script>
+
+<script>
+  function syncBusinessFields() {
+    const selected = document.querySelector('input[name="customer_type"]:checked');
+    const isBiz = selected && /business/i.test(selected.value);
+    document.querySelectorAll('.business-fields').forEach(f => {
+      if (isBiz) {
+        f.classList.remove('d-none');
+        f.querySelectorAll('input, select, textarea').forEach(inp => inp.setAttribute('required', 'required'));
+      } else {
+        f.classList.add('d-none');
+        f.querySelectorAll('input, select, textarea').forEach(inp => inp.removeAttribute('required'));
+      }
+    });
+  }
+
+  // Run once on load
+  document.addEventListener('DOMContentLoaded', syncBusinessFields);
+
+  // And on change
+  document.querySelectorAll('input[name="customer_type"]').forEach(el => {
+    el.addEventListener('change', syncBusinessFields);
+  });
+</script>

@@ -1,0 +1,53 @@
+
+/*============================
+  18.file-manager
+============================*/
+
+.files-list {
+    a {
+        @include rounded(5px);
+        &:hover, &.active {
+            background: $light;
+            color: var(--#{$prefix}gray-900) !important;
+        }
+    }
+}
+.recent-activity {
+    li {
+        padding-bottom: 16px;
+        position: relative;
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 16px;
+            border-color: $gray-200;
+            border-width: 1px;
+            width: 1px;
+            height: 100%;
+            border-style: dashed;
+        }
+        &:last-child {
+            padding-bottom: 0;
+            &::before {
+                content: none;
+            }
+        }
+    }
+}
+.file-drop {
+    position: relative;
+    transition: all 0.5s;
+    border: 1px dashed var(--#{$prefix}border-color);
+    @include rounded(4px);
+    padding: 24px;
+    input {
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        cursor: pointer;
+    }
+}

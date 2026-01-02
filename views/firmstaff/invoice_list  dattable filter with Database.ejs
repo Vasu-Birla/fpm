@@ -1,0 +1,217 @@
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Invoice List</h5>
+          <a href="/firmstaff/add_invoice" class="btn btn-primary btn-sm">+ New Invoice</a>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="row mb-3 g-2">
+              <div class="col-md-3">
+                <label class="form-label fw-medium small mb-1">Payment Status</label>
+                <select id="invPaymentFilter" class="form-select form-select-sm">
+                  <option value="">All</option>
+                  <option value="paid">Paid</option>
+                  <option value="partial">Partial</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-medium small mb-1">Search</label>
+                <input data-ignore-kilvish="Yes" id="invSearch" type="text" class="form-control form-control-sm" placeholder="Search invoice # or client">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped" id="invoiceTable" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Invoice #</th>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Created</th>
+                    <th>Due</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+
+<script>
+  (function($){
+    const fx = window.axiosElaw || window.axios;
+    if (!fx || !$.fn.DataTable) return;
+
+    const $tbl    = $('#invoiceTable');
+    const $pay    = $('#invPaymentFilter');
+    const $search = $('#invSearch');
+    const $reset  = $('#invResetFilters');
+
+    // --- Helpers ---
+    function fmtDate(d) {
+      try {
+        const dt = new Date(d);
+        if (isNaN(dt)) return '—';
+        const pad = n => (n < 10 ? '0' + n : '' + n);
+        return (
+          dt.getFullYear() + '-' +
+          pad(dt.getMonth() + 1) + '-' +
+          pad(dt.getDate())
+        );
+      } catch {
+        return '—';
+      }
+    }
+
+    function payBadge(pstat) {
+      const s = (pstat || '').toLowerCase();
+      if (s === 'paid') {
+        return '<span class="badge bg-success-subtle text-success border border-success px-2">Paid</span>';
+      }
+      if (s === 'partial') {
+        return '<span class="badge bg-warning-subtle text-warning border border-warning px-2">Partial</span>';
+      }
+      // default → pending
+      return '<span class="badge bg-danger-subtle text-danger border border-danger px-2">Pending</span>';
+    }
+
+    const dt = $tbl.DataTable({
+      responsive: true,
+      dom:
+        "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+      buttons: [
+        { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+        { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+        { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+      ],
+      pageLength: 25,
+      searching: false,
+      serverSide: false,
+      ajax: function(data, cb){
+        const payload = {
+          // 👇 filter is strictly on payment_status enum
+          payment_status: $pay.val() || '',
+          q:              $search.val() || ''
+        };
+
+        fx.post('/firmstaff/invoice_json', payload)
+          .then(({ data }) => {
+            if (!data?.success) {
+              window.kilToast?.danger?.(data?.message || 'Failed to load invoices.');
+              cb({ data: [] });
+              return;
+            }
+
+            const rows = (data.rows || []).map((inv, idx) => {
+              const c  = inv;
+              const cl = c.client || {};
+
+              const clientName = `${cl.first_name || ''} ${cl.last_name || ''}`.trim() || '—';
+              const clientHtml = `
+                <div class="fw-semibold">${clientName}</div>
+                <div class="text-muted small">${cl.email || ''}</div>
+              `;
+
+              const total = `${c.currency || 'USD'} ${(Number(c.total || 0)).toFixed(2)}`;
+
+              // 🔴 Use only payment_status column from DB
+              const pstat = (c.payment_status || '').toLowerCase();
+
+              // ✅ View button ONLY (no delete/deactivate)
+              let viewBtn;
+              if (c.pdf_key) {
+                viewBtn = `
+                  <a class="btn btn-outline-primary btn-sm"
+                     href="/secure/file_stream?s3key=${encodeURIComponent(c.pdf_key)}"
+                     target="_blank">
+                    View
+                  </a>`;
+              } else {
+                viewBtn = `
+                  <button class="btn btn-outline-secondary btn-sm" disabled>
+                    View
+                  </button>`;
+              }
+
+              const actions = `
+                <div class="btn-group btn-group-sm">
+                  ${viewBtn}
+                </div>
+              `;
+
+              return {
+                idx: idx + 1,
+                invoice_number: c.invoice_number || c.invoice_id,
+                client: clientHtml,
+                total: total,
+                payment: payBadge(pstat),
+                created: fmtDate(c.created_at),
+                due: fmtDate(c.due_date),
+                actions: actions
+              };
+            });
+
+            cb({ data: rows });
+          })
+          .catch(err => {
+            console.error('invoice_json ajax error:', err);
+            window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to load invoices.');
+            cb({ data: [] });
+          });
+      },
+      columns: [
+        { data: 'idx' },
+        { data: 'invoice_number' },
+        { data: 'client' },
+        { data: 'total' },
+        { data: 'payment' },              // 👈 this is payment_status badge
+        { data: 'created' },
+        { data: 'due' },
+        { data: 'actions', orderable:false, searchable:false }
+      ]
+    });
+
+    // Hide built-in DataTables search (we use our own)
+    const $wrapper = $tbl.closest('.dataTables_wrapper');
+    $('.dataTables_filter', $wrapper).hide();
+
+    function reloadWithDelay(){
+      clearTimeout(window.__invoice_timer);
+      window.__invoice_timer = setTimeout(() => dt.ajax.reload(), 250);
+    }
+
+    $pay.on('change', reloadWithDelay);
+    $search.on('input', reloadWithDelay);
+
+    $reset.on('click', function(e){
+      e.preventDefault();
+      $pay.val('');
+      $search.val('');
+      dt.ajax.reload();
+    });
+
+  })(jQuery);
+</script>

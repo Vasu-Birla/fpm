@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %> | <%= appName || 'MyApp' %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- You can replace with your favicon if you have -->
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: #f7f9fa;
+      color: #222;
+      margin: 0;
+      padding: 0;
+      line-height: 1.75;
+    }
+    .tandc-container {
+      max-width: 800px;
+      background: #fff;
+      margin: 40px auto 40px auto;
+      box-shadow: 0 8px 40px rgba(44,62,80,0.10);
+      border-radius: 16px;
+      padding: 40px 36px;
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(32px);}
+      to { opacity: 1; transform: none;}
+    }
+    .tandc-title {
+      font-size: 2.3rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #2d3748;
+      text-align: center;
+      margin-bottom: 0.8em;
+    }
+    .tandc-meta {
+      font-size: 1rem;
+      color: #7b8ca5;
+      text-align: center;
+      margin-bottom: 2em;
+    }
+    .tandc-content {
+      font-size: 1.15rem;
+      zoom: 1.1; /* slightly zoom in for readability */
+    }
+    .tandc-content h1, .tandc-content h2, .tandc-content h3 {
+      color: #1a202c;
+      margin-top: 2em;
+    }
+    .tandc-content ul, .tandc-content ol {
+      margin-left: 2em;
+    }
+    .tandc-content a {
+      color: #2563eb;
+      text-decoration: underline dotted;
+      transition: color 0.2s;
+    }
+    .tandc-content a:hover {
+      color: #d97706;
+    }
+    @media (max-width: 600px) {
+      .tandc-container {
+        padding: 16px 4vw;
+      }
+      .tandc-title { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="tandc-container">
+    <div class="tandc-title"><%= title %></div>
+    <% if (meta) { %>
+      <div class="tandc-meta"><%= meta %></div>
+    <% } %>
+    <div class="tandc-content">
+      <!-- Raw HTML (trusted from backend) -->
+      <%- content %>
+    </div>
+  </div>
+</body>
+</html>

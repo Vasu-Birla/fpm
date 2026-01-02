@@ -1,0 +1,13 @@
+// utils/wantsJSON.js
+export function wantsJSON(req) {
+  const h = (n) => (req.headers[n] || '').toString().toLowerCase();
+  const accept = h('accept');
+  const ctype  = h('content-type');
+
+  if (req.path?.startsWith('/api/')) return true;
+  if (h('x-response-mode') === 'json') return true;
+  if (h('x-requested-with') === 'xmlhttprequest') return true;
+  if (accept.includes('application/json')) return true;
+  if (ctype.includes('application/json')) return true;
+  return false;
+}

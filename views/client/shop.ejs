@@ -1,0 +1,355 @@
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+
+<!-- Banner Start -->
+<section class="main-inner-banner">
+	<!-- <span class="bg-icon"></span>
+	<div class="inner-banner-shape"></div>
+	<div class="container">
+		<div class="row">
+			<div class="col-12">
+				<div class="inner-banner-content">
+					<h1 class="h1-title">Market Place</h1>
+				</div>
+			</div>
+		</div>
+	</div> -->
+</section>
+<!-- Banner End -->
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+	<ul>
+		<li>
+			<a href="/home" title="HOME">HOME</a>
+		</li>
+		<li>
+			<a href="/shop" title="MARKET PLACE">MARKET PLACE</a>
+		</li>
+	</ul>
+</div>
+<!-- Breadcrumb End -->
+
+<section class="py-5" style="padding-top: 50px !important;">
+    <div class="container">
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-lg-3">
+                <div class="sidebars height" style="height: 900px;">
+                    <div class="sidebars">
+                      <h5>Search</h5>
+                      <input type="search" id="searchInput" class="form-control" placeholder="Search...">
+                    </div>
+
+                    <!-- Filter by Category -->
+                    <h5 class="mt-4">Filter by Category</h5>
+                    <div id="categoryFilter" class="mb-4"></div>
+
+                    <!-- Filter by City -->
+                    <h5>Filter by City</h5>
+                    <div id="cityFilter" class="mb-4"></div>
+
+                </div>
+            </div>
+
+            <!-- Right Content -->
+            <div class="col-lg-9">
+                <h3 class="mb-4"></h3>
+                <div class="row g-4" id="blogContainer"></div>
+
+                <nav class="d-flex justify-content-center mt-4">
+                  <ul class="pagination" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->
+
+
+ 
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const blogs = [
+  {
+    title: "Justice for All",
+    description: "Equal justice in society ensures fairness and protection for everyone regardless of background. Upholding justice strengthens democracy, safeguards rights, and promotes accountability in government and private institutions, fostering trust and equality in communities across the world.",
+    category: "Human Rights",
+    city: "Bog Walk",
+    img: "../assets/images/market_client/1.jpg",
+    date: "Jan 10, 2024"
+  },
+  {
+    title: "Legal Reforms",
+    description: "New legal reforms impact how justice is administered and how laws adapt to changing social needs. These reforms aim to reduce inequalities, improve transparency, and ensure timely resolution of disputes, making the justice system more efficient and accessible for all citizens.",
+    category: "Legal",
+    city: "Constant Spring",
+    img: "../assets/images/market_client/2.jpg",
+    date: "Feb 15, 2024"
+  },
+  {
+    title: "Human Rights",
+    description: "Human rights protections are central to justice. They ensure that every individual enjoys freedom, dignity, and equality under the law. Raising awareness about rights helps prevent abuse and empowers citizens to demand fairness and accountability from institutions.",
+    category: "Human Rights",
+    city: "Ewarton",
+    img: "../assets/images/market_client/3.png",
+    date: "Mar 20, 2024"
+  },
+  {
+    title: "Courtroom Stories",
+    description: "True courtroom stories reveal the complexities of the justice system, highlighting both triumphs and failures. These stories show how judges, lawyers, and citizens interact, providing insight into the human side of justice and the challenges in upholding fairness and law.",
+    category: "Court",
+    city: "Half Way Tree",
+    img: "../assets/images/market_client/4.jpg",
+    date: "Apr 05, 2024"
+  },
+  {
+    title: "Law and Justice",
+    description: "The relationship between law and justice is essential for a fair society. Laws provide structure, but justice ensures those laws are applied fairly, protecting rights and preventing abuse. Understanding this relationship is key to building trust in legal systems worldwide.",
+    category: "Legal",
+    city: "Kingston",
+    img: "../assets/images/market_client/5.jpg",
+    date: "May 12, 2024"
+  },
+  {
+    title: "Criminal Justice",
+    description: "The criminal justice system plays a critical role in maintaining social order. Proper investigation, fair trials, and effective rehabilitation ensure that justice is served while protecting society from crime, respecting rights, and promoting accountability among offenders.",
+    category: "Criminal",
+    city: "Linstead",
+    img: "../assets/images/market_client/11.jpg",
+    date: "Jun 22, 2024"
+  },
+  {
+    title: "Environmental Justice",
+    description: "Environmental justice ensures that all communities, especially marginalized ones, are protected from environmental hazards. Laws and policies must balance ecological preservation with human rights, promoting sustainability while holding polluters accountable for actions that threaten public health.",
+    category: "Environment",
+    city: "Mandeville",
+    img: "../assets/images/market_client/7.jpg",
+    date: "Jul 30, 2024"
+  },
+  {
+    title: "Civil Rights",
+    description: "Modern civil rights issues continue to challenge justice systems worldwide. Protecting equality in education, employment, and voting rights ensures fair treatment for all individuals, empowering citizens to participate fully in society and defend their freedoms against discrimination.",
+    category: "Human Rights",
+    city: "May Pen",
+    img: "../assets/images/market_client/8.webp",
+    date: "Aug 18, 2024"
+  },
+  {
+    title: "Justice System Failures",
+    description: "Failures in the justice system highlight gaps in fairness and accountability. Delayed trials, bias, and corruption can erode public trust, emphasizing the need for reforms, transparency, and mechanisms that uphold the rights of victims and defendants alike.",
+    category: "Legal",
+    city: "Montego Bay",
+    img: "../assets/images/market_client/9.webp",
+    date: "Sep 25, 2024"
+  },
+  {
+    title: "Legal Advice",
+    description: "Practical legal advice helps individuals navigate complex systems and understand their rights. Knowledgeable guidance promotes access to justice, empowers people to address disputes fairly, and ensures that legal procedures are followed properly to achieve just outcomes.",
+    category: "Legal",
+    city: "Old Harbour",
+    img: "../assets/images/market_client/10.jpg",
+    date: "Oct 10, 2024"
+  },
+  {
+    title: "Social Justice",
+    description: "Social justice addresses inequalities across communities, ensuring fair distribution of resources, opportunities, and protections. Promoting social justice reduces marginalization, strengthens societal cohesion, and empowers individuals to demand equitable treatment under laws and social systems.",
+    category: "Social",
+    city: "Port Antonio",
+    img: "../assets/images/market_client/5.jpg",
+    date: "Nov 14, 2024"
+  },
+  {
+    title: "Judicial Insights",
+    description: "Judicial insights analyze trends in court rulings, helping understand how justice evolves over time. Examining judicial decisions provides transparency, guides future legal strategies, and reveals the principles that underpin fair application of the law in different cases.",
+    category: "Judiciary",
+    city: "Portmore",
+    img: "../assets/images/market_client/12.webp",
+    date: "Dec 05, 2024"
+  },
+  {
+    title: "Public Justice",
+    description: "Ensuring public justice means protecting the collective interest while safeguarding individual rights. Transparent policies, citizen participation, and accountability of institutions are crucial to maintain trust and uphold fairness in societal governance and legal processes.",
+    category: "Social",
+    city: "Saint Ann’s Bay",
+    img: "../assets/images/market_client/13.webp",
+    date: "Jan 15, 2025"
+  },
+  {
+    title: "Court Decisions",
+    description: "Important court decisions shape society by setting legal precedents. These decisions influence public policy, clarify laws, and demonstrate the principles of justice in practice, ensuring consistency, fairness, and protection of rights for future cases.",
+    category: "Court",
+    city: "Savanna-la-Mar",
+    img: "../assets/images/market_client/14.jpg",
+    date: "Feb 20, 2025"
+  },
+  {
+    title: "Criminal Law Updates",
+    description: "Updates in criminal law reflect societal changes and emerging challenges. Modern legislation seeks to balance punishment and rehabilitation, strengthen public safety, and ensure justice is served fairly for both victims and offenders in evolving legal landscapes.",
+    category: "Criminal",
+    city: "Spanish Town",
+    img: "../assets/images/market_client/1.jpg",
+    date: "Mar 18, 2025"
+  },
+  {
+    title: "Rights Awareness",
+    description: "Awareness about rights is crucial to justice. Educating citizens about legal protections, responsibilities, and avenues for recourse empowers them to claim fair treatment, challenge injustices, and participate actively in a just and equitable society.",
+    category: "Bog Walk",
+    city: "Nagpur",
+    img: "../assets/images/market_client/2.jpg",
+    date: "Apr 22, 2025"
+  },
+  {
+    title: "Legal Case Studies",
+    description: "Analyzing legal cases helps understand the practical application of laws and justice principles. Case studies provide lessons on effective advocacy, highlight systemic issues, and offer insights into achieving fair outcomes for both individuals and communities.",
+    category: "Legal",
+    city: "Kingston",
+    img: "../assets/images/market_client/4.jpg",
+    date: "May 10, 2025"
+  },
+  {
+    title: "Environmental Laws",
+    description: "Laws protecting the environment ensure justice for present and future generations. Regulations against pollution, conservation initiatives, and accountability measures uphold environmental justice, balancing human needs with ecological preservation for sustainable living.",
+    category: "Environment",
+    city: "May Pen",
+    img: "../assets/images/market_client/5.jpg",
+    date: "Jun 05, 2025"
+  }
+];
+
+let currentPage = 1;
+const cardsPerPage = 6;
+// Populate category checkboxes
+const categorySet = new Set(blogs.map(blog => blog.category));
+const categoryFilterDiv = document.getElementById('categoryFilter');
+categorySet.forEach(cat => {
+  const div = document.createElement('div');
+  div.classList.add("form-check");
+  div.innerHTML = `
+    <input class="form-check-input category-checkbox" type="checkbox" value="${cat}" id="cat-${cat}">
+    <label class="form-check-label" for="cat-${cat}">${cat}</label>`;
+  categoryFilterDiv.appendChild(div);
+});
+
+// Populate city checkboxes
+const citySet = new Set(blogs.map(blog => blog.city).filter(c => c));
+const cityFilterDiv = document.getElementById('cityFilter');
+citySet.forEach(city => {
+  const div = document.createElement('div');
+  div.classList.add("form-check");
+  div.innerHTML = `
+    <input class="form-check-input city-checkbox" type="checkbox" value="${city}" id="city-${city}">
+    <label class="form-check-label" for="city-${city}">${city}</label>`;
+  cityFilterDiv.appendChild(div);
+});
+
+// Get selected values helper
+function getSelectedValues(selector) {
+  return Array.from(document.querySelectorAll(selector + ":checked")).map(cb => cb.value);
+}
+
+function renderBlogs() {
+  const container = document.getElementById('blogContainer');
+  const selectedCategories = getSelectedValues(".category-checkbox");
+  const selectedCities = getSelectedValues(".city-checkbox");
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+  let filteredBlogs = blogs.filter(blog => {
+    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(blog.category);
+    const cityMatch = selectedCities.length === 0 || selectedCities.includes(blog.city);
+    const searchMatch = blog.title.toLowerCase().includes(searchTerm) || blog.description.toLowerCase().includes(searchTerm);
+    return categoryMatch && cityMatch && searchMatch;
+  });
+
+  const totalPages = Math.ceil(filteredBlogs.length / cardsPerPage);
+  if(currentPage > totalPages) currentPage = totalPages || 1;
+
+  const start = (currentPage - 1) * cardsPerPage;
+  const end = start + cardsPerPage;
+  const blogsToShow = filteredBlogs.slice(start, end);
+
+  container.innerHTML = '';
+  blogsToShow.forEach(blog => {
+    const card = document.createElement('div');
+    card.className = "col-md-6 col-lg-4 blog-item";
+    card.innerHTML = `
+      <div class="card blog-card shadow-sm">
+        <img src="${blog.img}" class="card-img-top blog-img" alt="">
+        <div class="card-body">
+          <h5 class="card-title">${blog.title}</h5>
+          <p class="card-text">${blog.description}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">${blog.date} <br> ${blog.city || ''}</small>
+            <a href="viewpage.html" class="btn-add-cart">Request Hire</a>
+          </div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+  if(totalPages <= 1) return;
+
+  // Prev
+  const prevLi = document.createElement('li');
+  prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+  prevLi.innerHTML = `<a class="page-link">&laquo;</a>`;
+  prevLi.addEventListener('click', () => {
+    if(currentPage > 1) {
+      currentPage--;
+      renderBlogs();
+    }
+  });
+  pagination.appendChild(prevLi);
+
+  for(let i=1; i<=totalPages; i++) {
+    const li = document.createElement('li');
+    li.className = 'page-item' + (i === currentPage ? ' active' : '');
+    li.innerHTML = `<a class="page-link">${i}</a>`;
+    li.addEventListener('click', () => {
+      currentPage = i;
+      renderBlogs();
+    });
+    pagination.appendChild(li);
+  }
+
+  // Next
+  const nextLi = document.createElement('li');
+  nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+  nextLi.innerHTML = `<a class="page-link">&raquo;</a>`;
+  nextLi.addEventListener('click', () => {
+    if(currentPage < totalPages) {
+      currentPage++;
+      renderBlogs();
+    }
+  });
+  pagination.appendChild(nextLi);
+}
+
+// Event listeners
+document.getElementById('searchInput').addEventListener('input', () => {
+  currentPage = 1;
+  renderBlogs();
+});
+document.querySelectorAll(".category-checkbox, .city-checkbox").forEach(cb => {
+  cb.addEventListener('change', () => {
+    currentPage = 1;
+    renderBlogs();
+  });
+});
+
+// Initial render
+renderBlogs();
+</script>
+

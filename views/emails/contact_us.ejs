@@ -1,0 +1,51 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'New contact enquiry',
+  subtitle: 'Someone just submitted the contact form on your portal.',
+  badge: 'CONTACT',
+  preheader: 'New contact enquiry received from ' + (name || 'a visitor') + '.'
+}) %>
+
+<p class="email-lead">
+  Hi Admin,
+</p>
+
+<p class="text">
+  You’ve received a new <strong>Contact Us</strong> enquiry.
+</p>
+
+<div class="details-card">
+  <div class="details-row">
+    <div class="details-label">Name</div>
+    <div class="details-value"><%= name || '—' %></div>
+  </div>
+  <div class="details-row">
+    <div class="details-label">Email</div>
+    <div class="details-value">
+      <% if (email) { %>
+        <a href="mailto:<%= email %>" style="color:#2563eb;text-decoration:none;"><%= email %></a>
+      <% } else { %>
+        —
+      <% } %>
+    </div>
+  </div>
+  <div class="details-row">
+    <div class="details-label">Subject</div>
+    <div class="details-value"><%= subject || '—' %></div>
+  </div>
+</div>
+
+<div class="message-box">
+  <div class="message-label">Message</div>
+  <div class="message-body">
+    <%= (message || '').replace(/\r?\n/g, '<br>') %>
+  </div>
+</div>
+
+<p class="meta-line">
+  You’re receiving this email because contact enquiries for
+  <strong><%= (org && org.name) || 'your portal' %></strong> are routed to this address.
+</p>
+
+<%- include('_email_footer', { org }) %>

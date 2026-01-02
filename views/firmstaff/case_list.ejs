@@ -1,0 +1,577 @@
+<!-- views/firmstaff/case_list.ejs -->
+
+<%- include('firmheader.ejs'); %>
+<%- include('firmsidebar.ejs'); %>
+
+<%
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtDateTime(d){
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt)) return '';
+    return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate())
+      + ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+  } catch { return ''; }
+}
+%>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <div>
+        <h4 class="fw-bold mb-0">Cases</h4>
+        <% if (firm && firm.firm_name) { %>
+          <div class="text-muted small mt-1">
+            Firm: <strong><%= firm.firm_name %></strong>
+          </div>
+        <% } %>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button"
+                class="btn btn-primary btn-md fs-13"
+                data-bs-toggle="modal"
+                data-bs-target="#addCaseModal">
+          <i class="ti ti-plus me-1"></i> Add Case
+        </button>
+      </div>
+    </div>
+
+    <% if (output && output.message) { %>
+      <div class="alert alert-<%= output.type || 'info' %>"><%= output.message %></div>
+    <% } %>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+      <div class="card-body d-flex flex-wrap align-items-end gap-2">
+
+        <!-- Status filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="caseStatusFilter">Status</label>
+          <select id="caseStatusFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="Open">Open</option>
+            <option value="OnHold">On Hold</option>
+            <option value="Closed">Closed</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+
+        <!-- Type filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="caseTypeFilter">Case Type</label>
+          <select id="caseTypeFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <option value="Civil">Civil</option>
+            <option value="Criminal">Criminal</option>
+            <option value="Family">Family</option>
+            <option value="IP">IP</option>
+            <option value="Corporate">Corporate</option>
+            <option value="Immigration">Immigration</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Client filter -->
+        <div class="me-2">
+          <label class="form-label mb-1" for="caseClientFilter">Primary Client</label>
+          <select id="caseClientFilter" class="form-select" data-ignore-kilvish="yes">
+            <option value="">All</option>
+            <% (clients || []).forEach(cl => { %>
+              <% 
+                const displayName =
+                  cl.type === 'Business'
+                    ? (cl.business_name || ('Client #' + cl.client_id))
+                    : ((cl.first_name || '') + ' ' + (cl.last_name || '')).trim() || ('Client #' + cl.client_id);
+              %>
+              <option value="<%= cl.client_id %>"><%= displayName %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Search box -->
+        <div class="ms-auto">
+          <label class="form-label mb-1" for="caseSearch">Search</label>
+          <input id="caseSearch" type="text" class="form-control"
+                 placeholder="Title, number, jurisdiction..."
+                 data-ignore-kilvish="yes">
+        </div>
+
+        <div>
+          <button id="resetCaseFilters" class="btn btn-outline-secondary">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="caseTable" class="table table-striped table-bordered table-nowrap w-100">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Case</th>
+                <th>Primary Client</th>
+                <th>Contact</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Opened</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody><!-- DataTables will fill --></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<!-- Add Case Modal -->
+<div class="modal fade" id="addCaseModal" tabindex="-1" aria-labelledby="addCaseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="addCaseForm" method="POST" autocomplete="off">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCaseModalLabel">Add New Case</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+          <div class="mb-3">
+            <label for="case_title" class="form-label fw-medium">
+              Case Title <span class="text-danger">*</span>
+            </label>
+            <input type="text"
+                   class="form-control"
+                   id="case_title"
+                   name="case_title"
+                   placeholder="Enter case title"
+                   required>
+          </div>
+
+          <div class="mb-3">
+            <label for="primary_client_id" class="form-label fw-medium">
+              Select Primary Client <span class="text-danger">*</span>
+            </label>
+            <select class="form-select select2"
+                    id="primary_client_id"
+                    name="primary_client_id"
+                    required
+                    data-ignore-kilvish="yes">
+              <option value="">-- Select Client --</option>
+              <% (clients || []).forEach(cl => { %>
+                <% 
+                  const label =
+                    cl.type === 'Business'
+                      ? (cl.business_name || ('Client #' + cl.client_id))
+                      : ((cl.first_name || '') + ' ' + (cl.last_name || '')).trim() || ('Client #' + cl.client_id);
+                %>
+                <option value="<%= cl.client_id %>"><%= label %></option>
+              <% }); %>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">Cancel</button>
+          <button type="submit"
+                  class="btn btn-primary">
+            Save Case
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Add Case Modal -->
+
+<script>
+(function($){
+  const fx = window.axiosElaw || window.axios;
+  if (!fx || !$.fn.DataTable) return;
+
+  const $tbl      = $('#caseTable');
+  const $status   = $('#caseStatusFilter');
+  const $type     = $('#caseTypeFilter');
+  const $client   = $('#caseClientFilter');
+  const $search   = $('#caseSearch');
+  const $reset    = $('#resetCaseFilters');
+  const $addForm  = $('#addCaseForm');
+  const $addModal = $('#addCaseModal');
+
+  // Initialize Select2 where needed
+  $('.select2').select2();
+  $addModal.on('shown.bs.modal', function(){
+    $(this).find('.select2').select2({
+      dropdownParent: $addModal
+    });
+  });
+
+  function fmtDate(d) {
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt)) return '—';
+      const pad = n => (n < 10 ? '0' + n : '' + n);
+      return (
+        dt.getFullYear() + '-' +
+        pad(dt.getMonth() + 1) + '-' +
+        pad(dt.getDate()) + ' ' +
+        pad(dt.getHours()) + ':' +
+        pad(dt.getMinutes())
+      );
+    } catch {
+      return '—';
+    }
+  }
+
+  function statusBadge(st) {
+    if (st === 'Open') {
+      return '<span class="badge bg-success-subtle text-success border border-success">Open</span>';
+    }
+    if (st === 'OnHold') {
+      return '<span class="badge bg-warning-subtle text-warning border border-warning">On Hold</span>';
+    }
+    if (st === 'Closed') {
+      return '<span class="badge bg-secondary-subtle text-secondary border border-secondary">Closed</span>';
+    }
+    if (st === 'Archived') {
+      return '<span class="badge bg-dark-subtle text-dark border border-dark">Archived</span>';
+    }
+    return '<span class="badge bg-light text-muted">Unknown</span>';
+  }
+
+  const dt = $tbl.DataTable({
+    responsive: true,
+    dom:
+      "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+      { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+      { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+    ],
+    pageLength: 50,
+    searching: false,
+    serverSide: false,
+    ajax: function(data, cb){
+      const payload = {
+        status:    $status.val() || '',
+        type:      $type.val()   || '',
+        client_id: $client.val() || '',
+        q:         $search.val() || ''
+      };
+
+      fx.post('/firmstaff/case_json', payload)
+        .then(({ data }) => {
+          if (!data?.success) {
+            window.kilToast?.danger?.(data?.message || 'Failed to load cases.');
+            cb({ data: [] });
+            return;
+          }
+
+          const rows = (data.rows || []).map((r, idx) => {
+            const c = r;
+            const pc = c.primary_client || {};
+
+            const caseLabel = `
+              <div class="fw-semibold">${c.title || ''}</div>
+              <div class="text-muted small">${c.case_number || ''}</div>
+            `;
+
+            const clientName =
+              pc.type === 'Business'
+                ? (pc.business_name || '')
+                : ((pc.first_name || '') + ' ' + (pc.last_name || '')).trim();
+
+            const contact = (pc.country_code || '') + (pc.contact || '');
+
+            // Next status toggle:
+            //   Open → Closed
+            //   Closed → Open
+            //   OnHold → Open
+            //   Archived → Open
+            let nextStatus = 'Open';
+            let nextStatusLabel = 'Set Open';
+            if (c.status === 'Open') {
+              nextStatus = 'Closed';
+              nextStatusLabel = 'Set Closed';
+            } else if (c.status === 'Closed') {
+              nextStatus = 'Open';
+              nextStatusLabel = 'Set Open';
+            } else if (c.status === 'OnHold') {
+              nextStatus = 'Open';
+              nextStatusLabel = 'Set Open';
+            } else if (c.status === 'Archived') {
+              nextStatus = 'Open';
+              nextStatusLabel = 'Set Open';
+            }
+
+            return {
+              idx:      idx + 1,
+              caseInfo: caseLabel,
+              client:   clientName || '—',
+              contact:  contact || '—',
+              type:     c.type || '—',
+              status:   statusBadge(c.status || 'Open'),
+              opened:   fmtDate(c.opened_at || c.createdAt),
+              actions: `
+                <div class="d-flex align-items-center gap-1">
+                  <button type="button" class="btn btn-primary ms-2 fs-13 btn-md case-manage"                        
+                          data-id="${c.case_id}">
+                    <i class="ti ti-briefcase me-1"></i> Manage
+                  </button>
+                  <div class="dropdown">
+                    <a href="javascript:void(0);"
+                       class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 ms-1"
+                       data-bs-toggle="dropdown"
+                       data-bs-auto-close="outside"
+                       aria-expanded="false">
+                      <i class="ti ti-dots-vertical"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-2">
+                      <li>
+                        <a href="javascript:void(0);"
+                           class="dropdown-item case-status"
+                           data-id="${c.case_id}"
+                           data-status="${nextStatus}">
+                          <i class="ti ti-switch-3 me-2"></i>${nextStatusLabel}
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a href="javascript:void(0);"
+                           class="dropdown-item text-danger case-delete"
+                           data-id="${c.case_id}">
+                          <i class="ti ti-trash me-2"></i> Delete
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              `
+            };
+          });
+
+          cb({ data: rows });
+        })
+        .catch(err => {
+          console.error('case_json ajax error:', err);
+          window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to load cases.');
+          cb({ data: [] });
+        });
+    },
+    columns: [
+      { data: 'idx' },
+      { data: 'caseInfo' },
+      { data: 'client' },
+      { data: 'contact' },
+      { data: 'type' },
+      { data: 'status' },
+      { data: 'opened' },
+      { data: 'actions', orderable: false, searchable: false }
+    ]
+  });
+
+  // Hide built-in search (we use our own)
+  const $wrapper = $tbl.closest('.dataTables_wrapper');
+  $('.dataTables_filter', $wrapper).hide();
+
+  function reloadWithDelay(){
+    clearTimeout(window.__case_timer);
+    window.__case_timer = setTimeout(() => dt.ajax.reload(), 250);
+  }
+
+  $status.on('change', reloadWithDelay);
+  $type.on('change',   reloadWithDelay);
+  $client.on('change', reloadWithDelay);
+  $search.on('input',  reloadWithDelay);
+
+  $reset.on('click', function(e){
+    e.preventDefault();
+    $status.val('');
+    $type.val('');
+    $client.val('');
+    $search.val('');
+    dt.ajax.reload();
+  });
+
+    // --- Add Case form submit (modal) ---
+  $addForm.on('submit', async function(e){
+    e.preventDefault();
+    if (!fx) { this.submit(); return; }
+
+    try {
+      // 1) Read form into FormData
+      const fd = new FormData(this);
+
+      // 2) Convert FormData -> plain object (JSON)
+      const payload = {};
+      fd.forEach((value, key) => {
+        payload[key] = value;
+      });
+
+      console.log('Add case payload ->', payload);
+
+      // 3) Send JSON (Axios will set Content-Type: application/json)
+      const { data } = await fx.post('/firmstaff/add_case', payload);
+
+      if (!data?.success) {
+        const msg = data?.message || 'Failed to create case.';
+        window.kilToast?.danger?.(msg);
+        return;
+      }
+
+      // Close modal
+      const modalInstance = bootstrap.Modal.getInstance($addModal[0]);
+      modalInstance?.hide();
+
+      // Toast + refresh + redirect
+      window.kilToast?.success?.(data.message || 'Case created.');
+
+      if (data.case_id) {
+        document.cookie = `elaw_caseId=${data.case_id}; path=/;`;
+      }
+
+      window.location.href = '/firmstaff/manage_case';
+    } catch (err) {
+      console.error('add_case error', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to create case.';
+      window.kilToast?.danger?.(msg);
+    }
+  });
+
+
+  // --- Page-level actions ---
+
+  // Manage button → set cookie + go to manage_case
+  $tbl.on('click', '.case-manage', function(){
+    const id = this.dataset.id;
+    if (!id) return;
+    document.cookie = `elaw_caseId=${id}; path=/;`;
+    window.location.href = '/firmstaff/manage_case';
+  });
+
+  // Status toggle
+  $tbl.on('click', '.case-status', async function(){
+    const id     = this.dataset.id;
+    const status = this.dataset.status;
+    if (!id || !status) return;
+
+    try {
+      const { data } = await fx.post('/firmstaff/update_case_status', {
+        case_id: id,
+        status,
+        _csrf: '<%= csrfToken || "" %>'
+      });
+      if (!data?.success) {
+        window.kilToast?.danger?.(data?.message || 'Failed to update status.');
+        return;
+      }
+      window.kilToast?.success?.(data?.message || 'Status changed.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('update_case_status error', err);
+      window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to update status.');
+    }
+  });
+
+  // Delete case with soft/hard delete choice
+  $tbl.on('click', '.case-delete', async function(e){
+    e.preventDefault();
+    const id = this.dataset.id;
+    if (!id) return;
+
+    try {
+      const res = await Swal.fire({
+        title: 'Delete Case?',
+        html: `
+          <div style="text-align:left">
+            <p>You're about to delete Case ID <strong>${id}</strong>.</p>
+            <p>This action cannot be undone.</p>
+
+            <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+              <input type="checkbox" id="caseHardDelChk"/>
+              <span><strong>Hard delete</strong> (permanent, DB-level)</span>
+            </label>
+
+            <div id="caseHardDelWarn"
+                 style="display:none;margin-top:10px;padding:10px;border:1px solid #dc3545;background:#ffe9ec;color:#a1101a;border-radius:6px;">
+              <strong>FINAL WARNING:</strong> All records for this case
+              (participants, documents, etc. depending on cascade rules)
+              may be <u>permanently deleted</u> and <u>cannot be recovered</u>.
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Soft Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+          const chk  = document.getElementById('caseHardDelChk');
+          const warn = document.getElementById('caseHardDelWarn');
+          const btn  = Swal.getConfirmButton();
+
+          chk?.addEventListener('change', () => {
+            if (chk.checked) {
+              warn.style.display = 'block';
+              btn.textContent = 'Hard Delete';
+              btn.style.backgroundColor = '#dc3545';
+            } else {
+              warn.style.display = 'none';
+              btn.textContent = 'Soft Delete';
+              btn.style.backgroundColor = '';
+            }
+          });
+        },
+        preConfirm: () => {
+          const chk = document.getElementById('caseHardDelChk');
+          return { hard: !!chk?.checked };
+        }
+      });
+
+      if (!res.isConfirmed) return;
+
+      const { hard } = res.value || { hard: false };
+
+      const { data } = await fx.post('/firmstaff/delete_case', {
+        case_id: id,
+        hard,
+        _csrf: '<%= csrfToken || "" %>'
+      });
+
+      if (!data?.success) {
+        window.kilToast?.danger?.(data?.message || 'Failed to delete case.');
+        return;
+      }
+
+      window.kilToast?.success?.(data?.message || 'Case deleted.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('delete_case error', err);
+      const msg = err?.response?.data?.message || 'Failed to delete case.';
+      window.kilToast?.danger?.(msg);
+    }
+  });
+
+})(jQuery);
+</script>

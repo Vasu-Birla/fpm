@@ -1,0 +1,59 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title:  'Signature notification',
+  subtitle: 'You are copied on an e-signature request.',
+  badge: 'CC',
+  preheader: (recipientName || 'Recipient') + ' — you are copied on a document that is being signed.'
+}) %>
+
+<p class="email-lead">
+  Hello <strong><%= recipientName || 'Recipient' %></strong>,
+</p>
+
+<p class="text">
+  <%= message || 'You have been copied on the following signature request so you can track the document status.' %>
+</p>
+
+<div class="details-card">
+  <div class="details-row">
+    <div class="details-label">Document</div>
+    <div class="details-value"><%= documentTitle || 'Document' %></div>
+  </div>
+
+  <% if (typeof requesterName !== 'undefined' && requesterName) { %>
+    <div class="details-row">
+      <div class="details-label">Requested by</div>
+      <div class="details-value"><%= requesterName %></div>
+    </div>
+  <% } %>
+
+  <% if (typeof statusLabel !== 'undefined' && statusLabel) { %>
+    <div class="details-row">
+      <div class="details-label">Current status</div>
+      <div class="details-value"><%= statusLabel %></div>
+    </div>
+  <% } %>
+</div>
+
+<% if (viewLink) { %>
+  <p style="margin-top:18px;">
+    <a class="primary-btn"
+       href="<%= viewLink %>"
+       target="_blank"
+       rel="noopener">
+      View document
+    </a>
+  </p>
+<% } %>
+
+<p class="meta-line">
+  This email is for your information only. No signature is required from you.
+</p>
+
+<p class="closing">
+  Thank you,<br>
+  <strong><%= (org && org.name) || 'Our team' %></strong>
+</p>
+
+<%- include('_email_footer', { org }) %>

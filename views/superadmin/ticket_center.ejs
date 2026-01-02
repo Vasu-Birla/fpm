@@ -1,0 +1,233 @@
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('supersidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-3 mb-3 border-bottom">
+      <div class="d-flex align-items-center">
+        <h5 class="fw-bold mb-0 me-2">Ticket Center</h5>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="ticketCenterTable" class="table table-striped table-bordered table-nowrap">
+        <thead class="thead-light">
+          <tr>
+            <th>Ticket</th>
+            <th>Subject</th>
+            <th>Firm</th>
+            <th>Client</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Assigned</th>
+            <th>Updated</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener("load", () => {
+  const tableBody = document.querySelector("#ticketCenterTable tbody");
+
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || "";
+  }
+
+  function csrfHeaders(extra = {}) {
+    const token = getCsrfToken();
+    if (!token) return extra;
+    return {
+      ...extra,
+      "X-CSRF-Token": token,
+      "CSRF-Token": token,
+      "X-XSRF-TOKEN": token,
+    };
+  }
+
+  function formatTime(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString();
+  }
+
+  function renderRows(rows) {
+    if (!tableBody) return;
+    tableBody.innerHTML = "";
+    if (!rows.length) {
+      const tr = document.createElement("tr");
+      tr.dataset.status = String(row.status || "").toLowerCase();
+      tr.innerHTML = "<td colspan=\"9\" class=\"text-center\">No tickets</td>";
+      tableBody.appendChild(tr);
+      return;
+    }
+
+    rows.forEach((row) => {
+      const isClosed = String(row.status || "").toLowerCase() === "closed";
+      const priorityValue = String(row.priority || "normal").toLowerCase();
+      const tr = document.createElement("tr");
+      const priorityCell = `
+        <select class="form-select form-select-sm priority-select" data-ticket="${row.ticket_id}" data-prev="${priorityValue}">
+          <option value="low" ${priorityValue === "low" ? "selected" : ""}>Low</option>
+          <option value="normal" ${priorityValue === "normal" ? "selected" : ""}>Normal</option>
+          <option value="high" ${priorityValue === "high" ? "selected" : ""}>High</option>
+          <option value="urgent" ${priorityValue === "urgent" ? "selected" : ""}>Urgent</option>
+        </select>`;
+      tr.innerHTML = `
+        <td>${row.ticket_number || ""}</td>
+        <td>${row.subject || ""}</td>
+        <td>${row.firm_label || ""}</td>
+        <td>${row.client_label || ""}</td>
+        <td>${row.status || ""}</td>
+        <td>${priorityCell}</td>
+        <td>${row.assigned_label || "Unassigned"}</td>
+        <td>${formatTime(row.last_activity_iso)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary view-btn" data-ticket="${row.ticket_id}">View</button>
+          <button class="btn btn-sm btn-outline-danger ms-1 close-btn" data-ticket="${row.ticket_id}" ${isClosed ? "disabled" : ""}>Close</button>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  async function loadTickets() {
+    try {
+      const client = window.axiosElaw || window.axios;
+      if (!client) throw new Error("Axios not available");
+      const res = await client.post("/superadmin/tickets/json", {}, {
+        headers: csrfHeaders()
+      });
+      const data = res?.data;
+      if (!data?.success) {
+        window.kilToast?.danger?.(data?.message || "Failed to load tickets");
+        return;
+      }
+      renderRows(data.rows || []);
+    } catch (e) {
+      console.error("ticket list error:", e);
+      window.kilToast?.danger?.("Failed to load tickets");
+    }
+  }
+
+  async function openTicket(ticketId) {
+    if (!ticketId) return;
+    try {
+      const client = window.axiosElaw || window.axios;
+      if (!client) throw new Error("Axios not available");
+      const res = await client.post("/superadmin/tickets/open", { ticket_id: ticketId }, {
+        headers: csrfHeaders()
+      });
+      const data = res?.data;
+      if (!data?.success) {
+        window.kilToast?.info?.(data?.message || "Unable to open ticket");
+        return;
+      }
+      window.location.href = "/superadmin/tickets/view";
+    } catch (e) {
+      console.error("open ticket error:", e);
+      window.kilToast?.danger?.("Unable to open ticket");
+    }
+  }
+
+  async function closeTicket(ticketId) {
+    const client = window.axiosElaw || window.axios;
+    if (!client) throw new Error("Axios not available");
+    const res = await client.post("/superadmin/tickets/close", { ticket_id: ticketId }, {
+      headers: csrfHeaders()
+    });
+    return res?.data;
+  }
+
+  async function setPriority(ticketId, priority) {
+    const client = window.axiosElaw || window.axios;
+    if (!client) throw new Error("Axios not available");
+    const res = await client.post("/superadmin/tickets/priority", { ticket_id: ticketId, priority }, {
+      headers: csrfHeaders()
+    });
+    return res?.data;
+  }
+
+  if (tableBody) {
+    tableBody.addEventListener("click", (e) => {
+      const viewBtn = e.target.closest(".view-btn");
+      if (viewBtn) {
+        const rowStatus = viewBtn.closest("tr")?.dataset.status;
+        if (rowStatus === "closed") {
+          window.kilToast?.info?.("Ticket already closed");
+          return;
+        }
+        openTicket(viewBtn.getAttribute("data-ticket"));
+        return;
+      }
+      const closeBtn = e.target.closest(".close-btn");
+      if (closeBtn) {
+        const ticketId = closeBtn.getAttribute("data-ticket");
+        Swal.fire({
+          title: "Close this ticket?",
+          text: "You can re-open it later if needed.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, close",
+          cancelButtonText: "Cancel",
+        }).then(async (result) => {
+          if (!result.isConfirmed) return;
+          try {
+            const data = await closeTicket(ticketId);
+            if (!data?.success) {
+              window.kilToast?.danger?.(data?.message || "Failed to close ticket");
+              return;
+            }
+            window.kilToast?.success?.(data?.message || "Ticket closed");
+            loadTickets();
+          } catch (err) {
+            console.error("close ticket error:", err);
+            window.kilToast?.danger?.("Failed to close ticket");
+          }
+        });
+      }
+    });
+  }
+
+  if (tableBody) {
+    tableBody.addEventListener("change", async (e) => {
+      const select = e.target.closest(".priority-select");
+      if (!select) return;
+      const ticketId = select.getAttribute("data-ticket");
+      const priority = select.value;
+      const prev = select.getAttribute("data-prev") || "";
+      try {
+        const data = await setPriority(ticketId, priority);
+        if (!data?.success) {
+          select.value = prev;
+          window.kilToast?.danger?.(data?.message || "Failed to update priority");
+          return;
+        }
+        select.setAttribute("data-prev", priority);
+        window.kilToast?.success?.(data?.message || "Priority updated");
+        loadTickets();
+      } catch (err) {
+        console.error("priority update error:", err);
+        select.value = prev;
+        window.kilToast?.danger?.("Failed to update priority");
+      }
+    });
+  }
+
+  loadTickets();
+});
+</script>
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->

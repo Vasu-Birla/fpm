@@ -1,0 +1,143 @@
+
+
+/* ==================================== kilCss start  (common in every project ) ======================== */
+
+
+
+.success-text {
+	color: rgb(82, 190, 82);
+  font-size: medium;
+}
+
+/* .error-text {
+	color: rgb(255, 69, 69);
+  font-size: large;
+} */
+
+.error-text {
+  font-size: medium;
+	font-weight: bold;
+	color: rgb(255, 0, 0);
+	background: linear-gradient(45deg, #ff0707, #fe475f);
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	animation: heartbeat 1s infinite;
+	text-align: center;
+  }
+  
+  @keyframes heartbeat {
+	0% {
+	  transform: scale(1);
+	}
+	50% {
+	  transform: scale(1.05);
+	}
+	100% {
+	  transform: scale(1);
+	}
+  }
+
+
+
+
+
+
+
+  /* ------------- profile picture admin section */ 
+
+  .profile-pic_kil {
+	color: transparent;
+	transition: all 0.3s ease;
+	display: inline-flex;
+	justify-content: left;
+	align-items: flex-start;
+	position: relative;
+  height: 146px;
+	transition: all 0.3s ease;
+  }
+  .profile-pic_kil input {
+	display: none;
+    text-align: center !important;
+  }
+  .profile-pic_kil img {
+	position: absolute;
+	object-fit: cover;
+	width: 130px;
+	height: 130px;
+	box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.35);
+	border-radius: 100px;
+	z-index: 0;
+  border: 2px solid #05d5fa;
+  }
+  .profile-pic_kil .-label {
+	cursor: pointer;
+	height: 130px;
+	width: 130px;
+  }
+  .profile-pic_kil:hover .-label {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.8);
+	z-index: 10000;
+	color: #fafafa;
+	transition: background-color 0.2s ease-in-out;
+	border-radius: 100px;
+	margin-bottom: 0;
+  border: 2px solid #05d5fa;
+  }
+  .profile-pic_kil span {
+	display: inline-flex;
+	padding: 0.2em;
+	height: 2em;
+  }
+
+
+
+  /* ------------- profile picture end admin section */ 
+
+
+
+
+
+      /* ------- Defualt CSS Styles for Intl input  ------- */
+	  .iti--allow-dropdown {
+		width: 100%;
+	}
+	.iti__selected-flag {
+		margin-right: 10px;
+		margin-top: 8px;
+		height: none !important;
+	}
+	.iti__flag-container {
+		border: 1px solid #ccc;
+		border-radius: 5px;
+	}
+		/* ------- Defualt CSS Styles for Intl input  ------- */
+
+
+
+
+        
+
+   /* ----------------- Kilvish Input Validations  CSS adjust it according to each project ---------------- */
+
+             /* .error-message {
+                padding-left: 17px !important;
+            } */
+
+
+/* ----------------- Kiltell Number validation error message CSS adjust it according to each project  ---------------- */
+
+            div#kiltel-error {
+                padding-left: 20px;
+			
+            }
+
+
+
+
+
+
+/* ==================================== kilCss end  (common in every project ) ======================== */

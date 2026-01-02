@@ -1,0 +1,267 @@
+
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<!-- Sidebar End -->
+<!-- ========================
+    Start Page Content
+========================= -->
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Page Header Start -->
+        <div class="mb-4 d-flex align-items-center justify-content-between">
+            <h5 class="fw-bold mb-0">
+                <a href="#" class="text-dark">
+                    <i class="ti ti-chevron-left me-1"></i> Create Event
+                </a>
+            </h5>
+        </div>
+        <!-- Page Header End -->
+
+        <!-- Event Creation Form -->
+        <form action="#" method="POST" class="card">
+            <div class="card-body">
+
+                <div class="row g-3">
+                    <!-- Title -->
+                    <div class="col-md-6">
+                        <label for="title" class="form-label fw-medium">Title <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="Enter event title" required>
+                    </div>
+
+                    <!-- Case Select -->
+                    <div class="col-md-6">
+                        <label for="case_id" class="form-label fw-medium">Case <small>(optional)</small></label>
+                        <select id="case_id" name="case_id" class="form-select select2">
+                            <option selected disabled>Select Case</option>
+                            <option value="1">Case 1</option>
+                            <option value="2">Case 2</option>
+                            <!-- Populate dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-6">
+                        <label for="location" class="form-label fw-medium">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" placeholder="Courtroom or Meeting link">
+                    </div>
+
+                    <!-- Start Date Time -->
+                    <div class="col-md-3">
+                        <label for="start_at" class="form-label fw-medium">Start At <span class="text-danger">*</span></label>
+                        <input type="datetime-local" id="start_at" name="start_at" class="form-control" required>
+                    </div>
+
+                    <!-- End Date Time -->
+                    <div class="col-md-3">
+                        <label for="end_at" class="form-label fw-medium">End At <span class="text-danger">*</span></label>
+                        <input type="datetime-local" id="end_at" name="end_at" class="form-control" required>
+                    </div>
+
+                    <!-- All Day Checkbox -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="all_day" name="all_day">
+                            <label class="form-check-label" for="all_day">All Day Event</label>
+                        </div>
+                    </div>
+
+                    <!-- Reminders Repeater -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-medium">Reminders</label>
+                        <div id="reminders-container">
+                            <div class="row mb-2 reminder-item align-items-center">
+                                <div class="col-5">
+                                    <input type="number" name="reminders[0][minutesBefore]" class="form-control" placeholder="Minutes Before" min="1" />
+                                </div>
+                                <div class="col-5">
+                                    <select name="reminders[0][channel]" class="form-select select2">
+                                        <option value="email">Email</option>
+                                        <option value="in-app">In-App</option>
+                                    </select>
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-primary btn-sm" id="addReminderBtn">Add Reminder</button>
+                                    <!-- <button type="button" class="btn btn-danger btn-sm remove-reminder">Remove</button> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendees Multi-Select -->
+                    <div class="col-md-12">
+                        <label for="attendees" class="form-label fw-medium">Attendees</label>
+                        <select id="attendees" name="attendees[]" class="form-select select2" multiple>
+                            <option value="user1">Firm User 1</option>
+                            <option value="user2">Firm User 2</option>
+                            <option value="client1">Client 1</option>
+                            <option value="client2">Client 2</option>
+                            <!-- Populate dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- External Sync Checkbox -->
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="external_sync" name="external_sync">
+                            <label class="form-check-label" for="external_sync">Sync with Google/Outlook</label>
+                        </div>
+                    </div>
+                    <hr/>
+
+                    <!-- Availability Rules Section -->
+                    <div class="col-md-12">
+                        <h5 class="mt-1">Availability Rules <small>(optional)</small></h5>
+
+                        <!-- Working Days (weekday toggles) -->
+                        <label class="form-label fw-medium">Working Days</label>
+                        <div class="d-flex gap-2 mb-3">
+                            <?php
+                            $weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                            foreach ($weekdays as $day) {
+                                echo '<div class="form-check form-check-inline">';
+                                echo '<input class="form-check-input" type="checkbox" id="wd_'.$day.'" name="working_days[]" value="'.$day.'">';
+                                echo '<label class="form-check-label" for="wd_'.$day.'">'.$day.'</label>';
+                                echo '</div>';
+                            }
+                            ?>
+                        </div>
+
+                        <!-- Holidays Repeater -->
+                        <label class="form-label fw-medium">Holidays</label>
+                        <div id="holidays-container" class="mb-3">
+                            <div class="row g-2 holiday-item align-items-center mb-2">
+                                <div class="col-md-5">
+                                    <input type="date" name="holidays[0][date]" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="holidays[0][description]" class="form-control" placeholder="Description" />
+                                </div>
+                                <div class="col-md-1">
+                                    <!-- <button type="button" class="btn btn-danger btn-sm remove-holiday">Remove</button> -->
+                                    <button type="button" class="btn btn-primary btn-sm" id="addHolidayBtn">Add Holiday</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Extra Open Days -->
+                        <label class="form-label fw-medium mt-2">Extra Open Days</label>
+                        <div id="extraOpenDays-container" class="mb-3">
+                            <div class="input-group extra-open-day-item mb-2">
+                                <input type="date" name="extra_open_days[]" class="form-control" />
+                                <button type="button" class="btn btn-primary btn-sm" id="addExtraOpenDayBtn">Add Extra Day</button>
+                                <!-- <button type="button" class="btn btn-danger btn-sm remove-extra-open-day">Remove</button> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2">
+
+                <button type="submit" class="btn btn-primary">Create Event</button>
+            </div>
+        </form>
+        <!-- Event Creation Form End -->
+
+    </div>
+    <!-- End Content -->
+
+</div>
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+// Add/Remove Reminders Repeater
+document.addEventListener('DOMContentLoaded', function () {
+    let reminderIndex = 1;
+    const remindersContainer = document.getElementById('reminders-container');
+    document.getElementById('addReminderBtn').addEventListener('click', () => {
+        const reminderItem = document.createElement('div');
+        reminderItem.classList.add('row', 'mb-2', 'reminder-item', 'align-items-center');
+        reminderItem.innerHTML = `
+            <div class="col-5">
+                <input type="number" name="reminders[${reminderIndex}][minutesBefore]" class="form-control" placeholder="Minutes Before" min="1" />
+            </div>
+            <div class="col-5">
+                <select name="reminders[${reminderIndex}][channel]" class="form-select">
+                    <option value="email">Email</option>
+                    <option value="in-app">In-App</option>
+                </select>
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-danger btn-sm remove-reminder">Remove</button>
+            </div>
+        `;
+        remindersContainer.appendChild(reminderItem);
+        reminderIndex++;
+    });
+
+    remindersContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-reminder')) {
+            e.target.closest('.reminder-item').remove();
+        }
+    });
+
+    // Holidays repeater
+    let holidayIndex = 1;
+    const holidaysContainer = document.getElementById('holidays-container');
+    document.getElementById('addHolidayBtn').addEventListener('click', () => {
+        const holidayItem = document.createElement('div');
+        holidayItem.classList.add('row', 'g-2', 'holiday-item', 'align-items-center', 'mb-2');
+        holidayItem.innerHTML = `
+            <div class="col-md-4">
+                <input type="date" name="holidays[${holidayIndex}][date]" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="holidays[${holidayIndex}][description]" class="form-control" placeholder="Description" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm remove-holiday">Remove</button>
+            </div>
+        `;
+        holidaysContainer.appendChild(holidayItem);
+        holidayIndex++;
+    });
+
+    holidaysContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-holiday')) {
+            e.target.closest('.holiday-item').remove();
+        }
+    });
+
+    // Extra Open Days repeater
+    let extraOpenDayIndex = 1;
+    const extraOpenDaysContainer = document.getElementById('extraOpenDays-container');
+    document.getElementById('addExtraOpenDayBtn').addEventListener('click', () => {
+        const extraOpenDayItem = document.createElement('div');
+        extraOpenDayItem.classList.add('input-group', 'extra-open-day-item', 'mb-2');
+        extraOpenDayItem.innerHTML = `
+            <input type="date" name="extra_open_days[]" class="form-control" />
+            <button type="button" class="btn btn-danger btn-sm remove-extra-open-day">Remove</button>
+        `;
+        extraOpenDaysContainer.appendChild(extraOpenDayItem);
+        extraOpenDayIndex++;
+    });
+
+    extraOpenDaysContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-extra-open-day')) {
+            e.target.closest('.extra-open-day-item').remove();
+        }
+    });
+});
+</script>

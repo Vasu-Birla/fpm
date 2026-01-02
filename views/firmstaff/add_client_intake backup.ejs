@@ -1,0 +1,623 @@
+<%- include('firmheader.ejs'); %>
+<%- include('firmsidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row justify-content-center">
+      <div class="col-lg-12">
+        <div class="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h5 class="fw-bold mb-0 d-flex align-items-center">
+            <a href="/firmstaff/client_intake_list" class="text-dark">
+              <i class="ti ti-chevron-left me-1"></i>Add Client Intake
+            </a>
+          </h5>
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#intakeTemplateModal">
+            <i class="ti ti-template me-1"></i> Create Intake Template
+          </button>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+              <div class="fw-semibold">Intake templates</div>
+              <div class="text-muted small">
+                Customize intake questions per service. If you do not create a template, the system default intake form is used.
+              </div>
+            </div>
+            <div class="text-muted small">
+              Templates: <strong id="templateCount"><%= templatesCount || 0 %></strong>
+            </div>
+          </div>
+        </div>
+
+        <form id="intakeForm" action="#" method="POST" class="card" autocomplete="off">
+          <div class="card-body">
+            <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+            <div class="row g-3 mb-2">
+              <div class="col-md-6">
+                <label for="practice_area_id" class="form-label">Service <span class="text-danger">*</span></label>
+                <select id="practice_area_id" name="practice_area_id" class="form-select" data-ignore-kilvish="yes" required>
+                  <option value="">Select Service</option>
+                  <% (practiceAreas || []).forEach(pa => { %>
+                    <option value="<%= pa.practice_area_id %>"><%= pa.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="channel" class="form-label">Channel <span class="text-danger">*</span></label>
+                <select id="channel" name="channel" class="form-select" data-ignore-kilvish="yes" required>
+                  <option value="walk_in">Walk-In</option>
+                  <option value="phone">Phone</option>
+                  <option value="email">Email</option>
+                  <option value="referral">Referral</option>
+                  <option value="contact_us">Contact Us</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="text-muted small mb-3" id="templateInfo">
+              Select a service to load its intake template.
+            </div>
+
+            <div id="intakeSkeleton" class="py-2">
+              <div class="text-muted">Select a service to load the form.</div>
+            </div>
+
+            <div id="intakeFields" class="row g-3 d-none"></div>
+          </div>
+
+          <div class="card-footer d-flex justify-content-end">
+            <a href="/firmstaff/client_intake_list" class="btn btn-light me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Intake</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<div class="modal fade" id="intakeTemplateModal" tabindex="-1" aria-labelledby="intakeTemplateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form id="intakeTemplateForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="intakeTemplateModalLabel">Create Intake Template</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="template_key" class="form-label">Template Key <span class="text-danger">*</span></label>
+              <select id="template_key" name="template_key" class="form-select" data-ignore-kilvish="yes" required>
+                <option value="">Select key</option>
+                <option value="default">default</option>
+                <% (practiceAreas || []).forEach(pa => { %>
+                  <option value="<%= pa.slug %>"><%= pa.slug %> ( <%= pa.name %> )</option>
+                <% }); %>
+              </select>
+              <div class="text-muted small mt-1">
+                Use the service slug to map a template to that service.
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="template_name" class="form-label">Template Name <span class="text-danger">*</span></label>
+              <input type="text" id="template_name" name="name" class="form-control" placeholder="e.g., Family Law Intake" required>
+            </div>
+
+            <div class="col-12">
+              <label for="template_description" class="form-label">Description</label>
+              <input type="text" id="template_description" name="description" class="form-control" placeholder="Short description (optional)">
+            </div>
+
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between">
+                <label class="form-label mb-0">Visual Builder <span class="text-danger">*</span></label>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addBuilderField">
+                  <i class="ti ti-plus me-1"></i>Add Field
+                </button>
+              </div>
+              <div class="text-muted small mt-1">
+                Build your intake form visually. JSON updates automatically in the background.
+              </div>
+              <div id="builderEmpty" class="text-muted small mt-2">Add fields to build your intake template.</div>
+              <div id="templateBuilderList" class="d-flex flex-column gap-3 mt-2"></div>
+            </div>
+
+            <textarea id="template_schema_json" name="schema_json" class="d-none"></textarea>
+
+            <div class="col-12">
+              <label for="template_ui_json" class="form-label">UI JSON</label>
+              <textarea id="template_ui_json" name="ui_json" class="form-control" rows="4" placeholder="Optional UI config"></textarea>
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="1" id="template_active" name="is_active" checked>
+                <label class="form-check-label" for="template_active">
+                  Set template as active
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const fx = window.axiosElaw || window.axios;
+  const toast = window.kilToast;
+  const firmId = <%- JSON.stringify(firm_id || null) %>;
+  const defaultSchema = <%- JSON.stringify(defaultSchema || {}) %>;
+  const templateList = <%- JSON.stringify(templates || []) %>;
+  const templatesByKey = new Map((templateList || []).map(t => [t.template_key, t]));
+
+  const $form = document.getElementById('intakeForm');
+  const $practice = document.getElementById('practice_area_id');
+  const $fields = document.getElementById('intakeFields');
+  const $skeleton = document.getElementById('intakeSkeleton');
+  const $templateInfo = document.getElementById('templateInfo');
+  const $templateCount = document.getElementById('templateCount');
+
+  function escHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function renderField(field) {
+    const name = String(field?.name || '').trim();
+    if (!name) return '';
+
+    const label = field?.label || name;
+    const required = !!field?.required;
+    const placeholder = field?.placeholder || '';
+    const defaultValue = field?.default ?? '';
+    const type = String(field?.type || 'text').toLowerCase();
+    const reqMark = required ? ' <span class="text-danger">*</span>' : '';
+    const common = `name="${escHtml(name)}" ${required ? 'data-required="1"' : ''}`;
+
+    if (type === 'textarea') {
+      return `
+        <div class="col-12">
+          <label class="form-label">${escHtml(label)}${reqMark}</label>
+          <textarea class="form-control" rows="4" placeholder="${escHtml(placeholder)}" ${common}>${escHtml(defaultValue)}</textarea>
+        </div>
+      `;
+    }
+
+    if (type === 'select') {
+      const options = Array.isArray(field?.options) ? field.options : [];
+      const opts = options.map(opt => {
+        const val = typeof opt === 'object' ? (opt.value ?? opt.label ?? '') : opt;
+        const txt = typeof opt === 'object' ? (opt.label ?? opt.value ?? '') : opt;
+        const selected = String(val) === String(defaultValue) ? 'selected' : '';
+        return `<option value="${escHtml(val)}" ${selected}>${escHtml(txt)}</option>`;
+      }).join('');
+      return `
+        <div class="col-md-6">
+          <label class="form-label">${escHtml(label)}${reqMark}</label>
+          <select class="form-select" ${common} data-ignore-kilvish="yes">
+            <option value="">Select ${escHtml(label)}</option>
+            ${opts}
+          </select>
+        </div>
+      `;
+    }
+
+    if (type === 'radio') {
+      const options = Array.isArray(field?.options) ? field.options : [];
+      const items = options.map((opt, idx) => {
+        const val = typeof opt === 'object' ? (opt.value ?? opt.label ?? '') : opt;
+        const txt = typeof opt === 'object' ? (opt.label ?? opt.value ?? '') : opt;
+        const id = `radio_${name}_${idx}`;
+        return `
+          <div class="form-check">
+            <input class="form-check-input" type="radio" id="${id}" value="${escHtml(val)}" ${common}>
+            <label class="form-check-label" for="${id}">${escHtml(txt)}</label>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="col-12">
+          <label class="form-label d-block">${escHtml(label)}${reqMark}</label>
+          ${items || '<div class="text-muted small">No options</div>'}
+        </div>
+      `;
+    }
+
+    if (type === 'checkbox' && Array.isArray(field?.options)) {
+      const items = field.options.map((opt, idx) => {
+        const val = typeof opt === 'object' ? (opt.value ?? opt.label ?? '') : opt;
+        const txt = typeof opt === 'object' ? (opt.label ?? opt.value ?? '') : opt;
+        const id = `chk_${name}_${idx}`;
+        return `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="${id}" value="${escHtml(val)}" ${common}>
+            <label class="form-check-label" for="${id}">${escHtml(txt)}</label>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="col-12">
+          <label class="form-label d-block">${escHtml(label)}${reqMark}</label>
+          ${items}
+        </div>
+      `;
+    }
+
+    const inputType = ['email','number','date','text','tel'].includes(type) ? type : 'text';
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${escHtml(label)}${reqMark}</label>
+        <input type="${inputType}" class="form-control" placeholder="${escHtml(placeholder)}" value="${escHtml(defaultValue)}" ${common}>
+      </div>
+    `;
+  }
+
+  function renderSchema(schema) {
+    const fields = Array.isArray(schema?.fields) ? schema.fields : [];
+    if (!fields.length) {
+      $fields.innerHTML = '<div class="col-12 text-muted">No fields available in this template.</div>';
+      return;
+    }
+    $fields.innerHTML = fields.map(renderField).join('');
+  }
+
+  async function loadTemplate() {
+    const practiceAreaId = $practice.value;
+    if (!practiceAreaId) {
+      $templateInfo.textContent = 'Select a service to load its intake template.';
+      $fields.classList.add('d-none');
+      $skeleton.classList.remove('d-none');
+      return;
+    }
+
+    $skeleton.classList.remove('d-none');
+    $fields.classList.add('d-none');
+
+    try {
+      const { data } = await fx.get(`/api/intake/template?firm_id=${encodeURIComponent(firmId || '')}&practice_area_id=${encodeURIComponent(practiceAreaId)}`);
+      if (!data?.success) {
+        toast?.danger?.(data?.message || 'Failed to load intake template.');
+        return;
+      }
+
+      const schema = data.schema_json || defaultSchema;
+      const key = data.template_key || 'default';
+      const template = templatesByKey.get(key);
+
+      if (data.template_id) {
+        $templateInfo.textContent = `Using template: ${template?.name || key} (key: ${key}).`;
+      } else {
+        $templateInfo.textContent = 'No custom template found. Using system default intake form.';
+      }
+
+      renderSchema(schema);
+      $skeleton.classList.add('d-none');
+      $fields.classList.remove('d-none');
+    } catch (err) {
+      console.error('loadTemplate error', err);
+      toast?.danger?.(err?.response?.data?.message || 'Failed to load intake template.');
+    }
+  }
+
+  $practice?.addEventListener('change', loadTemplate);
+
+  $form?.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!fx) return;
+
+    if (!$practice.value) {
+      toast?.warning?.('Select a service.');
+      return;
+    }
+
+    const payload = {};
+    const fd = new FormData($form);
+    fd.forEach((value, key) => {
+      if (payload[key]) {
+        if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+        payload[key].push(value);
+      } else {
+        payload[key] = value;
+      }
+    });
+
+    try {
+      const { data } = await fx.post('/firmstaff/add_client_intake', payload);
+      if (!data?.success) {
+        toast?.danger?.(data?.message || 'Failed to create intake ticket.');
+        return;
+      }
+      toast?.success?.(data?.message || 'Intake ticket created.');
+      window.location.href = '/firmstaff/client_intake_list';
+    } catch (err) {
+      console.error('add_client_intake error', err);
+      toast?.danger?.(err?.response?.data?.message || err?.message || 'Failed to create intake ticket.');
+    }
+  });
+
+  const $templateForm = document.getElementById('intakeTemplateForm');
+  const $schemaField = document.getElementById('template_schema_json');
+  const $uiField = document.getElementById('template_ui_json');
+  const $templateKey = document.getElementById('template_key');
+  const $templateName = document.getElementById('template_name');
+  const $builderList = document.getElementById('templateBuilderList');
+  const $builderEmpty = document.getElementById('builderEmpty');
+  const $addFieldBtn = document.getElementById('addBuilderField');
+
+  function defaultSchemaText() {
+    try {
+      return JSON.stringify(defaultSchema, null, 2);
+    } catch {
+      return '';
+    }
+  }
+
+  function normalizeName(label) {
+    return String(label || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  function optionStringToArray(raw) {
+    return String(raw || '')
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean);
+  }
+
+  function optionArrayToString(list) {
+    return (Array.isArray(list) ? list : []).join(', ');
+  }
+
+  function isOptionType(type) {
+    return ['select','radio','checkbox'].includes(type);
+  }
+
+  function updateBuilderEmptyState() {
+    if (!$builderEmpty) return;
+    const hasFields = $builderList?.querySelectorAll('.builder-field').length;
+    $builderEmpty.style.display = hasFields ? 'none' : 'block';
+  }
+
+  function renderBuilderField(field = {}) {
+    const label = field.label || '';
+    const name = field.name || '';
+    const type = field.type || 'text';
+    const required = !!field.required;
+    const placeholder = field.placeholder || '';
+    const defValue = field.default ?? '';
+    const options = optionArrayToString(field.options || []);
+    const optionRowClass = isOptionType(type) ? '' : 'd-none';
+
+    const html = `
+      <div class="builder-field border rounded-3 p-3 bg-light">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <div class="fw-semibold">Field</div>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove-field">
+            Remove
+          </button>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Label <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" data-prop="label" value="${escHtml(label)}" placeholder="e.g., Full Name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Field Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" data-prop="name" value="${escHtml(name)}" placeholder="e.g., first_name" readonly>
+            <div class="text-muted small mt-1">Auto-filled from label.</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Type</label>
+            <select class="form-select" data-prop="type" data-ignore-kilvish="yes">
+              <option value="text" ${type === 'text' ? 'selected' : ''}>Text</option>
+              <option value="textarea" ${type === 'textarea' ? 'selected' : ''}>Textarea</option>
+              <option value="email" ${type === 'email' ? 'selected' : ''}>Email</option>
+              <option value="number" ${type === 'number' ? 'selected' : ''}>Number</option>
+              <option value="tel" ${type === 'tel' ? 'selected' : ''}>Phone</option>
+              <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
+              <option value="select" ${type === 'select' ? 'selected' : ''}>Select</option>
+              <option value="radio" ${type === 'radio' ? 'selected' : ''}>Radio</option>
+              <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Placeholder</label>
+            <input type="text" class="form-control" data-prop="placeholder" value="${escHtml(placeholder)}" placeholder="Optional">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Default Value</label>
+            <input type="text" class="form-control" data-prop="default" value="${escHtml(defValue)}" placeholder="Optional">
+          </div>
+          <div class="col-md-6 ${optionRowClass}" data-option-row>
+            <label class="form-label">Options (comma separated)</label>
+            <input type="text" class="form-control" data-prop="options" value="${escHtml(options)}" placeholder="Option 1, Option 2">
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" data-prop="required" ${required ? 'checked' : ''}>
+              <label class="form-check-label">Required</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    $builderList?.insertAdjacentHTML('beforeend', html);
+    updateBuilderEmptyState();
+  }
+
+  function readBuilderFields() {
+    const rows = Array.from($builderList?.querySelectorAll('.builder-field') || []);
+    return rows.map(row => {
+      const label = row.querySelector('[data-prop="label"]')?.value?.trim() || '';
+      let name = row.querySelector('[data-prop="name"]')?.value?.trim() || '';
+      const type = row.querySelector('[data-prop="type"]')?.value || 'text';
+      const placeholder = row.querySelector('[data-prop="placeholder"]')?.value?.trim() || '';
+      const defValue = row.querySelector('[data-prop="default"]')?.value ?? '';
+      const required = !!row.querySelector('[data-prop="required"]')?.checked;
+      const optionsRaw = row.querySelector('[data-prop="options"]')?.value || '';
+      const options = optionStringToArray(optionsRaw);
+
+      if (!name && label) {
+        name = normalizeName(label);
+        row.querySelector('[data-prop="name"]').value = name;
+      }
+
+      const field = {
+        name,
+        label,
+        type,
+        required: required || undefined
+      };
+
+      if (placeholder) field.placeholder = placeholder;
+      if (defValue !== '') field.default = defValue;
+      if (isOptionType(type) && options.length) field.options = options;
+      return field;
+    }).filter(f => f.name || f.label);
+  }
+
+  function syncSchemaFromBuilder() {
+    if (!$schemaField) return;
+    const title = $templateName?.value?.trim() || defaultSchema?.title || 'Intake Form';
+    const fields = readBuilderFields();
+    const schema = {
+      version: 1,
+      title,
+      fields
+    };
+    $schemaField.value = JSON.stringify(schema, null, 2);
+  }
+
+  function loadBuilderFromSchema(schema) {
+    if (!$builderList) return;
+    $builderList.innerHTML = '';
+    (schema?.fields || []).forEach(field => renderBuilderField(field));
+    updateBuilderEmptyState();
+    syncSchemaFromBuilder();
+  }
+
+  $addFieldBtn?.addEventListener('click', function(){
+    renderBuilderField({});
+    syncSchemaFromBuilder();
+  });
+
+  function handleBuilderUpdate(e) {
+    const target = e.target;
+    if (!target) return;
+
+    const row = target.closest('.builder-field');
+    if (!row) return;
+
+    if (target.dataset?.prop === 'label') {
+      const nameInput = row.querySelector('[data-prop="name"]');
+      if (nameInput) {
+        nameInput.value = normalizeName(target.value);
+      }
+    }
+
+    if (target.dataset?.prop === 'type') {
+      const optionRow = row.querySelector('[data-option-row]');
+      if (optionRow) {
+        optionRow.classList.toggle('d-none', !isOptionType(target.value));
+      }
+    }
+    syncSchemaFromBuilder();
+  }
+
+  $builderList?.addEventListener('input', handleBuilderUpdate);
+  $builderList?.addEventListener('change', handleBuilderUpdate);
+
+  $builderList?.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-action="remove-field"]');
+    if (!btn) return;
+    const row = btn.closest('.builder-field');
+    row?.remove();
+    updateBuilderEmptyState();
+    syncSchemaFromBuilder();
+  });
+
+  if ($schemaField && !$schemaField.value) {
+    $schemaField.value = defaultSchemaText();
+  }
+
+  $templateKey?.addEventListener('change', function(){
+    if (!$templateName.value && this.value) {
+      $templateName.value = this.value.replace(/_/g, ' ').replace(/-/g, ' ');
+    }
+    syncSchemaFromBuilder();
+  });
+
+  $templateName?.addEventListener('input', function(){
+    syncSchemaFromBuilder();
+  });
+
+  $templateForm?.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!fx) return;
+
+    const fields = readBuilderFields();
+    if (!fields.length) {
+      toast?.warning?.('Add at least one field to the template.');
+      return;
+    }
+    syncSchemaFromBuilder();
+
+    const payload = {
+      template_key: $templateKey.value || '',
+      name: $templateName.value || '',
+      description: document.getElementById('template_description')?.value || '',
+      schema_json: $schemaField.value || '',
+      ui_json: $uiField.value || '',
+      is_active: document.getElementById('template_active')?.checked ? '1' : '0'
+    };
+
+    try {
+      const { data } = await fx.post('/firmstaff/intake_template_create', payload);
+      if (!data?.success) {
+        toast?.danger?.(data?.message || 'Failed to save template.');
+        return;
+      }
+      toast?.success?.(data?.message || 'Template saved.');
+      const key = payload.template_key;
+      if (key && !templatesByKey.has(key)) {
+        templatesByKey.set(key, { template_key: key, name: payload.name });
+        if ($templateCount) {
+          $templateCount.textContent = String(Number($templateCount.textContent || 0) + 1);
+        }
+      }
+      const modalEl = document.getElementById('intakeTemplateModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal?.hide();
+    } catch (err) {
+      console.error('intake_template_create error', err);
+      toast?.danger?.(err?.response?.data?.message || err?.message || 'Failed to save template.');
+    }
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const showTemplate = params.get('show_template');
+  if (showTemplate === '1' || showTemplate === 'true') {
+    const modalEl = document.getElementById('intakeTemplateModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+  loadBuilderFromSchema(defaultSchema || {});
+})();
+</script>

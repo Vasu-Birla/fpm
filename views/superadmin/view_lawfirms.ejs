@@ -1,0 +1,686 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+                  <%
+/**
+ * Smart mask: show 2 chars at start and 2 at end if possible.
+ * If too short, just show the first and mask the rest, or just mask.
+ */
+function maskValue(str, maskChar = '*') {
+  str = (str == null) ? '' : String(str);
+  const len = str.length;
+  if (len === 0) return '';
+  if (len === 1) return maskChar;
+  if (len === 2) return str[0] + maskChar;
+  if (len <= 4) return str[0] + maskChar.repeat(len - 2) + str[len - 1];
+  // For emails, keep domain visible
+  if (str.includes('@')) {
+    const at = str.indexOf('@');
+    if (at <= 2) return maskChar.repeat(at) + str.substring(at);
+    return str[0] + maskChar.repeat(at - 2) + str[at - 1] + str.substring(at);
+  }
+  // For other strings (phones, etc): 2 start, 2 end
+  return str.slice(0, 2) + maskChar.repeat(len - 4) + str.slice(-2);
+}
+%>
+
+
+
+
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Start Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h4 class="fw-bold mb-0">Law Firm List <span class="badge badge-soft-primary fw-medium border py-1 px-2 border-primary fs-13 ms-1">Total Law Firms : 10</span></h4>
+            </div>
+            <div class="text-end d-flex">
+                <a href="/superadmin/add_lawfirm" class="btn btn-primary ms-2 fs-13 btn-md"><i class="ti ti-plus me-1"></i>Add Law Firm</a>
+            </div>
+        </div>
+  
+
+  
+                  
+              <%- include('partials/view_lawfirms_table', { lawfirms }) %>
+
+
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+    <script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'elaw_lawfirm'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_lawfirm'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'elaw_firmId'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+
+</script>
+
+  </body>
+</html>
+
+<script>
+
+
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.slideshow-trigger').forEach(el => {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        const imagesString = this.dataset.images;
+        openImageSlideshow(imagesString);
+      });
+    });
+  });
+
+
+
+
+function openImageSlideshow(imagesString) {
+    const images = imagesString.split(','); // Split the images by comma
+    let currentIndex = 0;
+
+    // Function to update the content inside SweetAlert
+    function updateImage(index) {
+        const totalImages = images.length;
+        const imgSrc = `${images[index].trim()}`;
+        const imageTag = `<img src="${imgSrc}" style="width:100%; height:auto;" />`;
+        const navigationText = `${index + 1} of ${totalImages} Images`;
+
+        // Display SweetAlert
+        Swal.fire({
+            title: navigationText, // Display image count
+            html: imageTag,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Next',
+            cancelButtonText: 'Previous',
+            allowOutsideClick: false,
+            showCloseButton: true,
+            preConfirm: () => {
+                if (currentIndex < totalImages - 1) {
+                    currentIndex++;
+                    updateImage(currentIndex); // Go to next image
+                }
+            },
+            preCancel: () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateImage(currentIndex); // Go to previous image
+                }
+            }
+        });
+    }
+
+    // Start slideshow with the first image
+    updateImage(currentIndex);
+}
+
+
+
+
+ const fx = (window.axiosElaw); // CSRF-aware
+
+
+
+//==========================  Edit Law Firm / Make Disable Law Firm  ( Inactive /delete) ======================
+document.addEventListener('click', (e) => {
+  const edit = e.target.closest('.lawfirm-edit');
+  if (edit) {
+    const id = edit.dataset.firmId;
+    document.cookie = `elaw_firmId=${id}`;
+    window.location.href = '/superadmin/edit_lawfirm';
+    return;
+  }
+
+
+    const toggle = e.target.closest('.lawfirm-status-toggle');
+  if (toggle) {
+    e.preventDefault();
+    update_lawfirm_status(
+      toggle.dataset.firmId,
+      toggle.dataset.newStatus,  // 'active' or 'admin_disabled'
+      toggle.dataset.firmName,
+      toggle                     // pass element for UI update
+    );
+    return;
+  }
+
+  const del = e.target.closest('.lawfirm-delete');
+  if (del) {
+ 
+    deleteLawfirm(del.dataset.firmId, del.dataset.firmName);
+  }
+});
+
+
+
+
+  
+async function deleteLawfirm(firmId, firmName) {
+  try {
+    const res = await Swal.fire({
+      title: 'Delete Law Firm?',
+      html: `
+        <div style="text-align:left">
+          <p>You're about to delete <strong>${firmName}</strong> (ID: ${firmId}).</p>
+          <p>This action cannot be undone.</p>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+            <input type="checkbox" id="hardDelChk"/>
+            <span><strong>Hard delete</strong> (permanent, DB-level cascade)</span>
+          </label>
+
+          <div id="hardDelWarn"
+               style="display:none;margin-top:10px;padding:10px;border:1px solid #dc3545;background:#ffe9ec;color:#a1101a;border-radius:6px;">
+            <strong>FINAL WARNING:</strong> All records related to this law firm
+            (users, cases, documents, billing, messages, etc.) will be
+            <u>permanently deleted</u> and <u>cannot be recovered or tracked for legal/audit purposes</u>.
+          </div>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Soft Delete',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      didOpen: () => {
+        const chk = document.getElementById('hardDelChk');
+        const warn = document.getElementById('hardDelWarn');
+        const btn = Swal.getConfirmButton();
+
+        chk?.addEventListener('change', () => {
+          if (chk.checked) {
+            warn.style.display = 'block';
+            btn.textContent = 'Hard Delete';
+            btn.style.backgroundColor = '#dc3545'; // red
+          } else {
+            warn.style.display = 'none';
+            btn.textContent = 'Soft Delete';
+            btn.style.backgroundColor = ''; // reset default
+          }
+        });
+      },
+      preConfirm: () => {
+        const chk = document.getElementById('hardDelChk');
+        return { hard: !!chk?.checked };
+      }
+    });
+
+    if (!res.isConfirmed) return;
+
+    const { hard } = res.value || { hard: false };
+
+    const { data } = await fx.post('/superadmin/delete_lawfirm', { id: firmId, hard });
+
+    if (!data?.success) {
+     
+      kilToast.danger(data?.message || 'Failed to delete law firm.')
+      return;
+    }
+
+
+    kilToast.success(data?.message || 'Law firm deleted.')
+    setTimeout(() => location.href = '/superadmin/view_lawfirms', 900);
+
+  } catch (err) {
+    console.error('delete_lawfirm error:', err);
+    const msg = err?.response?.data?.message || 'Failed to delete law firm.';
+    
+    kilToast.danger(msg)
+  }
+}
+
+
+async function update_lawfirm_status(firmId, newStatus, firmName, toggleEl) {
+  try {
+    const { data } = await fx.post('/superadmin/update_lawfirm_status', {
+      id: firmId,
+      status: newStatus
+    });
+
+    if (!data?.success) {
+      kilToast.danger(data?.message || 'Failed to update status.');
+      return;
+    }
+
+    kilToast.success(data?.message || 'Status changed.');
+
+    // ===== 1) Update the status cell =====
+    const cell = document.querySelector(
+      `td.status-container[data-firm-id="${firmId}"]`
+    );
+
+    if (cell) {
+      // keep latest status in data attribute
+      cell.dataset.firmStatus = newStatus;
+
+      let badgeHtml;
+
+      if (newStatus === 'active') {
+        badgeHtml =
+          '<span class="badge bg-success-subtle text-success">Activated</span>';
+      } else if (newStatus === 'pending') {
+        badgeHtml =
+          '<span class="badge bg-warning-subtle text-warning">Pending</span>';
+      } else {
+        // admin_disabled / inactive / anything else
+        badgeHtml =
+          '<span class="badge bg-danger-subtle text-danger">De-activated</span>';
+      }
+
+      cell.innerHTML = badgeHtml;
+    }
+
+    // ===== 2) Update the dropdown option (Suspend ↔ Activate) =====
+    if (toggleEl) {
+      // next status to send on next click
+      let nextStatus;
+      let linkHtml;
+
+      if (newStatus === 'active') {
+        // Now active => next action should Suspend
+        nextStatus = 'admin_disabled';
+        toggleEl.classList.remove('text-success');
+        toggleEl.classList.add('text-danger');
+        linkHtml =
+          '<i class="ti ti-power me-2 text-danger"></i> Suspend';
+      } else {
+        // Now de-activated/pending/etc => next action should Activate
+        nextStatus = 'active';
+        toggleEl.classList.remove('text-danger');
+        toggleEl.classList.add('text-success');
+        linkHtml =
+          '<i class="ti ti-power me-2 text-success"></i> Activate';
+      }
+
+      toggleEl.dataset.newStatus = nextStatus;
+      toggleEl.innerHTML = linkHtml;
+    }
+
+    // ❌ No page reload here
+    // location.href = '/superadmin/view_lawfirms';
+
+  } catch (err) {
+    const msg = err?.response?.data?.message || 'Failed to update status.';
+    kilToast.danger(msg);
+    console.error('update_lawfirm_status error:', err);
+  } finally {
+    console.log('status update done');
+  }
+}
+
+
+//============================= Make Disable lawfirm End =============================
+
+
+</script>
+
+
+
+
+
+<script>
+
+function showSweetLogs(logs ,total) {
+  if (!logs || logs.length === 0) {
+    return Swal.fire('No Logs Found', 'There are no audit logs available for this user.', 'info');
+  }
+
+  const logHtml = logs.map((log, index) => {
+    const date = log.timestamp || 'Invalid Date';
+    const resultColor = (log.result || '').toLowerCase().includes('success') ? 'green' : 'red';
+        //const displayIndex1 = logs.length - index; // latest gets highest #
+        const displayIndex = parseInt(total)  - index;  // Real database index
+
+    return `
+      <div style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; padding: 15px; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); font-size: 14px;">
+        <div style="margin-bottom: 5px; font-weight: bold; color: #444;">#${displayIndex} | <span style="color: #555;">${log.action}</span></div>
+        
+        <div style="margin-bottom: 6px;"><strong>Actor:</strong> ${log.actor}</div>
+        <div style="margin-bottom: 6px;"><strong>Lawfirm ID:</strong> ${log.firmId || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Candidate ID:</strong> ${log.candidate_id || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Timestamp:</strong> ${date}</div>
+        
+        <div style="margin: 8px 0;"><strong>Description:</strong><br>
+          <div style="white-space: pre-wrap; padding-left: 10px; margin-top: 3px; color: #333;">
+            ${log.description}
+          </div>
+        </div>
+
+        <div style="margin: 6px 0;"><strong>URL:</strong><br>
+          <code style="white-space: break-spaces; background: #f4f4f4; padding: 4px 6px; border-radius: 4px; display: inline-block;">${log.url}</code>
+        </div>
+
+        <div style="margin-top: 10px;"><strong>Result:</strong> 
+          <span style="color: ${resultColor}; font-weight: bold;">${log.result}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  Swal.fire({
+    title: 'Audit Logs',   
+    html: `
+      <div style="max-height: 600px; overflow-y: auto;">
+        ${logHtml}
+      </div>
+    `,
+    showCloseButton: true,
+    confirmButtonText: 'Close',
+    scrollbarPadding: false
+  });
+}
+
+  $(document).on('click', '.view-logs-btn', function () {
+  const candidateId = $(this).data('candidate-id') || null;
+  const firmId = $(this).data('lawfirm-id') || null;
+
+  $.ajax({
+    url: '/superadmin/get_logs',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ candidate_id: candidateId, firmId: firmId, _csrf: csrfToken }),
+    success: function (res) {
+      if (res.success) {
+        showSweetLogs(res.logs,res.total); // custom function to show logs in SweetAlert2
+      } else {
+        Swal.fire('Error', res.message || 'Something went wrong', 'error');
+      }
+    },
+    error: function () {
+      Swal.fire('Error', 'Server error occurred.', 'error');
+    }
+  });
+});
+
+</script>
+
+<script>
+
+
+function ensureLocationStyles(){
+  if (document.getElementById('locCardStyles')) return;
+  const css = `
+  .loc-list{max-height:60vh;overflow:auto}
+  .loc-card{
+    border:1px solid #e7eaf0;
+    border-radius:12px;
+    padding:14px 16px;
+    position:relative;
+    background:#fff;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+    margin-bottom:10px;
+  }
+  .loc-parish{
+    font-weight:600;
+    color:#0f172a;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .loc-address{
+    color:#475569;
+    line-height:1.45;
+    word-break:break-word;
+  }
+  .loc-badge{
+    position:absolute;
+    top:10px;
+    right:12px;
+    padding:2px 8px;
+    font-size:11px;
+    font-weight:700;
+    border-radius:999px;
+    background:#e8f5e9;
+    color:#1f7a1f;
+    border:1px solid #c7e8cb;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+  }
+  .loc-pin{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:20px;height:20px;border-radius:6px;
+    background:#eff6ff;color:#1d4ed8;font-size:12px;
+  }
+  `;
+  const style = document.createElement('style');
+  style.id = 'locCardStyles';
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function renderLocationsHTML(locations) {
+  if (!locations || !locations.length) {
+    return '<div class="text-muted">No locations found.</div>';
+  }
+  const rows = locations.map((loc) => {
+    const primary = !!loc.is_primary;
+    return `
+      <div class="loc-card">
+        ${primary ? '<span class="loc-badge">Primary</span>' : ''}
+        <div class="loc-parish">
+          <span class="loc-pin"><i class="ti ti-map-pin"></i></span>
+          ${esc(loc.parish) || '—'}
+        </div>
+        <div class="loc-address">${esc(loc.address)}</div>
+      </div>
+    `;
+  }).join('');
+  return `<div class="loc-list">${rows}</div>`;
+}
+
+async function showFirmLocations(firmId, firmName){
+  try {
+    ensureLocationStyles();
+    const { data } = await fx.post('/superadmin/firm_locations', { firm_id: firmId });
+    if (!data?.success) {
+      return Swal.fire('Error', data?.message || 'Failed to load locations.', 'error');
+    }
+    await Swal.fire({
+      title: `Service Locations — ${firmName}`,
+      html: renderLocationsHTML(data.locations),
+      width: 680,
+      showCloseButton: true,
+      confirmButtonText: 'Close'
+    });
+  } catch (err) {
+    console.error('firm_locations ajax error:', err);
+    const msg = err?.response?.data?.message || 'Failed to load locations.';
+    Swal.fire('Error', msg, 'error');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.view-locs-btn');
+  if (!btn) return;
+  const firmId = btn.dataset.firmId;
+  const name   = btn.dataset.firmName || 'Law Firm';
+  showFirmLocations(firmId, name);
+});
+</script>
+
+
+
+<style>
+/* ===== Practice Areas Modal (expandable) ===== */
+.pa-exp-modal { --bd:#e7eaf0; --muted:#6b7280; --ink:#0f172a; --chip:#f3f4f6; --chipbd:#e5e7eb; }
+.pa-exp-modal .pa-card{
+  border:1px solid var(--bd); border-radius:14px; padding:12px 14px; background:#fff;
+  box-shadow:0 2px 10px rgba(17,24,39,.06); margin-bottom:10px; transition:.2s ease box-shadow, .2s ease border-color;
+}
+.pa-exp-modal .pa-card:hover{ border-color:#dbeafe; box-shadow:0 4px 18px rgba(17,24,39,.08); }
+
+.pa-exp-modal .pa-head{
+  display:flex; align-items:center; gap:10px;
+}
+.pa-exp-modal .pa-title{
+  font-weight:700; color:var(--ink); display:flex; align-items:center; gap:8px;
+}
+.pa-exp-modal .pa-toggle{
+  width:28px; height:28px; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+.pa-exp-modal .pa-toggle:hover{ background:#eef2f7; border-color:#d1d5db; }
+
+.pa-exp-modal .pa-children{
+  margin-left:38px; margin-top:8px; overflow:hidden; display:grid; grid-template-rows: 1fr; transition: grid-template-rows .25s ease;
+}
+.pa-exp-modal .pa-children.collapsed{ grid-template-rows:0fr; }
+.pa-exp-modal .pa-children > div{ overflow:hidden; }
+
+.pa-exp-modal .chip{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+  background:var(--chip); border:1px solid var(--chipbd); color:#111827; font-size:12px; margin:4px 6px 0 0;
+}
+.pa-exp-modal .muted{ color:var(--muted); }
+
+/* toolbar in modal title */
+.pa-exp-toolbar {
+  display:flex; align-items:center; gap:8px; margin-top:6px;
+}
+.pa-exp-toolbar .btn { border-radius:8px; padding:.25rem .5rem; line-height:1; }
+</style>
+
+
+
+
+<script>
+(function(){
+  const fx    = window.axiosElaw;
+
+
+  const esc = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  function renderPAExpandable(areas, expandedSet){
+    if (!areas || !areas.length) {
+      return `<div class="muted">No practice areas linked.</div>`;
+    }
+    return `
+      <div class="pa-exp-modal">
+        ${areas.map(p => {
+          const id = String(p.id);
+          const isOpen = expandedSet.has(id);
+          const hasKids = (p.children && p.children.length);
+          return `
+            <div class="pa-card" data-parent-id="${id}">
+              <div class="pa-head">
+                <div class="pa-toggle" data-toggle="${id}" title="${isOpen?'Collapse':'Expand'}">
+                  <i class="ti ${isOpen?'ti-chevron-down':'ti-chevron-right'}"></i>
+                </div>
+                <div class="pa-title">
+                  <i class="ti ti-folders"></i> ${esc(p.name)}
+                </div>
+              </div>
+              ${
+                hasKids
+                  ? `<div class="pa-children ${isOpen?'':'collapsed'}">
+                      <div>
+                        ${p.children.map(c => `<span class="chip"><i class="ti ti-caret-right"></i>${esc(c.name)}</span>`).join('')}
+                      </div>
+                    </div>`
+                  : `<div class="pa-children collapsed"><div><div class="muted" style="margin-top:6px">No sub-areas selected.</div></div></div>`
+              }
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  async function showFirmPAModal(firmId, firmName){
+    try {
+      const { data } = await fx.post('/superadmin/firm_practice_areas', { firm_id: firmId });
+      if (!data?.success) return kilToast.danger(data?.message || 'Failed to load practice areas.');
+
+      // start collapsed by default; expand if small list (<=3)
+      const expanded = new Set();
+      if ((data.areas||[]).length <= 3) data.areas.forEach(a => expanded.add(String(a.id)));
+
+      await Swal.fire({
+        title: `
+          <div class="d-flex flex-column align-items-start">
+            <div>Practice Areas — ${esc(firmName)}</div>
+            <div class="pa-exp-toolbar">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="paExpExpandAll"><i class="ti ti-arrows-maximize me-1"></i>Expand All</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="paExpCollapseAll"><i class="ti ti-arrows-minimize me-1"></i>Collapse All</button>
+            </div>
+          </div>
+        `,
+        html: renderPAExpandable(data.areas || [], expanded),
+        width: 820,
+        showCloseButton: true,
+        confirmButtonText: 'Close',
+        customClass: { popup: 'shadow-lg rounded-4' },
+        didOpen: () => {
+          const $html = Swal.getHtmlContainer();
+          if (!$html) return;
+
+          // toggle one parent
+          $html.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-toggle]');
+            if (!btn) return;
+            const id = btn.getAttribute('data-toggle');
+            if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+            $html.innerHTML = renderPAExpandable(data.areas || [], expanded);
+          });
+
+          // expand all / collapse all
+          document.getElementById('paExpExpandAll')?.addEventListener('click', () => {
+            (data.areas||[]).forEach(a => expanded.add(String(a.id)));
+            $html.innerHTML = renderPAExpandable(data.areas || [], expanded);
+          });
+          document.getElementById('paExpCollapseAll')?.addEventListener('click', () => {
+            expanded.clear();
+            $html.innerHTML = renderPAExpandable(data.areas || [], expanded);
+          });
+        }
+      });
+    } catch (err) {
+      console.error('firm_practice_areas ajax error:', err);
+      kilToast.danger(err?.response?.data?.message || 'Failed to load practice areas.');
+    }
+  }
+
+  // hook the table button
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.view-pas-btn');
+    if (!btn) return;
+    showFirmPAModal(btn.dataset.firmId, btn.dataset.firmName);
+  });
+})();
+</script>
+

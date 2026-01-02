@@ -1,0 +1,197 @@
+<!-- Header -->
+<%- include('firmheader.ejs'); %>
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <h4 class="fw-bold mb-0">Edit Firm User <span class="badge badge-soft-primary border py-1 px-2 border-primary fs-13 ms-1">#<%= user.staff_id %></span></h4>
+      <div><a href="/firmstaff/firm_staff" class="btn btn-outline-secondary btn-md fs-13"><i class="ti ti-chevron-left me-1"></i> Back to List</a></div>
+    </div>
+
+    <form id="kilform" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="staff_id" value="<%= user.staff_id %>">
+
+      <div class="card">
+        <div class="card-body">
+          <div class="row g-3">
+
+            <!-- Firm -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="firm_id">Law Firm <span class="text-danger">*</span></label>
+              <select data-ignore-kilvish="Yes" id="firm_id" name="firm_id" class="form-select" required>
+                <% (firms || []).forEach(f => { %>
+                  <option value="<%= f.firm_id %>" <%= f.firm_id === user.firm_id ? 'selected' : '' %>><%= f.firm_name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Role -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="firm_role_id">User Role <span class="text-danger">*</span></label>
+              <select data-ignore-kilvish="Yes" id="firm_role_id" name="firm_role_id" class="form-select" required>
+                <% (roles || []).forEach(r => { %>
+                  <option value="<%= r.firm_role_id %>" <%= r.firm_role_id === user.firm_role_id ? 'selected' : '' %>><%= r.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <!-- Avatar -->
+            <div class="col-12">
+              <label class="form-label fw-medium">Avatar</label>
+              <% if (user.avatar) { %>
+                <div class="d-flex align-items-center gap-2">
+                  <a class="btn btn-outline-primary btn-sm"
+                     href="/secure/file_stream?s3key=<%= encodeURIComponent(user.avatar) %>"
+                     target="_blank"><i class="ti ti-external-link me-1"></i> View</a>
+                  <label class="btn btn-outline-secondary btn-sm mb-0">
+                    <i class="ti ti-upload me-1"></i> Replace
+                    <input type="file" name="avatar" class="d-none">
+                  </label>
+                  <div class="form-check">
+                    <input class="form-check-input" data-ignore-kilvish="Yes" type="checkbox" id="remove_avatar" name="remove_avatar" value="1">
+                    <label class="form-check-label" for="remove_avatar">Remove</label>
+                  </div>
+                </div>
+              <% } else { %>
+                <input type="file" name="avatar" class="form-control">
+              <% } %>
+            </div>
+
+            <!-- Names -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="first_name">First Name <span class="text-danger">*</span></label>
+              <input id="first_name" name="first_name" type="text" class="form-control" required value="<%- user.first_name || '' %>">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="last_name">Last Name <span class="text-danger">*</span></label>
+              <input id="last_name" name="last_name" type="text" class="form-control" required value="<%- user.last_name || '' %>">
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="email">Email <span class="text-danger">*</span></label>
+              <input id="email" name="email" type="email" class="form-control" required value="<%- user.email || '' %>">
+              <div id="emailError" class="text-danger small"></div>
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="full_contact">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-group kiltel-phone-wrap">
+                <button type="button" class="kiltel-country-trigger"></button>
+                <input data-ignore-kilvish="Yes" type="tel" class="form-control" id="full_contact" data-kilvish-tel data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes"
+                  value="<%- (user.country_code||'')+(user.contact||'') %>" required>
+                <input type="hidden" id="country_code" name="country_code" value="<%- user.country_code || '' %>">
+                <input type="hidden" id="contact" name="contact" value="<%- user.contact || '' %>">
+              </div>
+              <div id="phoneError" class="text-danger small"></div>
+            </div>
+
+        
+
+            <!-- Password (optional reset) -->
+            <!-- <div class="col-md-6">
+              <label class="form-label fw-medium" for="password">Reset Password</label>
+              <input id="password" name="password" type="password" class="form-control" placeholder="Leave blank to keep unchanged">
+            </div> -->
+
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium">Update User</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = window.axiosElaw;
+  const toast = (t,m)=>(window.kweToast||window.kilToast||function(){}) (t,m);
+
+  const firmSel = document.getElementById('firm_id');
+  const roleSel = document.getElementById('firm_role_id');
+  const emailEl = document.getElementById('email');
+  const phoneEl = document.getElementById('full_contact');
+
+  async function refreshRoles(){
+    roleSel.innerHTML = `<option value="">Loading...</option>`;
+    roleSel.disabled = true;
+    const firm_id = firmSel.value || '';
+    try {
+      const { data } = await fx.post('/firmstaff/firm_roles_json', { firm_id });
+      if (!data?.success) throw new Error(data?.message || 'Failed to load roles.');
+      const current = '<%- user.firm_role_id %>';
+      roleSel.innerHTML = `<option value="">Select Role</option>` + (data.roles||[]).map(r => `<option value="${r.firm_role_id}" ${String(r.firm_role_id)===String(current)?'selected':''}>${r.name}</option>`).join('');
+      roleSel.disabled = false;
+    } catch (err) {
+      console.error(err);
+      toast('danger', err?.response?.data?.message || err?.message || 'Failed to load roles.');
+      roleSel.innerHTML = `<option value="">Select Role</option>`;
+    }
+  }
+  firmSel?.addEventListener('change', refreshRoles);
+
+  // uniqueness checks (per-firm)
+  const origEmail = '<%- (user.email||"").toLowerCase() %>';
+  emailEl?.addEventListener('change', async ()=>{
+    const firm_id = firmSel.value || '';
+    const email   = (emailEl.value||'').trim().toLowerCase();
+    if (!firm_id || !email || email===origEmail) { document.getElementById('emailError').textContent=''; return; }
+    try {
+      const { data } = await fx.post('/firmstaff/check_firm_email', { email, firm_id });
+      if (data?.exists) {
+        document.getElementById('emailError').textContent = `Email (${email}) already exists in this firm.`;
+        toast('danger', `Email ${email} already exists.`);
+      } else {
+        document.getElementById('emailError').textContent = '';
+      }
+    } catch (err) {
+      document.getElementById('emailError').textContent = err?.response?.data?.message || 'Email check failed.';
+      toast('danger', err?.response?.data?.message || 'Email check failed.');
+    }
+  });
+
+  const origFull = '<%- (user.country_code||"") + (user.contact||"") %>';
+  phoneEl?.addEventListener('change', async ()=>{
+    const firm_id = firmSel.value || '';
+    const phoneNumber = (phoneEl.value||'').trim();
+    if (!firm_id || !phoneNumber || phoneNumber===origFull) { document.getElementById('phoneError').textContent=''; return; }
+    try {
+      const { data } = await fx.post('/firmstaff/check_firm_staff_phonenumber', { phoneNumber, firm_id });
+      if (data?.exists) {
+        document.getElementById('phoneError').textContent = `Contact (${phoneNumber}) already exists in this firm.`;
+        toast('danger', `Contact ${phoneNumber} already exists.`);
+      } else {
+        document.getElementById('phoneError').textContent = '';
+      }
+    } catch (err) {
+      document.getElementById('phoneError').textContent = err?.response?.data?.message || 'Phone check failed.';
+      toast('danger', err?.response?.data?.message || 'Phone check failed.');
+    }
+  });
+
+  // submit
+  document.getElementById('kilform')?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      const { data } = await fx.post('/firmstaff/edit_firm_staff', fd);
+      if (!data?.success) { toast('danger', data?.message || 'Failed to update user.'); return; }
+      toast('success', data?.message || 'User updated.');
+      location.href = '/firmstaff/firm_staff';
+    } catch (err) {
+      console.error(err);
+      toast('danger', err?.response?.data?.message || 'Failed to update user.');
+    }
+  });
+})();
+</script>

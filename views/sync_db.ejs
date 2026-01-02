@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin DB Sync</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { background: #181e2a; font-family: 'Segoe UI', sans-serif; }
+    .sync-card {
+      max-width: 420px;
+      margin: 90px auto;
+      padding: 32px 28px;
+      background: #232c3b;
+      border-radius: 14px;
+      box-shadow: 0 4px 32px #0008;
+      text-align: center;
+      position: relative;
+    }
+    .sync-card h2 { color: #38b000; margin-bottom: 18px; font-weight: 700; }
+    .sync-card form { margin-top: 12px; }
+    .sync-card input[type="password"] {
+      padding: 12px; font-size: 1.1rem; border-radius: 8px;
+      border: none; width: 90%; margin-bottom: 16px; outline: none; background: #131823; color: #fff;
+    }
+    .sync-card button {
+      padding: 10px 24px; background: #38b000; color: #fff; border: none;
+      border-radius: 7px; font-size: 1.1rem; cursor: pointer; font-weight: 600;
+    }
+    .sync-card .msg {
+      margin-bottom: 14px; font-weight: bold; font-size: 1.08rem;
+      border-radius: 6px; padding: 10px 0;
+    }
+    .msg-success { color: #38b000; background: #163b15; }
+    .msg-error { color: #fff; background: #842029; }
+    .msg-info { color: #ffca2c; background: #393001; }
+    .sync-card .sub { color: #aaa; margin-top: 28px; font-size: 0.97rem; }
+
+    /* Loader Styling */
+    .loader {
+      display: none;
+      border: 6px solid #444;
+      border-top: 6px solid #38b000;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sync-card">
+    <h2>🔒 SSCL DB Sync</h2>
+
+
+    <% if (message) { %>
+      <div class="msg <%= messageType %>"><%= message %></div>
+    <% } %>
+
+    <% if (!success) { %>
+      <form method="POST" autocomplete="off" onsubmit="showLoader()">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="password" name="secret" placeholder="Enter Secret Key" required autofocus />
+        <br>      
+        
+        <button id="syncBtn" type="submit">Sync Now</button>
+      </form>
+      <p class="sub">Database will sync only in production mode.</p>
+    <% } %>
+       <div class="loader" id="loader"></div>
+  </div>
+
+    
+
+<script>
+  function showLoader() {
+    // Show loader
+    document.getElementById('loader').style.display = 'inline-block';
+
+    // Disable the button and optionally the form input
+    const btn = document.getElementById('syncBtn');
+    btn.disabled = true;
+    btn.textContent = 'Syncing...';
+
+    // Optional: disable all inputs inside the form
+    const form = document.getElementById('syncForm');
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => input.disabled = true);
+  }
+</script>
+
+</body>
+</html>

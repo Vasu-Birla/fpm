@@ -1,0 +1,543 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+<style>
+    .card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s;
+    }
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    .card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.5rem;
+    }
+    .form-control {
+    padding: 0.8rem 1.2rem;
+    border-radius: 0 10px 10px 0;
+    transition: all 0.3s;
+    }
+    .input-group-text {
+    background-color: #f8f9fa;
+    border-radius: 10px 0 0 10px;
+    width: 45px;
+    justify-content: center;
+    }
+    .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd;
+    }
+    .btn {
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s;
+    }
+    .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .form-label {
+    margin-bottom: 0.7rem;
+    color: #344767;
+    }
+    .input-group:focus-within .input-group-text {
+    border-color: #0d6efd;
+    }
+
+
+
+    .custom-signin-btn {
+    background-color: #eaecf2 !important;
+color: #000 !important;
+border: none;
+}
+
+.custom-signin-btn:hover {
+background-color: #0056b3; /* Darker blue on hover */
+}
+    @media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    .btn {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    }
+</style>
+
+        <div class="container">
+          <div class="page-inner">
+            <div class="page-header">
+              <h3 class="fw-bold mb-3"></h3>
+              <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                  <a href="/superadmin">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Subadmin Management</a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Add Client</a>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card shadow-lg">
+                  <div class="card-header text-white d-flex justify-content-between align-items-center">
+                    <div>
+                      <h4 class="btn btn-light" style="background-color: #f5f7fd !important;">
+                        <i class="fas fa-user-plus me-2"></i>Add Subadmin
+                      </h4>
+                    </div>
+                    <div>
+                      <a href="/superadmin/view_subadmins" class="btn btn-light" style="background-color: #f5f7fd !important;">
+                        <i class="fas fa-users me-2"></i>View Subadmin
+                      </a>
+                    </div>
+                  </div>
+                  <div class="card-body p-4">
+
+                       <% if (output.toLowerCase().includes('successfully')) { %>
+                            <p id="message" class="success-text" style="color: green;"> <%= output %> </p>
+                            <% } else { %>
+                              <p id="message" class="error-text" style="color: red;"> <%= output %> </p>
+                              <% } %>
+                    <form id="kilform" action="/superadmin/add_subadmin" method="POST">
+                      
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="hidden"data-ignore-kilvish="yes" class="form-control" id="permissions" name="permissions">
+
+
+
+      <!-- ------- Permissions Action  ---------- -->
+                      <div class="card card-row card-bookkaro">
+                        <div class="card-header">
+                            <h3 class="card-title">Permission</h3><br>
+                            <input type="checkbox" id="checkall"> <label for="checkall">Select All</label>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Dashboard</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/superadmin" class="custom-control-input permission-checkbox" disabled checked type="checkbox" id="customCheckbox1" >
+                                                <label for="customCheckbox1" class="custom-control-label">Dashboard</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Client Management</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/add_client"  class="custom-control-input permission-checkbox" type="checkbox" id="customCheckbox2"  >
+                                                <label for="customCheckbox2" class="custom-control-label">Add Client</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/view_clients"  class="custom-control-input permission-checkbox" type="checkbox" id="customCheckbox3" >
+                                                <label for="customCheckbox3" class="custom-control-label">View Client</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Candidate Management</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/add_candidate" class="custom-control-input permission-checkbox" type="checkbox" id="customCheckbox4">
+                                                <label for="customCheckbox4" class="custom-control-label">Add Candidate</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/view_candidates" class="custom-control-input permission-checkbox" type="checkbox" id="customCheckbox5" >
+                                                <label for="customCheckbox5" class="custom-control-label">View Candidate</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Role Management</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/role_mgmt" class="custom-control-input permission-checkbox" type="checkbox" id="role" >
+                                                <label for="role" class="custom-control-label">Role Management</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Report</h5>
+                                        </div>
+                                        <div class="card-body">
+
+
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/reports" class="custom-control-input permission-checkbox" type="checkbox" id="reports" >
+                                                <label for="reports" class="custom-control-label">Report</label>
+                                            </div>
+
+
+
+                                                <div class="sub-permission-container mt-3 d-none" id="reportSubPermission">
+                                        <div class="mb-2 text-success fw-bold">All Tabs Allowed</div>
+                                        <div class="form-group mb-2">
+                                          <label>Do You want to block Tabs for this Sub admin?</label><br>
+                                          <div>
+                                            <input type="radio" name="blockTabsToggle" id="blockTabsYes" value="yes">
+                                            <label for="blockTabsYes">Yes</label>
+                                            <input type="radio" name="blockTabsToggle" id="blockTabsNo" value="no" class="ms-3" checked>
+                                            <label for="blockTabsNo">No</label>
+                                          </div>
+                                        </div>
+
+                                        <div id="blockTabsOptions" class="ms-3 d-none">
+                                          <div class="custom-control custom-checkbox">
+                                            <input name="/block_pending" class="custom-control-input permission-checkbox report-tab" type="checkbox" id="blockPending">
+                                            <label for="blockPending" class="custom-control-label">Block Pending Reports</label>
+                                          </div>
+                                          <div class="custom-control custom-checkbox">
+                                            <input name="/block_inprogress" class="custom-control-input permission-checkbox report-tab" type="checkbox" id="blockInProgress">
+                                            <label for="blockInProgress" class="custom-control-label">Block In-Progress Reports</label>
+                                          </div>
+                                          <div class="custom-control custom-checkbox">
+                                            <input name="/block_flagged" class="custom-control-input permission-checkbox report-tab" type="checkbox" id="blockFlagged">
+                                            <label for="blockFlagged" class="custom-control-label">Block Flagged Reports</label>
+                                          </div>
+                                          <div class="custom-control custom-checkbox">
+                                            <input name="/block_cleared" class="custom-control-input permission-checkbox report-tab" type="checkbox" id="blockCleared">
+                                            <label for="blockCleared" class="custom-control-label">Block Cleared Reports</label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                            
+
+
+                                <div class="col-md-3">
+                                    <div class="card card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">Screenings</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="custom-control custom-checkbox">
+                                                <input name="/screening" class="custom-control-input permission-checkbox" type="checkbox" id="Screenings">
+                                                <label for="Screenings" class="custom-control-label">Screenings</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                           
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ------- Permissions Action  ---------- -->
+
+
+
+                      <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="roleSelect" class="form-label fw-bold">Select Role</label>
+                                <div class="input-group">
+                                <select name="role_id"  class="form-control" id="roleSelect" data-ignore-kilvish="yes"  required>
+                                   <option selected value="">Select Role</option>
+                                   <% roles.forEach(function(role) { %>
+                                      <option value="<%= role.role_id %>"><%= role.role_name %></option>
+                                    <% }); %>
+                                </select>
+                                <span class="input-group-text"><i class="fas fa-user-shield"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="first_name" class="form-label fw-bold">Name</label>
+                            <div class="input-group">
+                              <input name="first_name" type="text" class="form-control" id="first_name" placeholder="Contact Person" required>
+                              <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="email" class="form-label fw-bold">Email</label>
+                            <div class="input-group">
+                              <input name="email" type="email" class="form-control" id="email" placeholder="Enter email" required>
+                              <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            </div>
+                          </div>
+                        </div>
+
+                           <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="username" class="form-label fw-bold">Username</label>
+                            <div class="input-group">
+                              <input name="username" type="text" class="form-control" id="username" required>
+                              <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            </div>
+                          </div>
+                        </div>
+
+
+
+
+
+
+                          <div class="col-md-6">
+
+                          
+                            <div class="form-group mt-3 position-relative">
+                             <label class="form-label fw-bold">Password</label>
+                             
+                            <input type="password" id="password" data-kilvish-password="8_20" name="password" class="form-control kilpass" placeholder="Enter password" required>
+                              <span toggle="#newPassword" class="fa fa-eye-slash toggle-password"
+                                style="position: absolute; top: 50px;right: 30px; cursor: pointer;"></span>
+                            </div>
+
+
+                        </div>
+
+
+
+
+
+                      </div>             
+
+
+                    <!-- ------- Submit Button ---------- -->
+                      <div class="mt-5 text-center">
+                        <button type="submit" class="btn btn-lg px-5 custom-signin-btn">
+                          Submit
+                        </button>
+                      </div>
+
+                    <!-- ------- Submit Button ---------- -->
+
+
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+
+<script>
+//==================  Gloable Variable ENd ===========================
+    // JavaScript to handle "Select All" checkbox functionality
+    document.getElementById('checkall').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.permission-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+
+      function collectPermissions1() {
+                    // Get all checkboxes
+                    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                    const permissions = [];
+
+                    // Loop through checkboxes and collect checked ones
+                    checkboxes.forEach((checkbox) => {
+                        if (checkbox.checked && checkbox.name.trim() !== '') {
+                            permissions.push(checkbox.name); // Use the name attribute as the permission value
+                        }
+                    });
+
+                    // Set the value of the hidden input field without starting with a comma
+                    const permissionsInput = document.getElementById('permissions');
+                    permissionsInput.value = permissions.join(','); // Join the permissions with a comma
+
+
+                    // alert(permissions.join(','))
+                    // return false; // Prevent form submission for testing purposes
+                }
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const reportCheckbox = document.querySelector('input[name="/reports"]');
+    const subPermissionContainer = document.getElementById('reportSubPermission');
+    const blockTabsYes = document.getElementById('blockTabsYes');
+    const blockTabsNo = document.getElementById('blockTabsNo');
+    const blockTabsOptions = document.getElementById('blockTabsOptions');
+    const reportTabCheckboxes = document.querySelectorAll('.report-tab');
+    const selectAll = document.getElementById('checkall');
+
+    const blockPermissions = [
+        '/block_pending',
+        '/block_inprogress',
+        '/block_flagged',
+        '/block_cleared'
+    ];
+
+    const expectedPermissions = [
+        '/superadmin',
+        '/add_client',
+        '/view_clients',
+        '/add_candidate',
+        '/view_candidates',
+        '/role_mgmt',
+        '/reports',
+        '/screening'
+    ];
+
+    // ✅ Show/hide sub-permission section on report checkbox toggle
+    reportCheckbox.addEventListener('change', function () {
+        subPermissionContainer.classList.toggle('d-none', !this.checked);
+        if (!this.checked) {
+            blockTabsNo.checked = true;
+            blockTabsOptions.classList.add('d-none');
+            reportTabCheckboxes.forEach(cb => cb.checked = false);
+        }
+    });
+
+    // ✅ Show/hide tab block options based on YES/NO
+    blockTabsYes.addEventListener('change', function () {
+        if (this.checked) {
+            blockTabsOptions.classList.remove('d-none');
+        }
+    });
+
+    blockTabsNo.addEventListener('change', function () {
+        if (this.checked) {
+            blockTabsOptions.classList.add('d-none');
+            reportTabCheckboxes.forEach(cb => cb.checked = false);
+        }
+    });
+
+    // ✅ Select All handler (excluding block permissions)
+    selectAll.addEventListener('change', function () {
+
+
+ document.getElementById('customCheckbox1').checked = true;
+
+        const checkboxes = document.querySelectorAll('.permission-checkbox');
+         
+           
+        checkboxes.forEach(cb => {
+            if (!blockPermissions.includes(cb.name)) {
+                cb.checked = this.checked;
+            }
+        });
+
+        // Trigger sub-section visibility
+        if (this.checked && reportCheckbox.checked) {
+            subPermissionContainer.classList.remove('d-none');
+            blockTabsYes.checked = true;
+            blockTabsOptions.classList.remove('d-none');
+        } else {
+            subPermissionContainer.classList.add('d-none');
+            blockTabsNo.checked = true;
+            blockTabsOptions.classList.add('d-none');
+        }
+
+        // Optionally uncheck block checkboxes even when toggling "select all"
+        reportTabCheckboxes.forEach(cb => cb.checked = false);
+
+         document.getElementById('customCheckbox1').checked = true;
+    });
+
+    // ✅ Collect permissions with full logic
+    function collectPermissions() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        let permissions = [];
+
+        // Collect checked values (excluding block checkboxes for 'full' logic)
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked && checkbox.name.trim() !== '') {
+                permissions.push(checkbox.name);
+            }
+        });
+
+        // ⚠️ Do not consider block permissions for 'full'
+        const hasAllMainPermissions = expectedPermissions.every(p => permissions.includes(p));
+        const hasAnyBlockPermission = blockPermissions.some(p => permissions.includes(p));
+
+        // Remove existing 'full' if present
+        permissions = permissions.filter(p => p !== 'full');
+
+        // ✅ Add 'full' only if all main permissions are checked AND no block permissions
+        if (hasAllMainPermissions && !hasAnyBlockPermission) {
+            permissions.push('full');
+        }
+
+        // alert(permissions.join(','))
+        // return;
+
+        document.getElementById('permissions').value = permissions.join(',');
+    }
+
+    document.querySelector('form').addEventListener('submit', collectPermissions);
+
+    // Optional: listen to changes in block checkboxes to re-evaluate full logic live (optional)
+    reportTabCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            // Uncheck "Select All" if manually toggled
+           
+            selectAll.checked = false;
+        });
+    });
+});
+
+
+
+
+
+               // document.querySelector('form').addEventListener('submit', collectPermissions);
+
+
+</script>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+     .terms-content {
+    line-height: 1.5;
+    color: #2d3748;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.terms-content h1,
+.terms-content h2,
+.terms-content h3 {
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+    color: #4a5568;
+}
+
+.terms-content p {
+    margin: 0 0 1em 0;
+}
+
+.terms-content ul {
+    margin: 0 0 1em 1.25em;
+    padding-left: 0;
+}
+
+.terms-content li {
+    margin-bottom: 0.5em;
+}
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" style="text-align: center;">
+            <h1>SSCL Pvt Ltd.</h1>
+        </div>
+        <div class="terms-content">
+            <%- terms %>
+        </div>
+    </div>
+</body>
+</html>

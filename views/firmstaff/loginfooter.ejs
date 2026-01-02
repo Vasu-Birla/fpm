@@ -1,0 +1,420 @@
+
+        <!-- Footer Start -->
+        <div class="footer text-center bg-white p-2 border-top">
+            <p class="text-dark mb-0">2025 &copy; <a href="#" class="text-info">eLaw</a>. All Rights Reserved | Design by <a href="https://cyberimpulses.com/" target="_blank" class="text-info">CISS</a></p>
+        </div>
+        <!-- Footer End -->
+
+	<div class="back-to-top">
+		<a class="back-to-top-icon align-items-center justify-content-center d-flex"  href="#top"><i class="ti ti-upload" aria-hidden="true"></i></a>
+	</div> 
+</div> 
+
+
+
+    <!-- jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Simplebar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@6.3.2/dist/simplebar.min.js"></script>
+
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.53.0/dist/apexcharts.min.js"></script>
+    
+	<!-- Daterangepikcer JS -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.30.1/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-4@5.39.0/build/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.print.min.js"></script>
+
+    <!-- Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- summernote -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+
+    <!-- Kiltel Phone Input -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/kiltel@1.0.61/kiltel.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/kiltel@1.0.61/kiltel.min.js"></script>
+    <!-- Kiltel Phone Input -->
+
+    <!-- FullCalendar v6 -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+
+    <!-- Theme Config Js -->
+    <script src="../superadminassets/js/theme-script.js"></script>
+
+    <!-- Main JS -->
+    <script src="../superadminassets/plugins/apexchart/chart-data.js"></script>
+    <script src="../superadminassets/js/doctors.js"></script>
+    <script src="../superadminassets/js/script.js"></script>
+
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.11.0/axios.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/kil-loader@1.0.3/kil-loader.min.js"></script>
+
+    
+       <!-- CryptoJS AES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+
+    <!-- --- KilvishCropper ---  -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/kiltoast@1.0.16/kiltoast.min.js"></script>
+
+                    <script src="https://cdn.jsdelivr.net/npm/kilvalidate@1.0.71/kilvish.min.js"></script>
+</body>
+</html>
+
+
+<script>
+    $(document).ready(function() {
+
+        kilToast.configure({
+  position: 'top-right',
+  duration: 3000,
+  gap: 12,
+  offset: 18,
+  mode: 'simple'
+});
+
+        // ########### container-table ##################
+        // ✅ Initialize DataTables dynamically for all tables with class "container-table"
+        $('.container-table').each(function() {
+            $(this).DataTable({
+                responsive: true,
+                dom: "<'row mb-3'<'col-sm-12'tr>>" + 
+                    "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+                pageLength: 10
+            });
+        });
+
+        // ✅ Show All / Hide All functionality with icons
+        let allOpen = false;
+        $('#toggleAll').on('click', function() {
+            if (!allOpen) {
+                // Open all accordions
+                $('.accordion-collapse').collapse('show');
+                $(this).html('<i class="ti ti-eye-off me-1"></i> Hide All'); // 👈 Icon changes to "eye-off"
+                allOpen = true;
+            } else {
+                // Close all accordions
+                $('.accordion-collapse').collapse('hide');
+                $(this).html('<i class="ti ti-eye me-1"></i> Show All'); // 👈 Icon changes back to "eye"
+                allOpen = false;
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // ✅ Initialize DataTables dynamically for all tables with class "vessel-table"
+        $('.vessel-table').DataTable({
+            responsive: true,
+            dom: "<'row mb-3'<'col-sm-12'tr>>" + 
+                "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+            pageLength: 10
+        });
+
+        // ✅ Show All / Hide All with icons
+        let allOpen = false;
+        $('#toggleAll').on('click', function() {
+            if (!allOpen) {
+                $('.accordion-collapse').collapse('show');
+                $(this).html('<i class="ti ti-eye-off me-1"></i> Hide All Vessels').removeClass('btn-outline-primary').addClass('btn-outline-danger');
+                allOpen = true;
+            } else {
+                $('.accordion-collapse').collapse('hide');
+                $(this).html('<i class="ti ti-eye me-1"></i> Show All Vessels').removeClass('btn-outline-danger').addClass('btn-outline-primary');
+                allOpen = false;
+            }
+        });
+    });
+</script>
+
+
+<script>
+(function ($) {
+  // ---- helpers ------------------------------------------------------
+  function ensureDT($el, opts) {
+    if (!$el.length) return null;
+    if ($.fn.DataTable.isDataTable($el)) {
+      return $el.DataTable(); // already initted
+    }
+    return $el.DataTable(opts || {});
+  }
+
+  function buildColumnMap(dt) {
+    const m = {};
+    if (!dt) return m;
+    dt.columns().every(function () {
+      const name = $(this.header()).data('col'); // e.g. data-col="status"
+      if (name) m[name] = this.index();          // store original index
+    });
+    return m;
+  }
+
+  // ---- init on ready ------------------------------------------------
+  $(function () {
+    // 1) Generic tables (your existing set)
+
+// one helper so you don't repeat options
+const dtOpts = {
+  responsive: true,
+  dom:
+    "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+    "<'row'<'col-sm-12'tr>>" +
+    "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+  buttons: [
+    { extend: 'excel', className: 'btn btn-primary me-2' },
+    { extend: 'csv',   className: 'btn btn-primary me-2' }
+  ],
+  pageLength: 10
+};
+
+// bookings table: sort by Date column (index 1) DESC
+var customerTable = ensureDT($('#customerTable'), {
+  ...dtOpts,
+  order: [[1, 'desc']]
+});
+
+// if you want DESC on the first column for these, keep them separate:
+var staffTable = ensureDT($('#staffTable'),      { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#rolesTable'),      { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#calendarTable'),   { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#broadcastTable'),  { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#report1Table'),    { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#report2Table'),    { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#payment1Table'),   { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#report3Table'),    { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#tcTable'),         { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#ppTable'),         { ...dtOpts, order: [[0, 'desc']] });
+ensureDT($('#cnp_table'),        { ...dtOpts, order: [[0, 'desc']] });
+
+
+    // 2) Click-N-Collect table (Option B), with dynamic column mapping
+    var cncDT = ensureDT($('#clickNTable'), {
+      responsive: true,
+      dom:
+        "<'row mb-3'<'col-md-12 d-flex justify-content-between align-items-center'<'dt-search d-flex justify-content-start'f><'dt-buttons ms-auto'B>>>" +
+        "<'row mb-2'<'col-md-3'l><'col-md-9 d-flex justify-content-end'<'status-filter'>>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+      buttons: [
+        {
+          extend: 'excel',
+          text: '<i class="ti ti-file-description fs-15"></i> Generate Excel Report',
+          className: 'btn btn-primary me-2'
+        }
+      ],
+      pageLength: 50
+    });
+
+    if (cncDT) {
+      // Build a name→index map from <th data-col="...">
+      const colIdx = buildColumnMap(cncDT);
+
+      // (Optional) hide built-in DT search box for this table; we use external inputs
+      $('.dataTables_filter', $('#clickNTable').closest('.dataTables_wrapper')).hide();
+
+      // Wire external filters if present
+      var $bl     = $('#searchBL');
+      var $status = $('#statusFilter');
+      var $reset  = $('#resetFilters');
+
+      if ($bl.length && colIdx.bl != null) {
+        $bl.on('keyup', function () {
+          cncDT.column(colIdx.bl).search(this.value).draw();
+        });
+      }
+
+      if ($status.length && colIdx.status != null) {
+        $status.on('change', function () {
+          const v = this.value || '';
+          cncDT.column(colIdx.status).search(v ? '^' + v + '$' : '', true, false).draw();
+        });
+      }
+
+      if ($reset.length) {
+        $reset.on('click', function () {
+          if ($bl.length) $bl.val('');
+          if ($status.length) $status.val('');
+          cncDT.search('').columns().search('').draw();
+        });
+      }
+    }
+  });
+})(jQuery);
+</script>
+
+
+
+
+
+<script>
+  // Sweet-alert style 1s popup
+  window.kilQuickToast = function (message = 'Success') {
+    try {
+      // Remove any existing toast so we don’t stack
+      const existing = document.querySelector('.kil-quick-toast');
+      if (existing) existing.remove();
+
+      const wrap = document.createElement('div');
+      wrap.className = 'kil-quick-toast';
+      wrap.setAttribute('role', 'status');
+      wrap.setAttribute('aria-live', 'polite');
+
+      const card = document.createElement('div');
+      card.className = 'kil-quick-toast__card';
+
+      const icon = document.createElement('span');
+      icon.className = 'kil-quick-toast__icon';
+
+      const text = document.createElement('span');
+      text.textContent = message;
+
+      card.appendChild(icon);
+      card.appendChild(text);
+      wrap.appendChild(card);
+      document.body.appendChild(wrap);
+
+      // Auto remove shortly after animation completes
+      setTimeout(() => wrap.remove(), 1100);
+    } catch (_) {}
+  };
+</script>
+
+
+<script>
+(function(){
+  try {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && !document.cookie.includes('tz=')) {
+      document.cookie = 'tz=' + encodeURIComponent(tz) + '; path=/; max-age=31536000; SameSite=Lax';
+    }
+  } catch(e) {}
+})();
+
+</script>
+
+
+<script>
+  function showLoader(){ document.getElementById('globalLoader').style.display = 'flex'; }
+  function hideLoader(){ document.getElementById('globalLoader').style.display = 'none'; }
+    
+let csrfToken = 
+  (document.querySelector('input[name="_csrf"]')?.value) ||
+  (document.querySelector('meta[name="csrf-token"]')?.content) ||
+  null;
+
+if (!csrfToken) console.error("❌ CSRF token not found!");
+
+
+
+
+    let axiosElaw;
+
+/* ---------- CSRF + fetch wrapper (uses current token every time) ---------- */
+(function () {
+  function readCookie(name){
+    return document.cookie.split('; ').find(r => r.startsWith(name+'='))?.split('=').slice(1).join('=');
+  }
+
+  // Update token in <meta> and the first hidden input[name="_csrf"], if present
+  window.setCsrf = function(token){
+    if(!token) return;
+    let m = document.querySelector('meta[name="csrf-token"]');
+    if(!m){
+      m = document.createElement('meta');
+      m.setAttribute('name', 'csrf-token');
+      document.head.appendChild(m);
+    }
+    m.setAttribute('content', token);
+    const hidden = document.querySelector('input[name="_csrf"]');
+    if (hidden) hidden.value = token;
+  };
+
+  // Read token from meta → hidden input → cookie (common names)
+  window.getCsrf = function(){
+    const meta = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (meta) return meta;
+    const hidden = document.querySelector('input[name="_csrf"]')?.value;
+    if (hidden) return hidden;
+    for (const key of ['XSRF-TOKEN','_csrf','csrfToken']) {
+      const v = readCookie(key);
+      if (v) return decodeURIComponent(v);
+    }
+    return '';
+  };
+
+  // fetch() wrapper that injects CSRF and refreshes it if server rotates
+  const _fetch = window.fetch;
+  window.kFetch = function(url, opts = {}) {
+    const headers = new Headers(opts.headers || {});
+    const t = getCsrf();
+    if (t) {
+      headers.set('X-CSRF-Token', t);
+      headers.set('CSRF-Token', t);       // compatibility
+      headers.set('X-XSRF-TOKEN', t);     // compatibility
+    }
+    opts.headers = headers;
+
+    // if (typeof showLoader === 'function') showLoader();
+
+    return _fetch(url, opts).then(res => {
+      const newT = res.headers.get('x-csrf-token')
+              || res.headers.get('csrf-token')
+              || res.headers.get('x-xsrf-token');
+      if (newT) setCsrf(newT);
+      return res;
+    }).finally(() => {
+      // if (typeof hideLoader === 'function') hideLoader();
+    });
+  };
+
+  // axios (optional) – keep token fresh too
+  if (window.axios) {
+  const instance = axios.create();
+
+  instance.interceptors.request.use(cfg => {
+    const t = getCsrf();
+    if (t) {
+      cfg.headers['X-CSRF-Token'] = t;
+      cfg.headers['CSRF-Token'] = t;
+      cfg.headers['X-XSRF-TOKEN'] = t;
+    }
+    return cfg;
+  });
+
+  instance.interceptors.response.use(res => {
+    const nt = res.headers['x-csrf-token'] || res.headers['csrf-token'] || res.headers['x-xsrf-token'];
+    if (nt) setCsrf(nt);
+    return res;
+  });
+
+  // Freeze it so no other script can overwrite accidentally
+  window.axiosElaw = Object.freeze(instance);
+}
+
+
+
+})();
+</script>
+

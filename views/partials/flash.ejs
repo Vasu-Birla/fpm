@@ -1,0 +1,9 @@
+<% const msg = (output || '').toString(); %>
+<% if (msg) { %>
+  <% const isSuccess = /successfully/i.test(msg); %>
+  <p id="message"
+     class="<%= isSuccess ? 'success-text' : 'error-text' %>"
+     style="color: <%= isSuccess ? 'green' : 'red' %>;">
+    <%= msg %>
+  </p>
+<% } %>

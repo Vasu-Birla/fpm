@@ -1,0 +1,258 @@
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+<style>
+  /* ===== AI / Neon / Glitch styling ===== */
+  .ai-500-wrap {
+    position: relative;
+    min-height: calc(100vh - 180px);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(0,255,209,.08), transparent 60%),
+      radial-gradient(900px 450px at 110% 110%, rgba(144,0,255,.08), transparent 60%),
+      linear-gradient(180deg, #0a0b10 0%, #0c0f18 100%);
+  }
+
+  /* subtle scanlines */
+  .ai-500-wrap::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 1px,
+      transparent 2px,
+      transparent 3px
+    );
+    pointer-events: none;
+  }
+
+  .ai-card {
+    width: min(1100px, 94vw);
+    border-radius: 18px;
+    padding: clamp(18px, 3vw, 32px);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border: 1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  }
+
+  .badge-soft {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .4rem .7rem; border-radius: 999px; font-size: .8rem;
+    background: rgba(0,255,209,.12); color: #7CF9E5; border: 1px solid rgba(124,249,229,.22);
+  }
+
+  .glow-500 {
+    --t: "500";
+    position: relative;
+    font-weight: 800;
+    letter-spacing: -4px;
+    font-size: clamp(64px, 16vw, 160px);
+    line-height: .9;
+    color: #e9e9ff;
+    text-shadow:
+      0 0 12px rgba(124,249,229,.35),
+      0 0 28px rgba(144,0,255,.25);
+  }
+  .glow-500::before,
+  .glow-500::after {
+    content: attr(data-text);
+    position: absolute; inset: 0;
+    mix-blend-mode: screen; pointer-events: none;
+  }
+  .glow-500::before {
+    color: #00ffd1; clip-path: inset(0 0 52% 0);
+    transform: translateX(-1px);
+    filter: blur(1px) saturate(1.2);
+    animation: glitch1 2.4s infinite steps(12);
+  }
+  .glow-500::after {
+    color: #9000ff; clip-path: inset(48% 0 0 0);
+    transform: translateX(1px);
+    filter: blur(1px) saturate(1.2);
+    animation: glitch2 2.2s infinite steps(11);
+  }
+  @keyframes glitch1 { 0%,100% { transform: translateX(-1px); } 50% { transform: translate(-3px, 1px);} }
+  @keyframes glitch2 { 0%,100% { transform: translateX(1px); } 50% { transform: translate(2px, -1px);} }
+
+  .ai-sub {
+    color: #aab3c5; font-size: clamp(14px, 1.4vw, 16px);
+    margin-top: -4px;
+  }
+
+  .code-panel {
+    position: relative;
+    margin-top: 18px;
+    background: #0d1018;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    color: #cfd7e6;
+    font-size: .9rem;
+  }
+  .code-dots { display: inline-flex; gap: 7px; align-items: center; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; opacity: .9; }
+  .code-dot.red   { background:#ff5f56; }
+  .code-dot.yellow{ background:#ffbd2e; }
+  .code-dot.green { background:#27c93f; }
+
+  pre#errorText {
+    margin: 0; padding: 16px 18px;
+    color: #ff2929; font-size: 1.5rem; line-height: 1.5;
+    max-height: 360px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  .code-footer {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.02);
+  }
+
+  .btn-ghost {
+    border: 1px solid rgba(124,249,229,.35);
+    color: #7CF9E5;
+    background: rgba(0,255,209,.06);
+    padding: .45rem .8rem; border-radius: 10px;
+  }
+  .btn-ghost:hover { background: rgba(0,255,209,.12); color: #7CF9E5; }
+
+  .btn-plain {
+    border: 1px solid rgba(144,0,255,.35);
+    color: #D7B7FF;
+    background: rgba(144,0,255,.06);
+    padding: .45rem .8rem; border-radius: 10px;
+  }
+  .btn-plain:hover { background: rgba(144,0,255,.12); color: #E8D7FF; }
+
+  .links {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .links .btn { border-radius: 12px; padding: .6rem 1rem; }
+
+  .muted {
+    color: #9aa4b7; font-size: .9rem;
+  }
+
+  /* small “telemetry” chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip {
+    font-size: .78rem; color: #c8d1e0;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    padding: .28rem .55rem; border-radius: 999px;
+  }
+</style>
+
+<div class="ai-500-wrap">
+  <div class="ai-card">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <span class="badge-soft">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" stroke="currentColor" stroke-opacity=".8"/></svg>
+        Internal Server Error
+      </span>
+
+      <% const _isSuccess = output && typeof output === 'string' && output.toLowerCase().includes('successfully'); %>
+      <% if (_isSuccess) { %>
+        <span class="chip">Status: OK</span>
+      <% } else { %>
+        <span class="chip" style="border-color: rgba(255,96,96,.35); background: rgba(255,96,96,.06); color:#ffb3b3;">Status: 500</span>
+      <% } %>
+    </div>
+
+    <div class="mt-2">
+      <div class="glow-500" data-text="500">500</div>
+      <div class="ai-sub">
+        Oops. Our circuits tripped while processing your request.
+      </div>
+
+      <div class="chips">
+        <% if (typeof reqId !== 'undefined' && reqId) { %>
+          <span class="chip">Request ID: <%= reqId %></span>
+        <% } %>
+        <span class="chip">Time: <%= new Date().toISOString() %></span>
+        <% if (typeof env !== 'undefined' && env) { %>
+          <span class="chip">Env: <%= env %></span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Exact error message panel -->
+    <div class="code-panel mt-3">
+      <div class="code-header">
+        <div class="code-dots">
+          <span class="code-dot red"></span>
+          <span class="code-dot yellow"></span>
+          <span class="code-dot green"></span>
+        </div>
+        <span>server › output</span>
+        <div class="muted"><%= _isSuccess ? 'Success' : 'Error' %></div>
+      </div>
+
+      <pre id="errorText"><%= (output && output.length) ? output : 'No error output provided.' %></pre>
+
+      <div class="code-footer">
+        <button type="button" class="btn btn-ghost" id="copyBtn">Copy message</button>
+        <a href="javascript:location.reload();" class="btn btn-plain">Retry</a>
+      </div>
+    </div>
+
+    <!-- Helpful links/actions -->
+    <div class="d-flex align-items-center justify-content-between mt-3 flex-wrap gap-2">
+      <div class="links">
+        <a href="/superadmin" class="btn btn-outline-light">Go to Dashboard</a>
+        <a href="javascript:void(0)" class="btn btn-outline-secondary" id="reportBtn">Report this issue</a>
+      </div>
+      <span class="muted">If the problem persists, share the copied message with the admin.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const copyBtn = document.getElementById('copyBtn');
+    const errorEl = document.getElementById('errorText');
+    if (copyBtn && errorEl) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(errorEl.innerText.trim());
+          copyBtn.innerText = 'Copied ✓';
+          setTimeout(() => (copyBtn.innerText = 'Copy message'), 1400);
+        } catch (e) {
+          copyBtn.innerText = 'Press Ctrl/Cmd + C';
+          const sel = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(errorEl);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          setTimeout(() => (copyBtn.innerText = 'Copy message'), 1800);
+        }
+      });
+    }
+
+    // Example "report" action – opens mailto with error payload
+    const reportBtn = document.getElementById('reportBtn');
+    if (reportBtn) {
+      reportBtn.addEventListener('click', () => {
+        const msg = encodeURIComponent(errorEl ? errorEl.innerText.trim() : 'No message');
+        const subject = encodeURIComponent('500 Error Report');
+        const body = encodeURIComponent(
+          `Hi Team,\n\nI encountered a 500 error.\n\nMessage:\n${msg}\n\nTime: ${new Date().toISOString()}`
+        );
+        window.location.href = `mailto:support@example.com?subject=${subject}&body=${body}`;
+      });
+    }
+  })();
+</script>
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->

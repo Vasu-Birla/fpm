@@ -1,0 +1,59 @@
+<%
+  // mode: 'email' (default) or 'web'
+  const _mode   = (typeof mode !== 'undefined' ? mode : 'email');
+  const _brand  = (org && org.name) || 'Elaw Service';
+  const _logo   = (typeof logoSrc !== 'undefined' && logoSrc) ? logoSrc : (org && org.logoUrl);
+
+  // Email: table layout + inline CSS (safe across clients)
+  // Web:   div + flex (light CSS)
+%>
+
+<% if (_mode === 'web') { %>
+  <div style="width:100%;border-bottom:1px solid #e9ecef;background:#fff;">
+    <div style="max-width:980px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <span style="width:8px;height:8px;border-radius:999px;background:#16a34a;flex:0 0 auto;"></span>
+        <div style="font-weight:800;letter-spacing:.2px;font-size:16px;line-height:1.2;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          <%= _brand %>
+        </div>
+      </div>
+      <% if (_logo) { %>
+        <img src="<%= _logo %>" alt="<%= _brand %>" style="height:36px;width:auto;display:block;max-width:180px;">
+      <% } %>
+    </div>
+  </div>
+<% } else { %>
+  <!-- Email-friendly brand bar -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border-bottom:1px solid #e9ecef;">
+    <tr>
+      <td align="center" style="padding:0;margin:0;">
+        <table role="presentation" width="680" cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:680px;width:100%;">
+          <tr>
+            <td style="padding:14px 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                <tr>
+                  <td valign="middle" style="padding:0;margin:0;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="width:8px;height:8px;border-radius:999px;background:#16a34a;"></td>
+                        <td style="width:10px;"></td>
+                        <td style="font-weight:800;letter-spacing:.2px;font-size:16px;line-height:1.2;color:#0f172a;">
+                          <%= _brand %>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td valign="middle" align="right" style="padding:0;margin:0;">
+                    <% if (_logo) { %>
+                      <img src="<%= _logo %>" alt="<%= _brand %>" style="height:32px;width:auto;display:block;">
+                    <% } %>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+<% } %>

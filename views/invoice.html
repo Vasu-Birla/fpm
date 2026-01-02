@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Template</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+</head>
+<body>
+
+<div id="app">
+    <div class="invoice">
+        <div class="left-col">
+            <div class="form-section">
+                <label for="patient">Select Patient:</label>
+                <select v-model="selectedPatient" @change="generateRandomInvoiceNumber">
+                    <option v-for="(patient, index) in patients" :key="index" :value="patient.name">
+                        {{ patient.name }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <label for="invoiceNumber">Invoice Number:</label>
+                <input type="text" v-model="invoiceNumber" readonly>
+            </div>
+
+            <div class="product-selection">
+                <div class="form-section">
+                    <label for="productType">Product Type:</label>
+                    <select v-model="selectedProductType" @change="updateProductList">
+                        <option value="product">Product</option>
+                        <option value="service">Service</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="productList">Select {{ selectedProductType === 'product' ? 'Product' : 'Service' }}:</label>
+                    <select v-model="selectedProduct" :disabled="productList.length === 0">
+                        <option v-for="(product, index) in productList" :key="index" :value="product" v-if="product.type === selectedProductType">
+                            {{ product.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <button @click="addItem" :disabled="selectedProduct === null">Add Item</button>
+                </div>
+            </div>
+
+            <div class="payment-section">
+
+
+                <div class="form-section">
+                    <label for="paymentMode">Payment Mode:</label>
+                    <div class="payment-modes">
+                        <label><input type="radio" v-model="paymentMode" value="creditCard"> Credit Card</label>
+                        <label><input type="radio" v-model="paymentMode" value="debitCard"> Debit Card</label>
+                        <label><input type="radio" v-model="paymentMode" value="cash"> Cash</label>
+                        <label><input type="radio" v-model="paymentMode" value="onlinePayment"> Online Payment</label>
+                    </div>
+                </div>
+
+
+                <div class="form-section">
+                    <label for="currency">Currency:</label>
+                    <select v-model="currency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <!-- Add more currency options as needed -->
+                    </select>
+                </div>
+
+
+                <div class="form-section">
+                    <label for="paymentStatus">Payment Status:</label>
+                    <select v-model="paymentStatus">
+                        <option value="paid">Paid</option>
+                        <option value="partialPaid">Partial Paid</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div v-if="paymentStatus === 'partialPaid'" class="form-section">
+                    <label for="partialPaymentAmount">Partial Payment Amount:</label>
+                    <input type="number" v-model="partialPaymentAmount" min="0" step="1" />
+                </div>
+
+                <div v-if="paymentStatus === 'partialPaid' || paymentStatus === 'pending'" class="form-section">
+                    <label for="dueDate">Due Date:</label>
+                    <input type="date" v-model="dueDate" :disabled="paymentStatus === 'paid'">
+                </div>
+            </div>
+
+
+        
+            
+            <div class="form-section">
+                <label for="taxRate">Tax Rate (%):</label>
+                <input type="number" v-model="taxRate" min="0" max="100" step="1">
+            </div>
+            
+            <div class="form-section">
+                <label for="discountRate">Discount Rate (%):</label>
+                <input type="number" v-model="discountRate" min="0" max="100" step="1">
+            </div>
+
+        </div>
+
+        <div class="right-col">
+            <div class="invoice-items-col">
+                <h3>Invoice Items</h3>
+                <div class="items">
+                    <div class="item" v-for="(item, itemIndex) in invoiceItems" :key="itemIndex">
+                        <div class="item-info">
+                            <p>{{ item.name }} - {{ currencySymbol }}{{ item.price }}</p>
+                        </div>
+                        <div class="quantity">
+                            <button @click="decrementQuantity(item)">-</button>
+                            <span>{{ item.quantity }}</span>
+                            <button @click="incrementQuantity(item)">+</button>
+                        </div>
+                        <div class="totals">
+                            <p>Tax: {{ currencySymbol }}{{ calculateTax(item) }}</p>
+                            &nbsp;
+                            <p>Discount: {{ currencySymbol }}{{ calculateDiscount(item) }}</p>
+                            &nbsp;
+                            <p>Subtotal: {{ currencySymbol }}{{ calculateSubtotal(item) }}</p>
+                            &nbsp;                           
+                            
+                        </div>
+                      
+                        <div class="delete-icon">
+                            <span @click="deleteItem(item)">
+                                <i class="fas fa-trash-alt"></i>
+                            </span>
+                        </div>
+                        
+
+                    </div>
+                </div>
+            </div>
+            
+
+
+            
+
+            <div class="totals-section">
+                <p>Subtotal: {{ currencySymbol }}{{ calculateInvoiceSubtotal() }}</p>
+                <p>Discount: {{ currencySymbol }}{{ calculateInvoiceDiscount() }}</p>
+                <p>Tax: {{ currencySymbol }}{{ calculateInvoiceTax() }}</p>
+                <h3>Grand Total: {{ currencySymbol }}{{ calculateGrandTotal() }}</h3>
+            
+                <hr style="margin: 10px 0; border: 1px solid #ddd;"> <!-- Horizontal line -->
+            
+                <p>Partial Payment: {{ currencySymbol }}{{ partialPaymentAmount }}</p>
+            
+                <hr style="margin: 10px 0; border: 1px solid #ddd;"> <!-- Horizontal line -->
+            
+                <h3>Net Pay: {{ currencySymbol }}{{ calculateNetPay() }}</h3>
+            </div>
+
+            <div class="generate-invoice">
+                <button @click="generateInvoice">Generate Invoice</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            selectedProductType: 'product',
+            productList: [
+                { type: 'product', name: 'Product 1', price: 50 },
+                { type: 'product', name: 'Product 2', price: 75 },
+                { type: 'service', name: 'Service 1', price: 100 },
+                { type: 'service', name: 'Service 2', price: 150 },
+            ],
+            patients: [
+        { name: 'Kilvish', contact: '123-456-7890', address: 'Patient Address 1' },
+        { name: 'Mahen', contact: '987-654-3210', address: 'Patient Address 2' },
+        { name: 'Shivani', contact: '555-123-4567', address: 'Patient Address 3' },
+        { name: 'Barkha', contact: '333-888-5555', address: 'Patient Address 4' },
+        { name: 'Renuka', contact: '777-222-9999', address: 'Patient Address 5' },
+    ],
+            selectedProduct: null,
+            invoiceItems: [],
+            taxRate: 10, // default to 10%
+            discountRate: 5, // default to 5%
+            paymentStatus: 'paid',
+            partialPaymentAmount: 0,
+            selectedPatient: '',
+            selectedPatientContact: '',
+            selectedPatientAddress: '',
+            invoiceNumber: '',
+            currency: 'USD',
+            dueDate: '',
+            paymentMode: '',
+            partialPaymentAmount: 0,
+            hospitalAddress: '206, Sairam Plaza , Pro Phsyio Hospital , Indore , MP, India, 452001',
+            hospitalName: 'Pro Physio Health Care System',
+
+        },
+        computed: {
+            currencySymbol() {
+                // Map currency codes to their respective symbols
+                const currencySymbols = {
+                    'USD': '$',
+                    'EUR': '€',
+                    // Add more currency symbols as needed
+                };
+
+                // Use the selected currency symbol or default to '$'
+                return currencySymbols[this.currency] || '$';
+            },
+        },
+        
+        methods: {
+            updateProductList() {
+                const filteredList = this.productList.filter(product => product.type === this.selectedProductType);
+                this.selectedProduct = filteredList.length > 0 ? filteredList[0] : null;
+            },
+            addItem() {
+                const existingItem = this.invoiceItems.find(item => item.name === this.selectedProduct.name);
+
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    this.invoiceItems.push({
+                        name: this.selectedProduct.name,
+                        price: this.selectedProduct.price,
+                        quantity: 1,
+                    });
+                }
+            },
+            incrementQuantity(item) {
+                item.quantity++;
+            },
+            decrementQuantity(item) {
+                if (item.quantity > 0) {
+                    item.quantity--;
+                }
+            },
+            deleteItem(item) {
+                const index = this.invoiceItems.indexOf(item);
+                if (index !== -1) {
+                    this.invoiceItems.splice(index, 1);
+                }
+            },
+            calculateSubtotal(item) {
+                return item.quantity * item.price;
+            },
+            calculateTax(item) {
+                return this.calculateSubtotal(item) * this.taxRate /100;
+            },
+            calculateDiscount(item) {
+                return this.calculateSubtotal(item) * this.discountRate /100;
+            },
+            calculateInvoiceSubtotal() {
+                return this.invoiceItems.reduce((total, item) => total + this.calculateSubtotal(item), 0);
+            },
+            calculateInvoiceTax() {
+                return this.invoiceItems.reduce((total, item) => total + this.calculateTax(item), 0);
+            },
+            calculateInvoiceDiscount() {
+                return this.invoiceItems.reduce((total, item) => total + this.calculateDiscount(item), 0);
+            },
+            calculateGrandTotal() {
+                return this.calculateInvoiceSubtotal() + this.calculateInvoiceTax() - this.calculateInvoiceDiscount();
+            },
+            calculateNetPay() {
+                let netPay = this.calculateGrandTotal();
+
+                if (this.paymentStatus === 'partialPaid') {
+                    netPay -= this.partialPaymentAmount;
+                }
+
+                return netPay < 0 ? 0 : netPay;
+            },
+
+            generateInvoice() {
+                const invoiceContent = this.prepareInvoiceContent();
+                this.downloadPDF(invoiceContent);
+            },
+            prepareInvoiceContent() {
+                const invoiceContent =  `
+        <div class="invoice">
+            <div class="invoice-items-col">
+            <h2>Invoice</h2>
+        
+            <div class="invoice-number">
+                Invoice Number: ${this.invoiceNumber}
+            </div>
+
+            <div class="invoice-to">
+                <div class="invoice-to-details">
+                    <p><strong>Invoice To:</strong></p>
+                    <p>${this.selectedPatient}</p>
+                    <p>Contact: ${this.selectedPatientContact}</p>
+                    <p>Address: ${this.selectedPatientAddress}</p>
+                </div>
+                <div class="invoice-to-details">
+                    <p><strong>Invoice From:</strong></p>
+                     <p>${this.hospitalName}</p>
+                     <p>Address: ${this.hospitalAddress}</p>
+                </div>
+            </div>
+
+            <div class="invoice-from">
+                <div class="invoice-from-details">
+                    <p><strong>Invoice Date:</strong> ${new Date().toLocaleDateString()}</p>
+                 <p><strong>Due Date:</strong> ${this.dueDate ? this.dueDate : 'No Date'}</p>
+                </div>
+                <div class="invoice-from-details">
+                    <p><strong>Invoice Status:</strong></p>
+                     <p class="invoice-status">${this.paymentStatus}</p>  
+                                        
+                </div>
+            </div>
+
+         
+                <h3>Invoice Items</h3>
+                ${this.invoiceItems.map(item => `
+                    <div class="item">
+                        <div class="item-info">
+                            <p>${item.name} - ${this.currencySymbol}${item.price}</p>
+                        </div>
+                        <div class="quantity">
+                            <p>Quantity: ${item.quantity}</p>
+                        </div>
+                        <div class="totals">
+                            <p>Subtotal: ${this.currencySymbol}${this.calculateSubtotal(item)}</p>
+                            <p>Tax: ${this.currencySymbol}${this.calculateTax(item)}</p>
+                            <p>Discount: ${this.currencySymbol}${this.calculateDiscount(item)}</p>
+                        </div>
+                    </div>
+                `).join('')}
+           
+
+            <div class="totals-section">
+                <p>Subtotal: ${this.currencySymbol}${this.calculateInvoiceSubtotal()}</p>
+                <p>Discount: ${this.currencySymbol}${this.calculateInvoiceDiscount()}</p>
+                <p>Tax: ${this.currencySymbol}${this.calculateInvoiceTax()}</p>
+                <h3>Grand Total: ${this.currencySymbol}${this.calculateGrandTotal()}</h3>
+                <hr style="margin: 10px 0; border: 1px solid #ddd;"> <!-- Horizontal line -->
+
+                <p>Partial Payment: ${this.currencySymbol}${this.partialPaymentAmount} </p>
+
+                <hr style="margin: 10px 0; border: 1px solid #ddd;"> <!-- Horizontal line -->
+
+                <h3>Net Pay: ${this.currencySymbol}${this.calculateNetPay()}</h3>
+            </div>
+
+
+            
+    
+            <div class="invoice-terms">
+                <p><strong>Invoice Terms and Conditions:</strong></p>
+    <ul>
+        <li>All services provided are subject to the terms and conditions set forth by [Hospital Name].</li>
+        <li>Payment is due upon receipt of the invoice unless otherwise agreed in writing.</li>
+        <li>Late payments may be subject to interest charges at the rate of [X]% per month.</li>
+        <li>Partial payments must be agreed upon in advance and are subject to the terms outlined in the invoice.</li>
+        <li>Any disputes must be reported within [X] days of receiving the invoice.</li>
+        <li>[Hospital Name] reserves the right to withhold further services in case of non-payment.</li>
+        <li>All invoices are payable in [Currency].</li>
+        <li>The patient is responsible for any additional charges not covered by insurance.</li>
+        <li>Insurance information provided must be accurate, and any discrepancies may result in additional charges.</li>
+        <li>[Hospital Name] is not responsible for the loss or damage of personal belongings during the patient's stay.</li>
+    </ul>
+            </div>
+
+
+        </div>
+        </div>
+    `;
+
+                return invoiceContent;
+            },
+             downloadPDF(content) {
+                const element = document.createElement('div');
+                element.innerHTML = content;
+
+                html2pdf(element, {
+                    margin: 10,
+                    filename: 'invoice.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                });
+            }  ,
+                generateRandomInvoiceNumber() {
+                // Generate a random 10-digit number
+                const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000);
+                this.invoiceNumber = randomNumber.toString();
+
+
+                        // Update patient-related data based on the selected patient
+                        const selectedPatientData = this.patients.find(p => p.name === this.selectedPatient);
+
+                        if (selectedPatientData) {
+                            this.selectedPatientContact = selectedPatientData.contact;
+                            this.selectedPatientAddress = selectedPatientData.address;
+                        } else {
+                            // Handle the case where the patient data is not found
+                            this.selectedPatientContact = '';
+                            this.selectedPatientAddress = '';
+                        }
+
+            },
+            updateDueDate() {
+                if (this.paymentStatus === 'pending' || this.paymentStatus === 'partialPaid') {
+                    this.dueDate = ''; // Reset dueDate when changing paymentStatus
+                }
+            }
+
+
+        },
+        mounted() {
+            this.updateProductList();
+        },
+    
+    });
+</script>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    .invoice {
+        display: flex;
+        border: 1px solid #ccc;
+        padding: 20px;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .left-col,
+    .right-col {
+        flex: 1;
+    }
+
+    .left-col {
+        margin-right: 10px;
+    }
+
+    .right-col {
+        margin-left: 10px;
+    }
+
+    .form-section {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    select,
+    input {
+        width: 100%;
+        padding: 8px;
+    }
+
+    .product-selection {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .form-section button {
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .form-section button:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+    }
+
+    .form-section button:hover {
+        background-color: white;
+        color: black;
+        border: 1px solid #4CAF50;
+    }
+
+
+
+
+
+
+
+
+
+
+    .items {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Add some space between items */
+    }
+
+    .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #ddd; /* Lighten the border color */
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9; /* Light background color */
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    }
+
+    .item-info,
+    .quantity,
+    .totals,
+    .delete-icon {
+        flex: 1;
+        display: flex;
+        align-items: center;
+    }
+
+    .quantity button {
+        margin: 0 5px;
+        background-color: #3498db; /* Blue color for buttons */
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .delete-icon span {
+        cursor: pointer;
+        color: #e74c3c; /* Red color for delete icon */
+        font-weight: bold;
+        font-size: 18px;
+        margin-left: 5px;
+    }
+
+
+
+
+
+    
+
+  
+
+    .totals-section {
+        text-align: right;
+    }
+
+    .generate-invoice {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .generate-invoice button {
+        cursor: pointer;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .generate-invoice button:hover {
+        background-color: #2980b9;
+    }
+
+    .payment-modes {
+        display: flex;
+    }
+
+    .payment-modes label {
+        margin-right: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-modes input {
+        margin-right: 5px; /* Adjust the spacing between the radio button and text */
+    }
+
+
+    
+
+
+
+    /* pdf invoice sytle  */
+
+
+    .invoice-number {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .invoice-to {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .invoice-to-details,
+    .invoice-from-details {
+        flex: 1;
+    }
+
+    .invoice-from {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .invoice-date {
+        margin-top: 20px;
+    }
+
+    .invoice-status {
+        margin-top: 10px;
+        font-weight: bold;
+        color: green; /* Assuming green for 'Paid', you can adjust the color as needed */
+    }
+    .paid {
+        color: green;
+    }
+
+    .pending {
+        color: red;
+    }
+
+    .partial-paid {
+        color: orange;
+    }
+
+    .invoice-terms {
+        margin-top: 20px;
+        font-style: italic;
+    }
+
+</style>
+
+</body>
+</html>

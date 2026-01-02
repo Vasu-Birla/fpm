@@ -1,0 +1,67 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'Signature request',
+  subtitle: 'Please review and sign the document below.',
+  badge: 'SIGNATURE',
+  preheader: (recipientName || 'Signer') + ' — a document is waiting for your e-signature.'
+}) %>
+
+<p class="email-lead">
+  Hello <strong><%= recipientName || 'Signer' %></strong>,
+</p>
+
+<p class="text">
+  <%= message || 'Please review the document below and complete your e-signature.' %>
+</p>
+
+<div class="details-card">
+  <div class="details-row">
+    <div class="details-label">Document</div>
+    <div class="details-value"><%= documentTitle || 'Document' %></div>
+  </div>
+
+  <% if (typeof requesterName !== 'undefined' && requesterName) { %>
+    <div class="details-row">
+      <div class="details-label">Requested by</div>
+      <div class="details-value"><%= requesterName %></div>
+    </div>
+  <% } %>
+
+  <% if (typeof expiresAt !== 'undefined' && expiresAt) { %>
+    <div class="details-row">
+      <div class="details-label">Expires on</div>
+      <div class="details-value"><%= expiresAt %></div>
+    </div>
+  <% } %>
+</div>
+
+<% if (signLink) { %>
+  <p style="margin-top:18px;">
+    <a class="primary-btn"
+       href="<%= signLink %>"
+       target="_blank"
+       rel="noopener">
+      Review &amp; Sign
+    </a>
+  </p>
+<% } %>
+
+<% if (viewLink) { %>
+  <p class="muted">
+    Prefer to check it first?
+    <a href="<%= viewLink %>" target="_blank" rel="noopener">View the document</a> before signing.
+  </p>
+<% } %>
+
+<p class="meta-line">
+  If you were not expecting this request, you can safely ignore this email.
+  The link will expire automatically.
+</p>
+
+<p class="closing">
+  Thank you,<br>
+  <strong><%= (org && org.name) || 'Our team' %></strong>
+</p>
+
+<%- include('_email_footer', { org }) %>

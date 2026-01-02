@@ -1,0 +1,36 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'OTP Verification',
+  subtitle: 'Secure login to your ' + ((org && org.name) || 'account'),
+  preheader: 'Your one-time password for login is ' + otp
+}) %>
+
+<p class="email-title">Verify your login</p>
+<p class="email-lead">
+  Hello <strong><%= username %></strong>,
+</p>
+
+<p class="text">
+  A sign-in request was made for your <%= (org && org.name) || 'account' %>.
+  To confirm that this is you, please use the one-time password below:
+</p>
+
+<div class="otp-wrapper">
+  <div class="otp-label">One-Time Password</div>
+  <div class="otp-pill"><%= otp %></div>
+</div>
+
+<div class="info-box">
+  <strong>Security tip:</strong> Never share this code with anyone, including
+  people claiming to be from support. Our team will <em>never</em> ask for your OTP.
+</div>
+
+<p class="text">
+  This code will be valid only for a short time. If you did not attempt to log in,
+  you can safely ignore this email.
+</p>
+
+
+
+<%- include('_email_footer', { org }) %>

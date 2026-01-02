@@ -1,0 +1,542 @@
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+<%
+  const svc = service || {};
+  const firmObj = firm || {};
+
+  const badgeServices = (typeof badges !== 'undefined' && Array.isArray(badges)) ? badges : [];
+  const otherServicesSafe = (typeof otherServices !== 'undefined' && Array.isArray(otherServices)) ? otherServices : [];
+  const outputSafe = (typeof output !== 'undefined') ? output : null;
+
+  const serviceSlug = svc.slug || '';
+  const serviceName = svc.name || 'Service';
+  const firmName = firmObj.firm_name || 'Firm';
+%>
+
+<section class="main-inner-banner"></section>
+
+<div class="breadcrumb-box">
+  <ul>
+    <li><a href="/home" title="HOME">HOME</a></li>
+    <li><a href="/services" title="Services">Services</a></li>
+    <li>
+      <a href="/service_firms" title="Firms"><%= serviceName %></a>
+    </li>
+    <li><%= firmName %></li>
+  </ul>
+</div>
+
+<section class="py-5">
+  <div class="container">
+
+    <% if (outputSafe && outputSafe.message) { %>
+      <div class="alert alert-<%= outputSafe.type || 'info' %> mb-3">
+        <%= outputSafe.message %>
+      </div>
+    <% } %>
+
+    <div class="row g-3">
+
+      <!-- Firm Info -->
+      <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <% if (firmObj.firm_logo_url) { %>
+                <img
+                  src="<%= firmObj.firm_logo_url %>"
+                  class="rounded-circle border"
+                  style="width:70px;height:70px;object-fit:cover;"
+                  alt="<%= firmName %>"
+                >
+              <% } else { %>
+                <div
+                  class="rounded-circle bg-light border d-flex align-items-center justify-content-center"
+                  style="width:70px;height:70px;font-weight:800;font-size:1.2rem;"
+                >
+                  <%= (firmName || 'F').slice(0,1).toUpperCase() %>
+                </div>
+              <% } %>
+
+              <div class="flex-grow-1">
+                <h3 class="mb-1"><%= firmName %></h3>
+                <div class="text-muted">
+                  <span class="me-2"><i class="ti ti-map-pin"></i> <%= firmObj.parish || '-' %></span>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-muted mb-3">
+              <%= firmObj.blurb || firmObj.description || 'Trusted legal team for your matter.' %>
+            </p>
+
+            <div class="mb-3">
+              <div class="fw-semibold mb-2">Service</div>
+              <span class="badge bg-primary"><%= serviceName %></span>
+            </div>
+
+            <% if (badgeServices && badgeServices.length) { %>
+              <div class="mb-3">
+                <div class="fw-semibold mb-2">Other Services by this Firm</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <% badgeServices.slice(0, 12).forEach(b => { %>
+                    <a class="badge bg-light text-dark border text-decoration-none"
+                       href="/services/<%= b.slug %>/firms">
+                      <%= b.name %>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } else if (otherServicesSafe && otherServicesSafe.length) { %>
+              <div class="mb-3">
+                <div class="fw-semibold mb-2">Other Services by this Firm</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <% otherServicesSafe.slice(0, 12).forEach(b => { %>
+                    <a class="badge bg-light text-dark border text-decoration-none"
+                       href="/services/<%= b.slug %>/firms">
+                      <%= b.name %>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } %>
+
+            <div class="border rounded p-3 bg-light">
+              <div class="fw-semibold mb-2">Why choose this firm?</div>
+              <ul class="mb-0 text-muted">
+                <li>Focused expertise in <%= serviceName %></li>
+                <li>Clear next steps after you submit the intake</li>
+                <li>Faster routing to the right staff in the firm</li>
+              </ul>
+            </div>
+
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+              <a class="btn btn-outline-secondary btn-sm" href="/services/<%= serviceSlug %>/firms">Back to Firms</a>
+              <a class="btn btn-outline-secondary btn-sm" href="/services">All Services</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Intake Form -->
+      <div class="col-lg-7">
+        <div class="card shadow-sm">
+          <div class="card-body">
+
+            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+              <div>
+                <h4 class="mb-1">Intake Form</h4>
+                <p class="text-muted mb-0">Fill the form and submit. The firm will contact you shortly.</p>
+              </div>
+            </div>
+
+            <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+            <!-- Honeypot -->
+            <input type="text" id="hp_website" style="position:absolute;left:-9999px;top:-9999px;" tabindex="-1" autocomplete="off">
+
+            <div id="intakeSkeleton" class="py-2">
+              <div class="text-muted">Loading form...</div>
+            </div>
+
+            <form id="intakeForm" class="d-none">
+              <div id="intakeFields" class="row g-3"></div>
+
+              <div class="mt-3 d-flex gap-2 flex-wrap">
+                <button type="submit" id="btnSubmitIntake" class="btn btn-primary">
+                  Submit Request
+                </button>
+                <button type="button" id="btnResetIntake" class="btn btn-outline-secondary">
+                  Reset
+                </button>
+              </div>
+
+              <div class="text-muted small mt-2">
+                By submitting, you consent to be contacted regarding your request.
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const fx = window.axiosElaw || window.axios;
+  const toast = window.kilToast;
+
+  const firmId = <%- JSON.stringify(firmObj.firm_id || null) %>;
+  const practiceAreaId = <%- JSON.stringify(svc.practice_area_id || null) %>;
+  const csrf = document.querySelector('input[name="_csrf"]')?.value || '';
+
+  const prefill = <%- JSON.stringify(typeof clientPrefill !== 'undefined' ? clientPrefill : null) %>;
+
+  
+  const $skeleton = document.getElementById('intakeSkeleton');
+  const $form = document.getElementById('intakeForm');
+  const $fields = document.getElementById('intakeFields');
+  const $btn = document.getElementById('btnSubmitIntake');
+  const $reset = document.getElementById('btnResetIntake');
+
+  let templateKey = 'default';
+  let schema = null;
+
+  function escHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // --- 1) Render ONE proper KilTel block ---
+  function renderKiltelPhoneBlock(required, placeholder){
+    const isoInit = String((prefill?.country_code || prefill?.iso2 || 'JM')).trim() || 'JM';
+    const cc = String((prefill?.country_code || '+1876')).trim() || '+1876';
+    const phoneDigits = String((prefill?.phone || prefill?.contact || '')).trim();
+    const fullUi = (String(prefill?.full_phone || '').trim()) || `${cc} ${phoneDigits}`.trim();
+
+    console.log('phoneDigits',phoneDigits)
+     console.log('fullUi',cc )
+
+    return `
+      <div class="col-md-6 mb-0">
+        <label class="form-label">Phone Number ${required ? '<span class="text-danger">*</span>' : ''}</label>
+
+        <div class="input-group kiltel-phone-wrap">
+          <button type="button" class="kiltel-country-trigger"></button>
+
+          <input
+            data-ignore-kilvish="Yes"
+            type="tel"
+            class="form-control"
+            id="full_contact"
+            data-kilvish-tel
+            data-kilvish-preferred="JM,IN"
+            data-kiltel-init="${escHtml(isoInit)}"
+            data-kiltel-validation="yes"
+            placeholder="${escHtml(placeholder || '+1 876 000 0000')}"
+            value="${escHtml(fullUi)}"
+          >
+
+          <!-- IMPORTANT: kiltel JS looks for these names -->
+          <input type="hidden" id="country_code" name="country_code" data-field="1" value="${escHtml(cc)}">
+          <input type="hidden" id="contact" name="contact" data-field="1" ${required ? 'data-required="1"' : ''} value="${escHtml(phoneDigits)}">
+          <input type="hidden" id="full_phone" name="full_phone" data-field="1" value="${escHtml((cc + phoneDigits).replace(/\s+/g,''))}">
+        </div>
+      </div>
+    `;
+  }
+
+  // --- 2) Default field render (non-phone) ---
+  function renderField(f){
+    const name = (f.name || '').trim();
+    if (!name) return '';
+
+    const label = f.label || name;
+    const required = !!f.required;
+    const placeholder = f.placeholder || '';
+    const type = (f.type || 'text').toLowerCase();
+
+    const reqMark = required ? ' <span class="text-danger">*</span>' : '';
+    const common = `data-field="1" name="${escHtml(name)}" id="f_${escHtml(name)}" ${required ? 'data-required="1"' : ''}`;
+
+    const pv = (prefill && prefill[name]) ? String(prefill[name]) : (f.default ? String(f.default) : '');
+
+    if (type === 'textarea') {
+      return `
+        <div class="col-12">
+          <label class="form-label">${escHtml(label)}${reqMark}</label>
+          <textarea class="form-control" ${common} rows="4" placeholder="${escHtml(placeholder)}">${escHtml(pv)}</textarea>
+        </div>
+      `;
+    }
+
+    if (type === 'select') {
+      const opts = Array.isArray(f.options) ? f.options : [];
+      const optionsHtml = opts.map(o => {
+        const ov = (typeof o === 'object') ? (o.value ?? o.label) : o;
+        const ol = (typeof o === 'object') ? (o.label ?? o.value) : o;
+        const sel = String(ov) === pv ? 'selected' : '';
+        return `<option value="${escHtml(ov)}" ${sel}>${escHtml(ol)}</option>`;
+      }).join('');
+
+      return `
+        <div class="col-md-6">
+          <label class="form-label">${escHtml(label)}${reqMark}</label>
+          <select class="form-select" ${common} data-ignore-kilvish="yes">
+            <option value="">Select</option>
+            ${optionsHtml}
+          </select>
+        </div>
+      `;
+    }
+
+    if (type === 'radio') {
+      const opts = Array.isArray(f.options) ? f.options : [];
+      const optionsHtml = opts.map((o, idx) => {
+        const ov = (typeof o === 'object') ? (o.value ?? o.label) : o;
+        const ol = (typeof o === 'object') ? (o.label ?? o.value) : o;
+        const id = `f_${escHtml(name)}_${idx}`;
+        const checked = String(ov) === pv ? 'checked' : '';
+        return `
+          <div class="form-check">
+            <input class="form-check-input" type="radio" id="${id}" name="${escHtml(name)}"
+                   value="${escHtml(ov)}" data-field="1" ${required ? 'data-required="1"' : ''} ${checked}>
+            <label class="form-check-label" for="${id}">${escHtml(ol)}</label>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="col-12">
+          <label class="form-label d-block">${escHtml(label)}${reqMark}</label>
+          ${optionsHtml || '<div class="text-muted small">No options</div>'}
+        </div>
+      `;
+    }
+
+    if (type === 'checkbox') {
+      const opts = Array.isArray(f.options) ? f.options : [];
+      const pvArr = Array.isArray(pv)
+        ? pv.map(v => String(v))
+        : String(pv || '')
+          .split(',')
+          .map(v => v.trim())
+          .filter(Boolean);
+
+      const optionsHtml = opts.map((o, idx) => {
+        const ov = (typeof o === 'object') ? (o.value ?? o.label) : o;
+        const ol = (typeof o === 'object') ? (o.label ?? o.value) : o;
+        const id = `f_${escHtml(name)}_${idx}`;
+        const checked = pvArr.includes(String(ov)) ? 'checked' : '';
+        return `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="${id}" name="${escHtml(name)}"
+                   value="${escHtml(ov)}" data-field="1" ${required ? 'data-required="1"' : ''} ${checked}>
+            <label class="form-check-label" for="${id}">${escHtml(ol)}</label>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="col-12">
+          <label class="form-label d-block">${escHtml(label)}${reqMark}</label>
+          ${optionsHtml || '<div class="text-muted small">No options</div>'}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="col-md-6">
+        <label class="form-label">${escHtml(label)}${reqMark}</label>
+        <input class="form-control" type="${escHtml(type)}" ${common}
+               value="${escHtml(pv)}"
+               placeholder="${escHtml(placeholder)}" data-ignore-kilvish="yes">
+      </div>
+    `;
+  }
+
+  // --- 3) Render schema: replace country_code + phone with KilTel UI ---
+  function renderSchema(schemaJson){
+    $fields.innerHTML = '';
+
+    const fields = schemaJson?.fields || [];
+    const names = fields.map(x => String(x?.name || '').trim().toLowerCase());
+
+    const hasCountryCode = names.includes('country_code');
+    const hasPhone = names.includes('phone') || names.includes('contact');
+    const shouldUseKiltel = hasCountryCode && hasPhone;   // this is your case
+
+    let phoneBlockRendered = false;
+
+    for (const f of fields) {
+      const n = String(f?.name || '').trim().toLowerCase();
+
+      // Replace the two fields with ONE kiltel block
+      if (shouldUseKiltel && !phoneBlockRendered && (n === 'country_code' || n === 'phone' || n === 'contact')) {
+        // render once
+        const required = !!fields.find(x => String(x?.name||'').toLowerCase() === 'phone')?.required;
+        $fields.insertAdjacentHTML('beforeend', renderKiltelPhoneBlock(required, f.placeholder || '+1 876 000 0000'));
+        phoneBlockRendered = true;
+        continue;
+      }
+
+      // skip duplicates
+      if (shouldUseKiltel && phoneBlockRendered && (n === 'country_code' || n === 'phone' || n === 'contact')) {
+        continue;
+      }
+
+      $fields.insertAdjacentHTML('beforeend', renderField(f));
+    }
+
+    $skeleton.classList.add('d-none');
+    $form.classList.remove('d-none');
+
+    // ✅ CRITICAL: because fields were inserted after DOMContentLoaded
+    // you must manually init kiltel again
+    setTimeout(() => {
+      if (typeof window.kiltelInit === 'function') window.kiltelInit();
+    }, 0);
+  }
+
+  // --- 4) Payload build: map contact -> phone (your backend expects phone) ---
+  function collectPayload(){
+    const payload = {};
+
+    $fields.querySelectorAll('[data-field="1"]').forEach(el => {
+      const name = el.name;
+      if (!name) return;
+      const type = (el.type || '').toLowerCase();
+
+      if (type === 'checkbox') {
+        if (!el.checked) return;
+        if (payload[name] === undefined) {
+          payload[name] = [el.value];
+        } else if (Array.isArray(payload[name])) {
+          payload[name].push(el.value);
+        } else {
+          payload[name] = [payload[name], el.value];
+        }
+        return;
+      }
+
+      if (type === 'radio') {
+        if (!el.checked) return;
+        payload[name] = (el.value || '').trim();
+        return;
+      }
+
+      payload[name] = (el.value || '').trim();
+    });
+
+    // honeypot
+    payload.website = (document.getElementById('hp_website')?.value || '').trim();
+
+    // map for your backend:
+    // backend reads payload.phone or payload.contact
+    if (payload.contact && !payload.phone) payload.phone = payload.contact;
+
+    // full_phone fallback
+    if (!payload.full_phone) {
+      const cc = (payload.country_code || '').trim();
+      const ph = (payload.phone || payload.contact || '').trim();
+      payload.full_phone = (cc + ph).replace(/[\s-]/g,'');
+    }
+
+    return payload;
+  }
+
+  function validateRequired(payload){
+    let ok = true;
+    $fields.querySelectorAll('[data-field="1"][data-required="1"]').forEach(el => {
+      const val = payload[el.name];
+      if (Array.isArray(val)) {
+        if (!val.length) ok = false;
+        return;
+      }
+      const v = (val || '').toString().trim();
+      if (!v) ok = false;
+    });
+    return ok;
+  }
+
+  // --- Load schema ---
+  (function loadTemplate(){
+    if (!fx) {
+      $skeleton.innerHTML = '<div class="text-danger">axiosElaw not found.</div>';
+      return;
+    }
+    if (!practiceAreaId) {
+      $skeleton.innerHTML = '<div class="text-danger">practice_area_id missing in page.</div>';
+      return;
+    }
+
+    fx.get('/api/intake/template', { params: { firm_id: firmId, practice_area_id: practiceAreaId } })
+      .then(({ data }) => {
+        if (!data?.success) {
+          toast?.danger?.(data?.message || 'Failed to load intake form.');
+          $skeleton.innerHTML = '<div class="text-danger">Failed to load form.</div>';
+          return;
+        }
+
+        templateKey = data.template_key || 'default';
+        schema = data.schema_json || null;
+
+        if (!schema) {
+          schema = { fields: [
+            { name:'full_name', label:'Full Name', type:'text', required:true },
+            { name:'email', label:'Email', type:'email', required:true },
+            { name:'country_code', label:'Country Code', type:'text', required:false, default:'+1' },
+            { name:'phone', label:'Phone', type:'text', required:false },
+            { name:'tell_us_about_the_matter', label:'Tell us about your matter', type:'textarea', required:true },
+          ]};
+        }
+
+        renderSchema(schema);
+      })
+      .catch(err => {
+        console.error('intake template error:', err);
+        toast?.danger?.(err?.response?.data?.message || 'Failed to load form.');
+        $skeleton.innerHTML = '<div class="text-danger">Failed to load form.</div>';
+      });
+  })();
+
+  $reset?.addEventListener('click', function(){
+    $fields.querySelectorAll('[data-field="1"]').forEach(el => el.value = '');
+    // re-init kiltel to restore default country
+    setTimeout(() => {
+      if (typeof window.kiltelInit === 'function') window.kiltelInit();
+    }, 0);
+  });
+
+  $form?.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (!fx) return;
+
+    const payload = collectPayload();
+
+    if (!validateRequired(payload)) {
+      toast?.warning?.('Please fill all required fields.');
+      return;
+    }
+
+    $btn.disabled = true;
+    $btn.innerHTML = 'Submitting...';
+
+    fx.post('/api/intake/submit', {
+      _csrf: csrf,
+      firm_id: firmId,
+      practice_area_id: practiceAreaId,
+      template_key: templateKey,
+      payload
+    })
+    .then(({ data }) => {
+      if (!data?.success) {
+        toast?.danger?.(data?.message || 'Submission failed.');
+        return;
+      }
+      toast?.success?.(data?.message || 'Submitted.', { duration: 0 });
+      $reset?.click();
+    })
+    .catch(err => {
+      console.error('intake submit error:', err);
+      toast?.danger?.(err?.response?.data?.message || 'Submission failed.');
+    })
+    .finally(() => {
+      $btn.disabled = false;
+      $btn.innerHTML = 'Submit Request';
+    });
+  });
+
+});
+</script>
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->

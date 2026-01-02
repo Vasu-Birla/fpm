@@ -1,0 +1,168 @@
+
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<!-- ========================
+    Start Page Content
+========================= -->
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+      
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3">
+            <div class="flex-grow-1">
+                <h5 class="fs-18 fw-semibold mb-0">
+                    <a href="#" class="text-dark"> 
+                        <i class="ti ti-chevron-left me-1"></i> View Calendar
+                    </a>
+                </h5>
+            </div>
+            <div class="text-end d-flex">
+                <a href="/firmstaff/add_calender_event" class="btn btn-primary ms-2 fs-13 btn-md">
+                    <i class="ti ti-plus me-1"></i> Create Event
+                </a>
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!-- start Card -->
+        <div class="card mb-0">
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+        <!-- end card -->
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<!-- ✅ Modal -->
+<div id="event_modal" style="display:none; position:fixed; top:15%; left:30%; background:#fff; padding:20px; border:1px solid #ccc; width:400px;z-index: 9999;">
+    <h3 id="eventTitle"></h3>
+    <p id="eventMessage"></p>
+    <p><strong>Date:</strong> <span id="eventDate"></span></p>
+    <button onclick="$('#event_modal').hide()">Close</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        headerToolbar: {
+            start: 'today prev,next',
+            center: 'title',
+            end: 'dayGridMonth,dayGridWeek,dayGridDay'
+        },
+        initialView: 'dayGridMonth',
+        editable: true,
+        droppable: true,
+        events: [
+            {
+                title: 'Team A',
+                start: '2025-10-04',
+                message: 'Project discussion with Team A',
+                extendedProps: {
+                    avatars: [
+                        'https://i.pravatar.cc/24?img=1',
+                        'https://i.pravatar.cc/24?img=2'
+                    ]
+                }
+            },
+            {
+                title: 'Team B',
+                start: '2025-10-06',
+                message: 'Review session with Team B',
+                extendedProps: {
+                    avatars: [
+                        'https://i.pravatar.cc/24?img=3',
+                        'https://i.pravatar.cc/24?img=4'
+                    ]
+                }
+            },
+            {
+                title: 'Meeting',
+                start: '2025-10-18',
+                message: 'Monthly strategy meeting',
+                extendedProps: {
+                    avatars: [
+                        'https://i.pravatar.cc/24?img=5'
+                    ]
+                }
+            }
+        ],
+        eventContent: function (arg) {
+            const title = arg.event.title;
+            const message = arg.event.extendedProps.message || '';
+            const date = arg.event.start.toLocaleDateString();
+
+            return {
+                html: `
+                    <div class="event-content">
+                        <div class="event-title">${title}</div>
+                        <div>${message}</div>
+                        <div class="event-date">${date}</div>
+                    </div>
+                `
+            };
+        },
+        eventClick: function (info) {
+            $('#event_modal').show();
+            document.getElementById('eventTitle').innerText = info.event.title;
+            document.getElementById('eventMessage').innerText = info.event.extendedProps.message || '';
+            document.getElementById('eventDate').innerText = info.event.start.toLocaleDateString();
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-blackout-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const blackoutId = this.getAttribute('data-id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This blackout date will be deleted permanently.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm btn btn-danger ms-2',
+                    cancelButton: 'swal2-cancel btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/firmstaff/delete-blackout?id=' + blackoutId;
+                }
+            });
+        });
+    });
+});
+</script>

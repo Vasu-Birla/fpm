@@ -1,0 +1,290 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+
+<!-- ========================
+    Start Page Content
+========================= -->
+
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Start Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h4 class="fw-bold mb-0">Practice Area Management</h4>
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <div class="row">
+            
+            <!-- ✅ Left Side: Add Practice Area -->
+            <div class="col-lg-3">
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-light fw-bold">Add Practice Area</div>
+                    <div class="card-body">
+                        <form method="POST" action="/superadmin/add_practice_area" class="row g-3">
+                            
+                            <div class="col-12">
+                                <label for="practice_area_name" class="form-label">Practice Area Name</label>
+                                <input type="text" id="practice_area_name" name="practice_area_name" class="form-control" placeholder="Enter practice area name" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="practice_area_desc" class="form-label">Description</label>
+                                <textarea id="practice_area_desc" name="practice_area_desc" class="form-control" rows="3" placeholder="Enter short description"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" name="submit" class="btn btn-primary w-100">
+                                    <i class="ti ti-plus"></i> Add Practice Area
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ Right Side: Practice Areas List -->
+            <div class="col-lg-9">
+                <div class="card shadow-sm border">
+                    <div class="card-header bg-light fw-bold">Practice Areas List</div>
+                    <div class="card-body table-responsive">
+                        <table id="practiceTable" class="table table-striped table-bordered table-nowrap table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Practice Area</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Example Static Row (Replace with PHP Loop) -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Criminal Law</td>
+                                    <td>Handles cases related to crime and justice</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-warning"><i class="ti ti-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Family Law</td>
+                                    <td>Marriage, divorce, custody cases</td>
+                                    <td><span class="badge bg-secondary">Inactive</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-warning"><i class="ti ti-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Loop Ends -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+
+
+        <!-- Kiltel Phone Input -->
+<input type="tel" id="hidden-iti-input" style="display:none;">
+<!-- Kiltel Phone Input -->
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+
+<script>
+  // ✅ JS to update button text based on selected cities
+  const checkboxes = document.querySelectorAll('.city-check');
+  const dropdownButton = document.getElementById('dropdownMenuButton');
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const selected = [...checkboxes].filter(c => c.checked).map(c => c.nextElementSibling.innerText);
+      dropdownButton.innerText = selected.length > 0 ? selected.join(', ') : 'Select Cities';
+    });
+  });
+</script>
+        
+<script>
+
+
+
+
+
+
+
+
+
+ $(document).ready(function () {
+  $('#trnInput').on('change', function () {
+    var trn_number = $(this).val();
+    var trnInput = document.getElementById('trnInput');
+    $.ajax({
+      type: 'POST',
+      url: '/superadmin/checktrn',
+      headers: { 'CSRF-Token': csrfToken },
+      data: { trn_number: trn_number },
+      success: function (data) {
+        if (data.exists == true) {
+          $('#trnInputError').text("A record with the given TRN (" + trn_number + ") already exists. Enter another unique TRN and try again.");
+          trnInput.value = "";
+        } else {
+          $('#trnInputError').text("");
+        }
+      }
+    });
+  });
+});
+
+
+
+
+
+   //======================== Check Email Uniqueness    ====================================  
+
+        $(document).ready(function () {
+                    $('#emailInput').on('change', function () {
+                        var email = $(this).val();
+                        var emailInput = document.getElementById('emailInput');
+                        $.ajax({
+                            type: 'POST',
+                            url: '/superadmin/checkemail',
+                            headers: { 'CSRF-Token': csrfToken },
+                            data: { email: email },
+                            success: function (data) {
+
+                                if (data.exists == true) {
+                                    $('#emailInputError').text("A record with the given Email ID( " + email + " ) already exist, Enter another unnique Email ID and try again.");
+                               
+                                    emailInput.value = "";
+                                }
+                                else {
+                                    if (emailInput.value == "") {
+                                    
+                                        $('#emailInputError').text("");
+                                    } else {
+                                     
+                                        $('#emailInputError').text("");
+                                    }
+
+                                }
+                            }
+                        });
+                    });
+                });
+
+
+
+
+ //======================== Check Email Uniqueness    ====================================  
+
+
+
+
+
+            //===================kilcheck contact Number ==============================================
+
+           $(document).ready(function () {
+                    $('#kilvishcontact').on('change', function () {
+                        var phoneNumber = $(this).val();
+
+                        var countryCode = document.querySelector("#country_code").value;
+                        var contactInput = document.getElementById('kilvishcontact');
+                        var errorText1 = document.getElementById('errorText1');
+
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '/superadmin/checkphonenumber',
+                            headers: { 'CSRF-Token': csrfToken },
+                            data: { phoneNumber: phoneNumber, countryCode: countryCode },
+                            success: function (data) {
+
+                                console.log(data)
+                                if (data.exists == true) {
+
+                                    errorText1.textContent = "A record with the given Contact Number ( " + phoneNumber + " ) already exists. Enter another unique Contact Number and try again";
+                                    contactInput.style.borderColor = "red";
+                                    contactInput.value = "";
+                                }
+                                else {
+                                    if (contactInput.value == "") {
+
+                                        $('#errorText1').text("");
+                                    } else {
+
+                                        $('#errorText1').text("");
+                                    }
+
+                                }
+                            }
+                        });
+
+                    });
+                });
+
+
+                  //===================kilcheck contact Number ==============================================
+
+
+
+
+
+
+
+</script>
+
+
+
+<script>
+
+  // Toggle business fields on radio change
+  document.querySelectorAll('input[name="customer_type"]').forEach(el => {
+    el.addEventListener('change', function () {
+      const isBiz = this.value.toLowerCase().includes('business');
+      document.querySelectorAll('.business-fields').forEach(f => {
+        if (isBiz) {
+          f.classList.remove('d-none');
+          f.querySelectorAll('input, select, textarea').forEach(inp => inp.setAttribute('required', 'required'));
+        } else {
+          f.classList.add('d-none');
+          f.querySelectorAll('input, select, textarea').forEach(inp => inp.removeAttribute('required'));
+        }
+      });
+    });
+  });
+
+</script>
+

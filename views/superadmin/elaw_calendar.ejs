@@ -1,0 +1,393 @@
+<!-- Header/Sidebar includes -->
+<%- include('superheader.ejs'); %>
+<%- include('supersidebar.ejs'); %>
+
+
+<%
+// YYYY-MM-DD -> "September 04, 2025" (safe: no timezone shift)
+function fmtISO(iso) {
+  try {
+    const [y,m,d] = (iso || '').split('-').map(Number);
+    const dt = new Date(y, (m||1)-1, d||1);
+    return dt.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+  } catch { return iso; }
+}
+%>
+
+<style>
+  /* header container */
+  .kwe-hdr-wrap{display:flex;align-items:center;justify-content:center;gap:8px}
+  .kwe-pill{font-size:11px;font-weight:700;letter-spacing:.2px;padding:2px 8px;border-radius:999px}
+  .kwe-pill.work{background:#16a34a;color:#fff}   /* green */
+  .kwe-pill.off {background:#ee1804;color:#fffcfc}   /* amber */
+
+  /* Very light green for WORKING days */
+  .fc .kwe-hdr-working { background:#ecfdf5 !important; } /* header cell */
+
+  /* Month view day cells */
+  .fc .fc-daygrid-day.kwe-cell-working,
+  .fc .fc-daygrid-day.kwe-cell-working .fc-daygrid-day-frame {
+    background:#ecf6fd !important;   /* super light green */
+  }
+
+  /* Week/Day timegrid columns */
+  .fc .fc-timegrid-col.kwe-cell-working,
+  .fc .fc-timegrid-col.kwe-cell-working .fc-timegrid-col-frame {
+    background:#ecfdf5 !important;
+  }
+
+  /* Keep OFF days softly warm (optional) */
+  .fc .kwe-hdr-off { background:#fff7ed !important; }
+  .fc .fc-daygrid-day.kwe-cell-off,
+  .fc .fc-daygrid-day.kwe-cell-off .fc-daygrid-day-frame {
+    background:#fffaf0 !important;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="mb-3">
+      <h6 class="fw-bold mb-0 d-flex align-items-center">
+        <a href="#" class="text-dark">
+          <i class="ti ti-chevron-left me-1"></i> KWE Calendar
+        </a>
+      </h6>
+    </div>
+
+
+    <!-- Working Days -->
+    <div class="card mb-3">
+      <div class="card-body pb-0">
+        <label class="form-label">Select Working Days</label>
+        <div class="row">
+          <% const wd = calendar.working_days || {}; %>
+          <% ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach(function(d){ %>
+            <div class="col-lg-3 mt-2">
+              <ul class="list-group">
+                <li class="list-group-item">
+                  <div class="form-check">
+                    <input class="form-check-input me-1 working-day" type="checkbox"
+                           name="working_days[]" value="<%= d %>" id="day_<%= d %>"
+                           <%= wd[d] ? 'checked' : '' %> >
+                    <label class="form-check-label" for="day_<%= d %>"><%= d %></label>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Blackout -->
+    <div class="card mb-3">
+      <div class="card-body pb-0">
+        <form id="blackoutForm" class="row g-3">
+          <div class="col-md-6">
+            <label for="blackout_date" class="form-label">Blackout Date (Holidays)</label>
+            <input type="date" id="blackout_date" name="blackout_date" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="1" required placeholder="Reason for blackout"></textarea>
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Blackout</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Holidays List -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-2">Existing Blackouts</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th style="width:160px">Date</th>
+                <th>Description</th>
+                <th style="width:80px" class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody id="holidayRows">
+              <% (Array.isArray(calendar.holidays) ? calendar.holidays : []).forEach(function(h){ %>
+                <tr data-date="<%= h.blackout_date %>">
+              
+                  <td><span class="badge bg-light text-dark"><%= fmtISO(h.blackout_date) %></span></td>
+                  <td><%= h.description %></td>
+                  <td class="text-end">
+                    <button class="btn btn-outline-danger btn-sm delete-blackout-btn" data-id="<%= h.blackout_date %>">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="card">
+      <div class="card-body">
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('superfooter.ejs'); %>
+
+<script>
+  // expose current calendar to JS
+  window.elaw_CAL = <%- JSON.stringify(calendar) %>;
+
+  function fmtISOClient(iso){
+  try {
+    const [y,m,d] = String(iso||'').split('-').map(Number);
+    const dt = new Date(y, (m||1)-1, d||1);
+    return dt.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' });
+  } catch { return iso; }
+}
+
+
+// map day-of-week
+const DOW_NAME = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function isWorkingDow(dow){
+  const wd = (window.elaw_CAL && window.elaw_CAL.working_days) || {};
+  return !!wd[DOW_NAME[dow]];
+}
+
+</script>
+
+<style>
+
+
+.kwe-toast-wrap{position:fixed; top:16px; right:16px; z-index:1080;}
+.kwe-toast{
+  min-width:260px; margin-top:10px; padding:12px 16px;
+  border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.18);
+  font-weight:600; letter-spacing:.2px;
+}
+.kwe-success{ background:#16a34a; color:#fff; border:0; }   /* green-600 */
+.kwe-danger { background:#dc2626; color:#fff; border:0; }   /* red-600  */
+.kwe-warning{ background:#f59e0b; color:#111; border:0; }   /* amber-500 */
+
+
+
+</style>
+
+<script>
+(function(){
+  // Toast helpers
+  const wrap = document.createElement('div'); wrap.className = 'kwe-toast-wrap'; document.body.appendChild(wrap);
+  function toast(type, msg, ms=2000){
+    const d = document.createElement('div');
+    d.className = `kwe-toast kwe-${type}`;
+    d.textContent = msg;
+    wrap.appendChild(d);
+    setTimeout(()=>{ d.remove(); }, ms);
+  }
+
+  // Map working days -> FullCalendar businessHours (0=Sun..6=Sat)
+  const dayIndex = { Sunday:0, Monday:1, Tuesday:2, Wednesday:3, Thursday:4, Friday:5, Saturday:6 };
+  function businessHoursFrom(wd){
+    const active = [];
+    for (const k in wd){ if (wd[k]) active.push(dayIndex[k]); }
+    // FullCalendar expects objects; simplest is: Mo–Fr 09-18 etc; if you only want open days, set daysOfWeek and default time range:
+    return active.length ? [{ daysOfWeek: active, startTime: '00:00', endTime: '24:00' }] : [];
+  }
+
+  // Init FullCalendar
+  const calendarEl = document.getElementById('calendar');
+
+
+
+                        //============= Calendar creation =====================
+
+              const cal = new FullCalendar.Calendar(calendarEl, {
+  headerToolbar: { start: 'today prev,next', center: 'title', end: 'dayGridMonth,dayGridWeek,dayGridDay' },
+  initialView: 'dayGridMonth',
+  editable: false,
+  droppable: false,
+
+  // you already had this
+  businessHours: businessHoursFrom(window.elaw_CAL.working_days || {}),
+
+  // NEW: header classes (backgrounds)
+  dayHeaderClassNames: function(arg){
+    const dow = arg.date.getDay();
+    return isWorkingDow(dow) ? ['kwe-hdr-working'] : ['kwe-hdr-off'];
+  },
+
+  // NEW: header content with a pill
+  dayHeaderContent: function(arg){
+    const dow = arg.date.getDay();
+    const label = arg.text; // e.g. Mon, Tue (locale)
+    const work = isWorkingDow(dow);
+    return {
+      html: `
+        <div class="kwe-hdr-wrap">
+          <span>${label}</span>
+          <span class="kwe-pill ${work ? 'work':'off'}">${work ? 'Working' : 'Off'}</span>
+        </div>
+      `
+    };
+  },
+
+  // (optional) tint the day cells too
+  dayCellClassNames: function(arg){
+    const dow = arg.date.getDay();
+    return isWorkingDow(dow) ? ['kwe-cell-working'] : ['kwe-cell-off'];
+  },
+
+  // your existing eventContent:
+  eventContent: function (arg) {
+    const message = arg.event.extendedProps.message || '';
+    const dateStr = arg.event.start
+      ? arg.event.start.toLocaleDateString('en-US',{month:'long',day:'2-digit',year:'numeric'})
+      : '';
+    return { html: `
+      <div class="event-content">
+        <div class="event-title">${message || arg.event.title}</div>
+        <div class="event-date">${dateStr}</div>
+      </div>` };
+  }
+});
+
+                        //============= Calendar creation =====================
+
+
+  // Seed existing holidays as events
+  (Array.isArray(window.elaw_CAL.holidays) ? window.elaw_CAL.holidays : []).forEach(h=>{
+    cal.addEvent({ title:'Holiday', start:h.blackout_date, allDay:true, classNames:['kwe-holiday-event'], extendedProps:{ message: h.description } });
+  });
+  cal.render();
+
+  // Toggle working day (no page reload)
+  document.querySelectorAll('.working-day').forEach(cb=>{
+    cb.addEventListener('change', async (e)=>{
+      const day = cb.value;
+      const enabled = cb.checked;
+      try{
+        const { data } = await axiosKwe.post('/superadmin/calendar/working-days/toggle', { day, enabled });
+        if (data?.success){
+
+
+
+            // update your data model if you keep it
+  window.elaw_CAL.working_days = data.working_days || {};
+  cal.batchRendering(() => {
+    cal.setOption('businessHours', businessHoursFrom(window.elaw_CAL.working_days));
+    cal.render(); // re-run header callbacks so classes + pills update
+  });
+
+
+        //  cal.setOption('businessHours', businessHoursFrom(data.working_days || {}));
+          toast('success', `Updated ${day} → ${enabled ? 'Working' : 'Off'}`);
+        } else {
+          cb.checked = !enabled; // revert
+          toast('danger', data?.message || 'Update failed');
+        }
+      } catch(err){
+        console.log(err)
+        cb.checked = !enabled; // revert
+        toast('danger', 'Server error while updating day');
+      }
+    });
+  });
+
+  // Add blackout date
+  document.getElementById('blackoutForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const blackout_date = document.getElementById('blackout_date').value;
+    const description   = document.getElementById('description').value.trim();
+
+    try{
+      const { data } = await axiosKwe.post('/superadmin/calendar/holidays', { blackout_date, description });
+      if (data?.success){
+        // update table
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-date', blackout_date);
+        tr.innerHTML = `
+          <td><span class="badge bg-light text-dark">${fmtISOClient(blackout_date)}</span></td>
+          <td>${description}</td>
+          <td class="text-end">
+            <button class="btn btn-outline-danger btn-sm delete-blackout-btn" data-id="${blackout_date}">
+              <i class="ti ti-trash"></i>
+            </button>
+          </td>`;
+        document.getElementById('holidayRows').prepend(tr);
+
+        // bind delete for new row
+        bindDelete(tr.querySelector('.delete-blackout-btn'));
+
+        // add event to calendar
+        cal.addEvent({ title:'Holiday', start:blackout_date, allDay:true, classNames:['kwe-holiday-event'], extendedProps:{ message: description } });
+
+        // clear form
+        e.target.reset();
+        toast('success', 'Blackout date added');
+      } else {
+        toast('warning', data?.message || 'Could not add blackout');
+      }
+    } catch(err){
+      toast('danger', 'Server error while adding blackout');
+    }
+  });
+
+  // Delete blackout helper
+  function bindDelete(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      const date = this.getAttribute('data-id');
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "This blackout date will be deleted permanently.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton: 'swal2-cancel btn btn-secondary'
+        },
+        buttonsStyling: false
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try{
+            const { data } = await axiosKwe.delete('/superadmin/calendar/holidays/' + encodeURIComponent(date));
+            if (data?.success){
+              // remove table row
+              const row = document.querySelector(`tr[data-date="${date}"]`);
+              if (row) row.remove();
+              // remove event from calendar
+              cal.getEvents().forEach(ev => { if (ev.startStr === date) ev.remove(); });
+              toast('success', 'Blackout deleted');
+            } else {
+              toast('warning', data?.message || 'Could not delete blackout');
+            }
+          }catch(err){
+            toast('danger', 'Server error while deleting blackout');
+          }
+        }
+      });
+    });
+  }
+  // bind for existing rows
+  document.querySelectorAll('.delete-blackout-btn').forEach(bindDelete);
+})();
+</script>

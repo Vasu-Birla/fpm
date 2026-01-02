@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f6f6f6; color:#111827; }
+    .wrap { max-width: 860px; margin: 18px auto; background:#fff; border:1px solid #dcdfe4; border-radius:10px; overflow:hidden; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #dcdfe4; }
+    .logo { height: 28px; }
+    .title { margin:0; font-size:20px; font-weight:700; }
+    .muted { color:#6b7280; font-size:12px; }
+    .badge { border:1px solid #d1d5db; color:#111827; padding:6px 10px; border-radius:14px; font-size:11px; font-weight:700; background:#f9fafb; }
+    .badge-pending { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+    .badge-partial { background:#fffbeb; color:#92400e; border-color:#fcd34d; }
+    .badge-paid { background:#ecfdf3; color:#166534; border-color:#bbf7d0; }
+    .section { padding:18px 20px; }
+    .grid { display:flex; gap:12px; }
+    .card { flex:1; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; background:#fafafa; }
+    .label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6b7280; margin-bottom:4px; }
+    .value { font-size:14px; font-weight:600; color:#111827; }
+    table { width:100%; border-collapse: collapse; margin-top:12px; }
+    th, td { padding:9px; border:1px solid #e5e7eb; font-size:13px; }
+    th { background:#f9fafb; text-align:left; }
+    .summary { width:320px; margin-left:auto; margin-top:12px; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+    .summary-row { display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid #e5e7eb; }
+    .summary-row:last-child { border-bottom:none; }
+    .fw-bold { font-weight:700; }
+    .notes, .terms { margin-top:14px; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; background:#fafafa; }
+    ul { margin: 8px 0 0 16px; padding:0; font-size:12px; color:#374151; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <% if (logoSrc) { %>
+          <img src="<%= logoSrc %>" class="logo" alt="ELAW">
+        <% } else { %>
+          <div class="title" style="font-size:18px;">ELAW</div>
+        <% } %>
+        <div>
+          <p class="title" style="margin:0;">Invoice</p>
+          <div class="muted">#<%= invoice.invoice_number || invoice.invoice_id %></div>
+        </div>
+      </div>
+      <% const pstat = (meta?.payment_status || invoice.payment_status || invoice.status || 'pending').toLowerCase(); %>
+      <div class="badge <%= pstat === 'paid' ? 'badge-paid' : (pstat.startsWith('partial') ? 'badge-partial' : 'badge-pending') %>"><%= (meta?.payment_status || invoice.status || 'pending').toUpperCase() %></div>
+    </div>
+
+    <div class="section">
+      <div class="grid" style="gap:10px;">
+        <div class="card" style="flex:1.2;">
+          <div class="label">Bill To</div>
+          <div class="value"><%= invoice.client?.first_name %> <%= invoice.client?.last_name %></div>
+          <div style="color:#6b7280; font-size:12px;"><%= invoice.client?.email || '' %></div>
+        </div>
+        <div class="card" style="flex:1.2; text-align:right;">
+          <div class="label">Invoice From</div>
+          <div class="value"><%= invoice.firm?.firm_name || 'Law Firm' %></div>
+          <div style="color:#6b7280; font-size:12px; white-space:pre-line;"><%= invoice.firm?.address || '' %></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <div class="card" style="flex:1;">
+          <div class="label">Invoice Date</div>
+          <div class="value"><%= invoice.created_at ? invoice.created_at.toISOString().slice(0,10) : '' %></div>
+        </div>
+        <div class="card" style="flex:1;">
+          <div class="label">Due Date</div>
+          <div class="value"><%= invoice.due_date || '' %></div>
+        </div>
+        <div class="card" style="flex:1;">
+          <div class="label">Payment Mode</div>
+          <div class="value" style="text-transform:capitalize;"><%= meta?.payment_mode || '—' %></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Type</th>
+            <th style="text-align:right;">Qty</th>
+            <th style="text-align:right;">Unit</th>
+            <th style="text-align:right;">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% invoice.items.forEach(it => { %>
+            <tr>
+              <td><%= it.description %></td>
+              <td><%= it.type %></td>
+              <td style="text-align:right;"><%= it.quantity %></td>
+              <td style="text-align:right;"><%= it.unit_price %></td>
+              <td style="text-align:right;"><%= it.line_total %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <div class="summary">
+        <div class="summary-row"><span>Subtotal</span><span><%= invoice.subtotal %></span></div>
+        <div class="summary-row"><span>Discount (<%= meta?.discount_rate || 0 %>%)</span><span>-<%= meta?.discount_total || 0 %></span></div>
+        <div class="summary-row"><span>Tax (<%= meta?.tax_rate || 0 %>%)</span><span><%= invoice.tax_total %></span></div>
+        <div class="summary-row fw-bold"><span>Grand Total</span><span><%= meta?.grand_total ?? invoice.total %></span></div>
+        <% if (meta?.partial_payment) { %>
+          <div class="summary-row"><span>Partial Payment</span><span>-<%= meta.partial_payment %></span></div>
+        <% } %>
+        <div class="summary-row fw-bold"><span>Net Due</span><span><%= meta?.net_total ?? invoice.total %></span></div>
+      </div>
+
+      <% if (meta?.notes || invoice.notes) { %>
+        <div class="notes">
+          <div class="label">Notes</div>
+          <div style="font-size:13px; color:#374151;"><%= meta?.notes || invoice.notes %></div>
+        </div>
+      <% } %>
+
+      <div class="terms">
+        <div class="label">Invoice Terms & Conditions</div>
+        <ul>
+          <li>Payment is due upon receipt unless otherwise agreed in writing.</li>
+          <li>Late payments may incur interest at 1.5% per month after the due date.</li>
+          <li>Partial payments must be pre-approved and reflected in this invoice.</li>
+          <li>Disputes must be submitted in writing within 10 business days of receipt.</li>
+          <li>Services are provided under the firm’s engagement terms; additional work may be billed separately.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

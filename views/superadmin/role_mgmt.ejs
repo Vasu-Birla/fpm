@@ -1,0 +1,541 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+   
+
+<!-- ========================
+    Start Page Content
+========================= -->
+
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h4 class="fw-bold mb-0">Roles & Permissions Management</h4>
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <div class="row">
+            
+            <!-- ✅ Left Side: Create / Edit Role -->
+            <div class="col-lg-3">
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-light fw-bold">Create Role</div>
+                    <div class="card-body">
+                        <form method="POST" action="/superadmin/add_role" class="row g-3">
+                            
+                            <!-- Role Name -->
+                            <div class="col-12">
+                                <label for="role_name" class="form-label">Role Name</label>
+                                <input type="text" id="role_name" name="role_name" class="form-control" placeholder="Enter role name" required>
+                            </div>
+
+                            <!-- Permissions (Checkbox Tree / Multi Select) -->
+                            <div class="col-12">
+                                <label class="form-label">Permissions</label>
+                                <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="full" id="perm_full">
+                                        <label class="form-check-label fw-semibold" for="perm_full">
+                                            Full Access
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="view_staff" id="perm_staff">
+                                        <label class="form-check-label" for="perm_staff">View Users</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="manage_staff" id="perm_manage_staff">
+                                        <label class="form-check-label" for="perm_manage_staff">Manage Users</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="view_reports" id="perm_reports">
+                                        <label class="form-check-label" for="perm_reports">View Reports</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="edit_settings" id="perm_settings">
+                                        <label class="form-check-label" for="perm_settings">Edit Settings</label>
+                                    </div>
+                                    <!-- Add More Permissions Here -->
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-12">
+                                <label for="statuss" class="form-label">Status</label>
+                                <select id="statuss" name="statuss" class="form-select">
+                                    <option value="active" selected>Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="ti ti-plus"></i> Create Role
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ✅ Assign Role to Admin -->
+                <div class="card shadow-sm border">
+                    <div class="card-header bg-light fw-bold">Assign Role</div>
+                    <div class="card-body">
+                        <form method="POST" action="#" class="row g-3">
+                            <div class="col-12">
+                                <label for="admin_id" class="form-label">Select Admin</label>
+                                <select id="admin_id" name="admin_id" class="form-select" required>
+                                    <option value="">-- Select Admin --</option>
+                                    <option value="1">John Doe</option>
+                                    <option value="2">Jane Smith</option>
+                                    <!-- PHP loop for admin list -->
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="role_id" class="form-label">Select Role</label>
+                                <select id="role_id" name="role_id" class="form-select" required>
+                                    <option value="">-- Select Role --</option>
+                                    <option value="1">Super Admin</option>
+                                    <option value="2">Editor</option>
+                                    <!-- PHP loop for roles list -->
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="ti ti-user-check"></i> Assign Role
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ Right Side: Roles List -->
+            <div class="col-lg-9">
+                <div class="card shadow-sm border">
+                    <div class="card-header bg-light fw-bold">Roles List</div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Role</th>
+                                    <th>Permissions</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Replace with PHP Loop -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Super Admin</td>
+                                    <td>Full Access</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-warning"><i class="ti ti-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Editor</td>
+                                    <td>View Users, Manage Users</td>
+                                    <td><span class="badge bg-secondary">Inactive</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-warning"><i class="ti ti-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- PHP Loop Ends -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // ✅ Do the deletion logic here (e.g., AJAX, remove row, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // ❌ Cancelled
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<script>
+
+  
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'sscl_client_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+  
+//==========================  Edit Role / Make Disable Role  ( Inactive /delete) ======================
+
+let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // Edit Role
+    document.querySelectorAll('.role-edit').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const roleId = this.dataset.roleId;
+        document.cookie = `sscl_role_id=${roleId}`;
+        window.location.href = '/superadmin/edit_role';
+      });
+    });
+
+    // Delete Role
+    document.querySelectorAll('.role-delete').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const roleId = this.dataset.roleId;
+        const roleName = this.dataset.roleName;
+        deleteRole(roleId, roleName);
+      });
+    });
+
+    // Change Role status
+      // Status toggle button
+        document.querySelectorAll('.role-status-toggle').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const roleId = this.dataset.roleId;
+            const roleName = this.dataset.roleName;
+            const newStatus = this.dataset.newStatus;
+
+          
+            update_role_status(roleId, newStatus, roleName);
+          });
+        });
+
+
+
+  });
+
+
+
+  function deleteRole(roleId, roleName) {
+    // You can add your SweetAlert confirmation here if needed
+    console.log(`Delete Role ${roleName} (${roleId})`);
+
+    // NOTE -> Make inactive or diable User can be consider as SOFT delete of user so am not developing it 
+ 
+  }
+
+
+
+
+function update_role_status(role_id, newStatus,username ) {
+   
+
+  event.preventDefault(); 
+  var action;
+if(newStatus== 'admin_disabled'){
+  action = 'Inactived'
+}else{
+  action = 'approved '
+}
+ 
+
+  const userStatusElement = document.getElementById(`userStatus${role_id}`);
+  const pmsgElement  = document.getElementById(`msg${role_id}`);
+
+    $.ajax({
+        url: '/superadmin/update_role_status',
+        type: 'POST',
+        data: { id: role_id, status: newStatus,  _csrf: csrfToken  },
+        beforeSend: function() {
+            // Hide the kilstatus paragraph before the request
+            $('.kilstatus').hide();
+        },
+        success: function(response) {  
+           console.log(response)       
+           
+                    if (response.success == true) {
+               
+                                                      $('[data-user-id="' + role_id + '"]').attr('data-user-status', newStatus);
+
+                                // Update image source and tooltip based on new status
+                                var imgSrc = (newStatus === 'active') ? '../images/icons/active.png' : '../images/icons/inactive.png';
+                                $('[data-user-id="' + role_id + '"] .status-image').attr('src', imgSrc);
+                                $('[data-user-id="' + role_id + '"] .status-tooltip').attr('title', (newStatus === 'active') ? 'deactive' : 'active');
+
+                                // Add fade in overlay and change background color based on new status
+                                var bgColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+
+                                var textColor = (newStatus === 'active') ? '#3c763d' : '#ffffff'; // White font for non-Approve status
+                                // var textColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+                                // $('[data-user-id="' + role_id + '"] .status-overlay').css('background-color', bgColor).fadeIn();
+
+
+
+                                $('[data-user-id="' + role_id + '"] .status-overlay').css({
+                                    'background-color': bgColor,
+                                    'color': textColor + ' !important', // Force the font color change
+                                  
+                                }).fadeIn();
+
+
+                                pmsgElement.innerHTML = response.msg;
+                                var msg = 'Role ('+username+') '+action+' successfully'
+                                document.cookie = `sscl_msg=${msg}`;
+
+                                // Fade out the overlay after a delay
+                                setTimeout(function() {
+                                 
+                                    $('[data-user-id="' + role_id + '"] .status-overlay').fadeOut();
+                                    window.location.href = '/superadmin/role_mgmt'
+                                }, 1500);
+
+                                // $('.kilstatus').show();
+
+
+              } else {
+                  console.error('Error:', response.msg);
+                  $("#errorMessage").removeClass("d-none");
+                  $("#successMessage").addClass("d-none");
+              }
+
+
+        },
+        error: function(error) { alert("ajax error")
+          console.error('Error:', error);
+          $("#errorMessage").text('Ajax Error');
+    $("#errorMessage").removeClass("d-none");
+    $("#successMessage").addClass("d-none");
+        }
+    });
+}
+
+
+
+
+
+//============================= Make Disable Role End =============================
+
+
+
+   //======================== Check role_name Uniqueness    ====================================  
+
+        $(document).ready(function () {
+                    $('#roleInput').on('change', function () {
+                        var role_name = $(this).val();
+                        var roleInput = document.getElementById('roleInput');
+                        $.ajax({
+                            type: 'POST',
+                            url: '/superadmin/checkrole',
+                            headers: { 'CSRF-Token': csrfToken },
+                            data: { role_name: role_name },
+                            success: function (data) {
+
+                                if (data.exists == true) {
+                                 var msg = data.message || "A record with the given Role ( " + role_name + " ) already exists. Enter another unique Role and try again.";
+                                   $('#roleInputError').text(msg);
+                                  
+                                    roleInput.value = "";
+                                }
+                                else {
+                                    if (roleInput.value == "") {
+                                     
+                                        $('#roleInputError').text("");
+                                    } else {
+                                   
+                                        $('#roleInputError').text("");
+                                    }
+
+                                }
+                            }
+                        });
+                    });
+                });
+
+
+
+
+ //======================== Check role_name Uniqueness    ====================================  
+
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // --- Optional (Report) elements: only exist if you kept that card in DOM ---
+  const reportCheckbox         = document.querySelector('input[name="/reports"]') || null;
+  const subPermissionContainer = document.getElementById('reportSubPermission') || null;
+  const blockTabsYes           = document.getElementById('blockTabsYes') || null;
+  const blockTabsNo            = document.getElementById('blockTabsNo') || null;
+  const blockTabsOptions       = document.getElementById('blockTabsOptions') || null;
+  const reportTabCheckboxes    = document.querySelectorAll('.report-tab'); // may be empty
+  const selectAll              = document.getElementById('checkall');
+
+  // Names used only if the block UI exists
+  const blockPermissions = ['/block_pending','/block_inprogress','/block_flagged','/block_cleared'];
+
+  // Helper: get all permission checkboxes (excluding empties)
+  const allPermissionCheckboxes = () =>
+    Array.from(document.querySelectorAll('.permission-checkbox'))
+      .filter(cb => (cb.name || '').trim() !== '');
+
+  // Helper: main permissions = all permission-checkboxes minus any block/tab ones
+  const getMainPermissionNames = () => {
+    const all = allPermissionCheckboxes().map(cb => cb.name);
+    // remove block permissions if those names happen to exist
+    return all.filter(name => !blockPermissions.includes(name));
+  };
+
+  // --- Wire up Report UI only if present ---
+  if (reportCheckbox && subPermissionContainer && blockTabsYes && blockTabsNo && blockTabsOptions) {
+    // Show/hide the sub-permission panel with the report checkbox
+    reportCheckbox.addEventListener('change', function () {
+      subPermissionContainer.classList.toggle('d-none', !this.checked);
+      if (!this.checked) {
+        blockTabsNo.checked = true;
+        blockTabsOptions.classList.add('d-none');
+        reportTabCheckboxes.forEach(cb => (cb.checked = false));
+      }
+    });
+
+    // YES -> show options
+    blockTabsYes.addEventListener('change', function () {
+      if (this.checked) blockTabsOptions.classList.remove('d-none');
+    });
+
+    // NO -> hide options + clear block checkboxes
+    blockTabsNo.addEventListener('change', function () {
+      if (this.checked) {
+        blockTabsOptions.classList.add('d-none');
+        reportTabCheckboxes.forEach(cb => (cb.checked = false));
+      }
+    });
+
+    // If user toggles any block checkbox manually, we can uncheck "select all"
+    reportTabCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (selectAll) selectAll.checked = false;
+      });
+    });
+  }
+
+  // --- Select All (always works even if Report UI is removed) ---
+  if (selectAll) {
+    selectAll.addEventListener('change', function () {
+      const check = this.checked;
+
+      // Check/uncheck only "permission-checkbox" items, excluding block perms
+      allPermissionCheckboxes().forEach(cb => {
+        if (!blockPermissions.includes(cb.name)) cb.checked = check;
+      });
+
+      // If Report UI exists, sync its sub-panel visibility sensibly
+      if (reportCheckbox && subPermissionContainer && blockTabsYes && blockTabsNo && blockTabsOptions) {
+        if (check && reportCheckbox.checked) {
+          subPermissionContainer.classList.remove('d-none');
+          blockTabsYes.checked = true;
+          blockTabsOptions.classList.remove('d-none');
+        } else {
+          subPermissionContainer.classList.add('d-none');
+          blockTabsNo.checked = true;
+          blockTabsOptions.classList.add('d-none');
+          reportTabCheckboxes.forEach(cb => (cb.checked = false));
+        }
+      }
+    });
+  }
+
+  // --- Compute permissions (and "full") on submit ---
+  function collectPermissions() {
+    const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+    let permissions = [];
+
+    // 1) gather every checked checkbox with a non-empty name
+    checkboxes.forEach(checkbox => {
+      if (checkbox.checked && (checkbox.name || '').trim() !== '') {
+        permissions.push(checkbox.name);
+      }
+    });
+
+    // 2) "full" logic:
+    //    full = all MAIN permissions are checked AND none of the block permissions are checked
+    const mainNames = getMainPermissionNames();
+    const hasAllMain = mainNames.every(name => permissions.includes(name));
+    const hasAnyBlock = blockPermissions.some(name => permissions.includes(name));
+
+    // Remove any existing "full" first
+    permissions = permissions.filter(p => p !== 'full');
+
+    if (hasAllMain && !hasAnyBlock) {
+      permissions.push('full');
+    }
+
+    alert(permissions.join(','))
+
+    document.getElementById('permissions').value = permissions.join(',');
+  }
+
+  const form = document.querySelector('form');
+  if (form) form.addEventListener('submit', collectPermissions);
+});
+</script>
+

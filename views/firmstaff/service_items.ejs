@@ -1,0 +1,326 @@
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row justify-content-center">
+      <div class="col-lg-12">
+        <!-- Title -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h5 class="fw-bold mb-0 d-flex align-items-center">
+              <a href="/firmstaff" class="text-dark text-decoration-none">
+                <i class="ti ti-chevron-left me-1"></i>
+              </a>
+              <span>Services &amp; Products</span>
+            </h5>
+            <div class="text-muted small mt-1">
+              Manage billable services and products for this firm.
+            </div>
+          </div>
+        </div>
+
+        <!-- Add / Edit form -->
+        <div class="card mb-3">
+          <div class="card-body">
+            <form id="serviceForm" autocomplete="off">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-medium">
+                    Name <span class="text-danger">*</span>
+                  </label>
+                  <input type="text"
+                         name="name"
+                         class="form-control"
+                         required
+                         placeholder="e.g. Consultation, Drafting, Filing Fee">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-medium">Type</label>
+                  <select name="type" class="form-select">
+                    <option value="service">Service</option>
+                    <option value="product">Product</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label fw-medium">Unit Price</label>
+                  <input type="number"
+                         step="0.01"
+                         name="unit_price"
+                         class="form-control"
+                         value="0">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label fw-medium">Description</label>
+                  <textarea name="description"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Short description for invoice (optional)"></textarea>
+                </div>
+              </div>
+              <div class="text-end mt-3">
+                <button type="submit" class="btn btn-primary">
+                  Save Item
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Filters + Table -->
+        <div class="card">
+          <div class="card-body">
+
+            <!-- Filters -->
+            <div class="row g-2 mb-3 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label fw-medium small mb-1">Type</label>
+                <select id="svcTypeFilter"
+                        class="form-select form-select-sm"
+                        data-ignore-kilvish="yes">
+                  <option value="">All</option>
+                  <option value="service">Service</option>
+                  <option value="product">Product</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-medium small mb-1">Status</label>
+         
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-medium small mb-1">Search</label>
+                <div class="d-flex gap-2">
+                  <input id="svcSearch"
+                         type="text"
+                         class="form-control form-control-sm"
+                         data-ignore-kilvish="yes"
+                         placeholder="Search name or description">
+                  <button id="svcResetFilters"
+                          class="btn btn-outline-secondary btn-sm">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="table table-striped table-nowrap w-100" id="servicesTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Unit Price</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody><!-- DataTables will fill via AJAX --></tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function($){
+  const fx = window.axiosElaw || window.axios;
+  if (!fx || !$.fn.DataTable) return;
+
+  const $tbl    = $('#servicesTable');
+  const $type   = $('#svcTypeFilter');
+  const $stat   = $('#svcStatusFilter');
+  const $search = $('#svcSearch');
+  const $reset  = $('#svcResetFilters');
+  const $form   = $('#serviceForm');
+
+  function typeBadge(t) {
+    const s = (t || '').toLowerCase() === 'product' ? 'product' : 'service';
+    if (s === 'product') {
+      return '<span class="badge bg-info-subtle text-info border border-info">Product</span>';
+    }
+    return '<span class="badge bg-primary-subtle text-primary border border-primary">Service</span>';
+  }
+
+  const dt = $tbl.DataTable({
+    responsive: true,
+    dom:
+      "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+      { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+      { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+    ],
+    pageLength: 25,
+    searching: false,
+    serverSide: false,
+    ajax: function(data, cb){
+      const payload = {
+        type:   $type.val()   || '',
+        status: $stat.val()   || '',
+        q:      $search.val() || '',
+      };
+
+      fx.post('/firmstaff/services_json', payload)
+        .then(({ data }) => {
+          if (!data?.success) {
+            window.kilToast?.danger?.(data?.message || 'Failed to load services.');
+            cb({ data: [] });
+            return;
+          }
+
+          const rows = (data.rows || []).map((s, idx) => {
+            const price    = Number(s.unit_price || 0).toFixed(2);
+            const rawName  = s.name || '—';
+            const safeName = String(s.name || '').replace(/"/g, '&quot;');
+
+            const actions = `
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger svc-delete"
+                      data-id="${s.service_id}"
+                      data-name="${safeName}"
+                      title="Delete">
+                <i class="ti ti-trash"></i>
+              </button>
+            `;
+
+            return {
+              idx: idx + 1,
+              name: rawName,
+              type: typeBadge(s.type),
+              unit_price: price,
+              description: s.description || '',
+              actions,
+            };
+          });
+
+          cb({ data: rows });
+        })
+        .catch(err => {
+          console.error('services_json ajax error:', err);
+          window.kilToast?.danger?.(err?.response?.data?.message || 'Failed to load services.');
+          cb({ data: [] });
+        });
+    },
+    columns: [
+      { data: 'idx' },
+      { data: 'name' },
+      { data: 'type' },
+      { data: 'unit_price' },
+      { data: 'description' },
+      { data: 'actions', orderable:false, searchable:false },
+    ]
+  });
+
+  // Hide DataTables’ built-in search
+  const $wrapper = $tbl.closest('.dataTables_wrapper');
+  $('.dataTables_filter', $wrapper).hide();
+
+  function reloadWithDelay(){
+    clearTimeout(window.__svc_timer);
+    window.__svc_timer = setTimeout(() => dt.ajax.reload(), 250);
+  }
+
+  $type.on('change',  reloadWithDelay);
+  $stat.on('change',  reloadWithDelay);
+  $search.on('input', reloadWithDelay);
+
+  // ✅ Reset button for filters
+  $reset.on('click', function(e){
+    e.preventDefault();
+    $type.val('');
+    $stat.val('');
+    $search.val('');
+    dt.ajax.reload();
+  });
+
+  // Create item
+  $form.on('submit', async function(e){
+    e.preventDefault();
+    try {
+      const fd = new FormData(this);
+      const payload = {};
+      fd.forEach((v, k) => { payload[k] = v; });
+      if (!payload.unit_price) payload.unit_price = 0;
+
+      const { data } = await fx.post('/firmstaff/api/services', payload);
+      if (!data?.success) {
+        const msg = data?.message || 'Failed to save item.';
+        window.kilToast?.danger?.(msg) || alert(msg);
+        return;
+      }
+
+      window.kilToast?.success?.('Item saved.');
+      this.reset();
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('services create error', err);
+      const msg = err?.response?.data?.message || 'Error saving item.';
+      window.kilToast?.danger?.(msg) || alert(msg);
+    }
+  });
+
+  // SweetAlert2 delete confirmation with nice message
+  $tbl.on('click', '.svc-delete', async function(e){
+    e.preventDefault();
+    const id   = this.dataset.id;
+    const name = this.dataset.name || '';
+
+    if (!id) return;
+
+    try {
+      const res = await Swal.fire({
+        title: 'Delete Item?',
+        html: `
+          <div style="text-align:left">
+            <p>You are about to delete this billing item:</p>
+            <p><strong>${name || 'Service / Product'}</strong></p>
+            <p class="mb-0 text-muted">
+              This item will no longer be available when creating new invoices.
+            </p>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+          confirmButton: 'swal2-confirm btn btn-danger ms-2',
+          cancelButton:  'swal2-cancel btn btn-secondary'
+        },
+        buttonsStyling: false,
+      });
+
+      if (!res.isConfirmed) return;
+
+      const { data } = await fx.delete(`/firmstaff/api/services/${id}`);
+      if (!data?.success) {
+        const msg = data?.message || 'Failed to delete.';
+        window.kilToast?.danger?.(msg) || alert(msg);
+        return;
+      }
+
+      window.kilToast?.success?.('Item deleted.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      console.error('services delete error', err);
+      const msg = err?.response?.data?.message || 'Error deleting item.';
+      window.kilToast?.danger?.(msg) || alert(msg);
+    }
+  });
+
+})(jQuery);
+</script>

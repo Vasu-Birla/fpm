@@ -1,0 +1,177 @@
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+<%
+  const svc = service || {};
+  const svcName = svc.name || 'Service';
+  const svcSlug = svc.slug || '';
+%>
+
+<!-- Banner Start -->
+<section class="main-inner-banner">
+  <!-- optional banner content if your theme supports it -->
+</section>
+<!-- Banner End -->
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+  <ul>
+    <li><a href="/home" title="HOME">HOME</a></li>
+    <li><a href="/services" title="Services">Services</a></li>
+    <li>Services Firms</li>
+  </ul>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Firms List Start -->
+<section class="main-service-page-list">
+  <div class="container">
+
+    <div class="row align-items-end mb-4">
+      <div class="col-lg-8">
+        <div class="section-title">
+          <h2 class="h2-title"><%= svcName %> — Firms</h2>
+          <p>Choose a firm that matches your needs and submit your intake request in 60 seconds.</p>
+        </div>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a href="/services" class="sec-btn" title="Back to Services"><span>Back to Services</span></a>
+      </div>
+    </div>
+
+    <% if (output && output.message) { %>
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="alert alert-<%= output.type || 'info' %> mb-0"><%= output.message %></div>
+        </div>
+      </div>
+    <% } %>
+
+    <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+    <!-- Search -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="service-box" style="padding:18px;">
+          <label class="form-label mb-2" style="display:block;font-weight:600;">Search Firm</label>
+          <input
+            id="firmSearch"
+            class="form-control"
+            placeholder="Search by name / parish..."
+            data-ignore-kilvish="yes"
+          />
+          <small class="text-muted d-block mt-2">Tip: type a firm name or parish to filter.</small>
+        </div>
+      </div>
+    </div>
+
+    <% if (firms && firms.length) { %>
+      <div class="row" id="firmGrid">
+        <% firms.forEach((f, index) => { %>
+          <div
+            class="col-md-6 col-xl-4 firm-card mb-4"
+            data-name="<%= (f.firm_name||'').toLowerCase() %>"
+            data-parish="<%= (f.parish||'').toLowerCase() %>"
+          >
+            <div class="service-box wow fadeup-animation" data-wow-duration="0.8s" data-wow-delay="<%= ((index % 3) * 0.1 + 0.2).toFixed(1) %>s">
+              <div class="d-flex align-items-center gap-3 mb-3" style="display:flex;gap:12px;align-items:center;">
+                <% if (f.firm_logo_url) { %>
+                  <img
+                    src="<%= f.firm_logo_url %>"
+                    alt="<%= f.firm_name %>"
+                    style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:1px solid rgba(0,0,0,0.08);"
+                  />
+                <% } else { %>
+                  <div
+                    style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:#f6f7fb;border:1px solid rgba(0,0,0,0.08);"
+                    aria-label="<%= f.firm_name %>"
+                  >
+                    <%= (f.firm_name || 'F').slice(0,1).toUpperCase() %>
+                  </div>
+                <% } %>
+
+                <div style="flex:1;">
+                  <h4 class="h4-title mb-1" style="margin:0;">
+                    <%= f.firm_name %>
+                  </h4>
+                  <div class="text-muted" style="font-size:13px;">
+                    <%= f.parish || '-' %>
+                    <% if (f.address) { %> • <%= (f.address || '').toString().slice(0,60) %><% } %>
+                  </div>
+                </div>
+              </div>
+
+              <p class="mb-3"><%= f.blurb || 'Professional legal support for this service area.' %></p>
+
+              <div class="d-flex gap-2 flex-wrap" style="display:flex;gap:10px;flex-wrap:wrap;">
+      
+
+                <a  class="btn btn-primary firm-go"
+  href="/firm_details"
+  data-firm="<%= f.slug %>"
+  title="View Firm & Submit Intake"
+>
+  <span>View Firm &amp; Submit Intake</span>
+</a>
+
+              
+              </div>
+
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="row">
+        <div class="col-12">
+          <div class="service-box">
+            <h4 class="h4-title">No firms found</h4>
+            <p>No firms are currently listed for this service. Please check back soon.</p>
+            <a href="/services" class="sec-btn" title="Back to Services"><span>Back to Services</span></a>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+  </div>
+</section>
+<!-- Firms List End -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('firmSearch');
+  const cards = Array.from(document.querySelectorAll('.firm-card'));
+
+  function applyFilter() {
+    const q = (input.value || '').toLowerCase().trim();
+    cards.forEach(c => {
+      const name = c.dataset.name || '';
+      const parish = c.dataset.parish || '';
+      const show = !q || name.includes(q) || parish.includes(q);
+      c.style.display = show ? '' : 'none';
+    });
+  }
+
+  if (input) input.addEventListener('input', applyFilter);
+});
+</script>
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->
+
+
+<script>
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('.firm-go');
+  if (!a) return;
+
+  const firmSlug = a.dataset.firm;
+  if (!firmSlug) return;
+
+  e.preventDefault();
+  document.cookie = `elaw_firmSlug=${encodeURIComponent(firmSlug)}; path=/; SameSite=Lax`;
+  window.location.href = a.getAttribute('href') || '/firm_details';
+});
+</script>

@@ -1,0 +1,144 @@
+
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<!-- ========================
+    Start Page Content
+========================= -->
+
+<!-- New Task Form Start -->
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center">
+                        <a href="#" class="text-dark">
+                            <i class="ti ti-chevron-left me-1"></i>Edit Task
+                        </a>
+                    </h5>
+                </div>
+                <!-- page header end -->
+
+                <!-- card start -->
+                <form action="#" method="POST">
+                    <div class="card">
+                        <div class="card-body pb-0">
+                            <div class="form">
+                                <div class="row">
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label mb-1 fw-medium">
+                                                Title <span class="text-danger ms-1">*</span>
+                                            </label>
+                                            <input type="text" id="title" name="title" class="form-control" placeholder="Enter task title" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="case_id" class="form-label mb-1 fw-medium">Case <small>(optional)</small></label>
+                                            <select class="form-select select2" id="case_id" name="case_id">
+                                                <option selected disabled>Select Case</option>
+                                                <!-- Example options -->
+                                                <option value="1">Case 1</option>
+                                                <option value="2">Case 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label mb-1 fw-medium">Description</label>
+                                            <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter task description"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="status" class="form-label mb-1 fw-medium">Status</label>
+                                            <select class="form-select select2" name="status" required>
+                                                <option value="">Select Status</option>
+                                                <option value="Todo">Todo</option>
+                                                <option value="InProgress">In Progress</option>
+                                                <option value="Blocked">Blocked</option>
+                                                <option value="Done">Done</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="priority" class="form-label mb-1 fw-medium">Priority</label>
+                                            <select class="form-select select2" id="priority" name="priority" required>
+                                                <option value="">Select Priority</option>
+                                                <option value="Low">Low</option>
+                                                <option value="Normal">Normal</option>
+                                                <option value="High">High</option>
+                                                <option value="Critical">Critical</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="assigned_to" class="form-label mb-1 fw-medium">Assigned To</label>
+                                            <select class="form-select select2" id="assigned_to" name="assigned_to" required>
+                                                <option selected disabled>Select Firm User</option>
+                                                <!-- Example options -->
+                                                <option value="user1">Firm User 1</option>
+                                                <option value="user2">Firm User 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="due_at" class="form-label mb-1 fw-medium">Due Date & Time</label>
+                                            <input type="datetime-local" id="due_at" name="due_at" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="recurrence" class="form-label mb-1 fw-medium">Recurrence (RRULE or JSON)</label>
+                                            <textarea id="recurrence" name="recurrence" class="form-control" rows="2" placeholder='Example: {"freq":"weekly","interval":1}'></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>                  
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-end">
+                        <a href="#" class="btn btn-light me-2">Cancel</a>
+                        <button type="submit" name="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Task</button>
+                    </div>
+                </form>
+                <!-- card end -->
+
+            </div>
+        </div>
+        <!-- row end -->
+
+    </div>
+    <!-- End Content -->
+
+</div>
+<!-- New Task Form End -->
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->

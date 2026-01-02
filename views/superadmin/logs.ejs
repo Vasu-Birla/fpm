@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Audit Logs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <% if (csrfToken) { %><meta name="csrf-token" content="<%= csrfToken %>"><% } %>
+
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #0f1623;
+      --muted: #9fb3c8;
+      --text: #e6effa;
+      --accent: #7c3aed;    /* neon violet */
+      --accent-2: #22d3ee;  /* neon cyan */
+      --success: #10b981;
+      --warn: #f59e0b;
+      --error: #ef4444;
+      --security: #38bdf8;
+      --chip: #1a2435;
+    }
+    * { box-sizing: border-box }
+    body {
+      margin: 0; background: radial-gradient(1200px 500px at 50% -30%, rgba(34,211,238,.06), transparent), var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 28px; margin: 0 0 12px; letter-spacing: .3px }
+    .sub { color: var(--muted); margin-bottom: 20px }
+
+    .date-card {
+      background: linear-gradient(180deg, rgba(124,58,237,.08), rgba(34,211,238,.06));
+      border: 1px solid rgba(124,58,237,.25);
+      border-radius: 18px;
+      padding: 16px;
+      margin: 18px 0;
+      box-shadow: 0 10px 30px rgba(124,58,237,.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .date-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .date-title {
+      font-size: 18px; font-weight: 700; letter-spacing: .4px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pill {
+      background: var(--chip); color: var(--muted);
+      padding: 2px 8px; border-radius: 12px; font-size: 12px;
+    }
+    .btn {
+      background: transparent;
+      border: 1px solid var(--accent-2);
+      color: var(--accent-2);
+      padding: 8px 12px;
+      border-radius: 12px; cursor: pointer;
+      font-weight: 600; letter-spacing: .2px;
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(34,211,238,.25) }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Log card — severity-themed */
+    .log {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px 12px 10px 14px;
+      margin: 12px 0;
+      display: grid; gap: 8px;
+      position: relative;
+      border: 1px solid rgba(148,163,184,.18);
+    }
+    .log.sev-info     { border-left: 4px solid var(--success); box-shadow: 0 0 0 0 rgba(16,185,129,.0) }
+    .log.sev-warning  { border-left: 4px solid var(--warn);    box-shadow: 0 0 18px -10px rgba(245,158,11,.45) }
+    .log.sev-error    { border-left: 4px solid var(--error);   box-shadow: 0 0 22px -10px rgba(239,68,68,.55) }
+    .log.sev-security { border-left: 4px solid var(--security);box-shadow: 0 0 22px -10px rgba(56,189,248,.55) }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center }
+    .grow { flex: 1 1 auto }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; color: #b5c9dc }
+    .badge {
+      padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(148,163,184,.25);
+      background: rgba(148,163,184,.08);
+    }
+    .sev-chip.info     { color: var(--success);  border-color: rgba(16,185,129,.45) }
+    .sev-chip.warning  { color: var(--warn);     border-color: rgba(245,158,11,.45) }
+    .sev-chip.error    { color: var(--error);    border-color: rgba(239,68,68,.45) }
+    .sev-chip.security { color: var(--security); border-color: rgba(56,189,248,.45) }
+
+    .status-chip.ok      { color: var(--success);  border-color: rgba(16,185,129,.4) }
+    .status-chip.denied  { color: var(--error);    border-color: rgba(239,68,68,.4) }
+    .status-chip.failed  { color: var(--error);    border-color: rgba(239,68,68,.4) }
+    .status-chip.warn    { color: var(--warn);     border-color: rgba(245,158,11,.4) }
+
+    .method-chip { background: rgba(124,58,237,.08); border-color: rgba(124,58,237,.35); color: #c8b9ff }
+    .url-chip    { background: rgba(34,211,238,.08); border-color: rgba(34,211,238,.35); color: #b3f0ff }
+    .ip-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px; border-radius: 10px; font-size: 12px; cursor: pointer;
+      background: linear-gradient(90deg, rgba(34,211,238,.12), rgba(124,58,237,.12));
+      border: 1px solid rgba(34,211,238,.35);
+      color: #bef7ff;
+      transition: box-shadow .15s ease, transform .05s ease;
+    }
+    .ip-chip:hover { box-shadow: 0 0 16px rgba(34,211,238,.25); transform: translateY(-1px) }
+
+    .small { font-size: 12px; color: var(--muted) }
+
+    /* Per-date overlay (validate) */
+    .overlay {
+      position: absolute; inset: 0; display: none;
+      backdrop-filter: blur(3px);
+      background: radial-gradient(1200px 400px at 50% 0%, rgba(124,58,237,.08), transparent);
+      align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+    }
+    .overlay.active { display: flex; }
+    .glow {
+      font-weight: 800; font-size: 16px; letter-spacing: .6px;
+      text-shadow: 0 0 8px rgba(124,58,237,.9), 0 0 18px rgba(34,211,238,.8);
+      color: #b3f0ff; text-align: center;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: .6; transform: translateY(0) scale(1) }
+      50% { opacity: 1; transform: translateY(-2px) scale(1.02) }
+      100% { opacity: .6; transform: translateY(0) scale(1) }
+    }
+    .spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid rgba(34,211,238,.3);
+      border-top-color: var(--accent-2);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    .result {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.15);
+    }
+    .result.ok { border-color: rgba(16,185,129,.35); color: var(--success) }
+    .result.bad { border-color: rgba(239,68,68,.35); color: var(--error) }
+
+    .right { margin-left: auto }
+    .nowrap { white-space: nowrap }
+
+    @media (max-width: 720px) {
+      .date-head { flex-direction: column; align-items: flex-start }
+      .right { margin-left: 0 }
+      .mono { font-size: 11px }
+    }
+
+    /* Global startup overlay */
+    .startup {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+      background: radial-gradient(1100px 380px at 50% -10%, rgba(124,58,237,.18), rgba(34,211,238,.1), transparent), rgba(11,15,23,.92);
+    }
+    .startup .scanline {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(124,58,237,.3);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 22px rgba(124,58,237,.35), inset 0 0 18px rgba(34,211,238,.25);
+    }
+    .startup .robot {
+      font-weight: 900; font-size: 18px; color: #c8f6ff;
+      text-shadow: 0 0 10px rgba(34,211,238,.7), 0 0 20px rgba(124,58,237,.6);
+    }
+    .type {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      color: #00ff5e;
+      font-size: 16px;
+      border-right: 2px solid #aff9ff;
+      white-space: nowrap; overflow: hidden;
+      width: 0ch; animation: typing 4.2s steps(42, end) forwards, caret 600ms steps(1) infinite;
+    }
+    @keyframes typing { to { width: 42ch } }
+    @keyframes caret { 50% { border-color: transparent } }
+
+
+
+
+
+
+    /* Description block */
+.desc {
+  background: linear-gradient(180deg, rgba(148,163,184,.08), rgba(124,58,237,.06));
+  border: 1px solid rgba(148,163,184,.25);
+  border-left: 3px solid rgba(124,58,237,.65);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.desc .label {
+  font-size: 11px; letter-spacing: .4px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.desc pre {
+  margin: 0; white-space: pre-wrap; word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px; color: #d6e2f0;
+}
+.btn.tiny {
+  padding: 4px 8px; font-size: 11px; border-radius: 10px; margin-top: 8px;
+}
+.redacted {
+  color: #fecaca; background: rgba(239,68,68,.12);
+  border: 1px dashed rgba(239,68,68,.4);
+  padding: 0 4px; border-radius: 4px;
+}
+
+.log.sev-info .desc     { border-left-color: var(--success); }
+.log.sev-warning .desc  { border-left-color: var(--warn); }
+.log.sev-error .desc    { border-left-color: var(--error); }
+.log.sev-security .desc { border-left-color: var(--security); }
+
+
+
+
+  </style>
+</head>
+<body>
+  <!-- Startup overlay: 5s AI scan -->
+  <div id="startup" class="startup">
+    <div class="scanline"></div>
+    <div class="robot">AMBER SECURITY SYSTEM</div>
+    <div id="type" class="type">is scanning with HMAC signatures…</div>
+  </div>
+
+  <div class="wrap">
+    <h1>Audit Logs</h1>
+
+      <div class="sub">
+        <a  class="btn btn-outline-light">Total Events: <%= total %></a>
+           <a  class="btn btn-outline-light">Rendered: <%= groupedLogs.reduce((s,g)=>s+g.logs.length, 0) %></a>
+    </div>
+
+
+ 
+
+    
+
+    <% if (!groupedLogs.length) { %>
+      <div class="log sev-info">No logs found.</div>
+    <% } %>
+
+    <% groupedLogs.forEach(group => { %>
+      <div class="date-card" data-date="<%= group.date %>">
+        <div class="date-head">
+          <div class="date-title">
+            <span>🗓️ <%= group.date %></span>
+            <span class="pill"><%= group.logs.length %> events</span>
+          </div>
+
+          <div class="row right">
+            <button class="btn validate-date-btn" data-date="<%= group.date %>">Validate Date (HMAC)</button>
+            <span class="result small" id="date-result-<%= group.date %>" style="display:none"></span>
+            <a id="date-report-<%= group.date %>" class="btn" style="display:none" href="#" download>Download Report</a>
+          </div>
+        </div>
+
+        <!-- Overlay (date-level scan) -->
+        <div class="overlay" id="overlay-<%= group.date %>">
+          <div class="spinner"></div>
+          <div class="glow">Amber Security is Scanning with HMAC Signature…</div>
+        </div>
+
+        <% group.logs.forEach(item => { 
+             const parts = (item.result || '').split(':');
+             const resMsg = (parts[1] || '').toLowerCase(); // OK, DENIED, FAILED...
+             const sev = (item.severity || 'info').toLowerCase();
+        %>
+          <div class="log sev-<%= sev %>" data-event="<%= item.event_id %>">
+            <div class="row">
+              <div class="badge sev-chip <%= sev %>"><%= (item.severity || 'info').toUpperCase() %></div>
+              <div class="badge status-chip <%= resMsg === 'ok' ? 'ok' : (resMsg === 'denied' || resMsg === 'failed' ? 'denied' : 'warn') %>"><%= item.result || '' %></div>
+              <div class="badge method-chip"><%= item.method || '' %></div>
+              <div class="badge url-chip mono"><%= item.url || '' %></div>
+              <div class="grow"></div>
+              <div class="small nowrap"><%= item.ts_local %></div>
+            </div>
+
+            <div class="row small">
+              <div><b>Action:</b> <%= item.action %></div>
+              <div class="right"><b>Latency:</b> <%= item.latency_ms ? (Number(item.latency_ms).toFixed(2)+' ms') : '—' %></div>
+            </div>
+
+            <div class="row small">
+              <div><b>Actor:</b> <%= item.actor_label %></div>
+              <div class="right">
+                <b>IP:</b> 
+                <code class="ip-chip" data-copy="<%= item.ip || '' %>">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M3 5a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M14 3v4h4"/></svg>
+                  <span class="mono"><%= item.ip || '—' %></span>
+                </code>
+              </div>
+            </div>
+
+            <div class="row small">
+              <div><b>req_id:</b> <span class="mono"><%= item.req_id || '—' %></span></div>
+              <div class="right"><b>event_id:</b> <span class="mono"><%= item.event_id || '—' %></span></div>
+            </div>
+
+
+            <% 
+  const rawDesc = item.description || '';
+  const shortDesc = rawDesc.length > 240 ? rawDesc.slice(0,240) + '…' : rawDesc;
+
+  // Manual escape for <, >, & so we can safely inject later into <pre>
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+%>
+<div class="desc" data-event="<%= item.event_id %>">
+  <div class="label">Description</div>
+  <pre class="desc-pre"
+       data-full="<%- esc(rawDesc) %>"
+       data-short="<%- esc(shortDesc) %>"><%- esc(shortDesc) %></pre>
+  <% if (rawDesc.length > 240) { %>
+    <button class="btn tiny toggle-desc" data-state="short">Show more</button>
+  <% } %>
+</div>
+
+
+
+            <div class="row">
+              <button class="btn validate-event-btn" data-event="<%= item.event_id %>" data-date="<%= group.date %>">Validate</button>
+              <span class="result small" id="event-result-<%= item.event_id %>" style="display:none"></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+  </div>
+
+  <script>
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    // Startup overlay: keep for 5 seconds
+    window.addEventListener('load', () => {
+      const el = document.getElementById('startup');
+      // Typewriter already runs via CSS. Hide after 5s:
+      setTimeout(() => { el.style.display = 'none'; }, 2000);
+    });
+
+    // Copy IP to clipboard
+    document.addEventListener('click', (e) => {
+      const chip = e.target.closest('.ip-chip');
+      if (!chip) return;
+      const ip = chip.getAttribute('data-copy') || '';
+      if (!ip) return;
+      navigator.clipboard?.writeText(ip).then(() => {
+        chip.style.boxShadow = '0 0 22px rgba(34,211,238,.45)';
+        setTimeout(() => chip.style.boxShadow = '', 600);
+      });
+    });
+
+    function showOverlay(date, on) {
+      const el = document.getElementById('overlay-' + date);
+      if (!el) return;
+      el.classList.toggle('active', !!on);
+    }
+
+    async function postJSON(url, data) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrf ? {'X-CSRF-Token': csrf} : {}) // ✅ csurf-friendly
+        },
+        body: JSON.stringify(data || {})
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || ('HTTP '+res.status));
+      return json;
+    }
+
+    // Per-date validation
+    document.querySelectorAll('.validate-date-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const date = btn.dataset.date;
+        const resultEl = document.getElementById('date-result-' + date);
+        const reportEl = document.getElementById('date-report-' + date);
+
+        btn.disabled = true;
+        resultEl.style.display = 'none';
+        reportEl.style.display = 'none';
+        showOverlay(date, true);
+
+        try {
+          const out = await postJSON('/superadmin/validate-date', { date }); // ✅ route
+          const { file, total, valid, unsigned, invalid } = out.summary || {};
+          const ok = invalid === 0 && unsigned === 0;
+          resultEl.textContent = `File: ${file} • Total: ${total} • Valid: ${valid} • Unsigned: ${unsigned} • Invalid: ${invalid}`;
+          resultEl.classList.toggle('ok', ok);
+          resultEl.classList.toggle('bad', !ok);
+          resultEl.style.display = 'inline-block';
+          if (out.reportUrl) {
+            reportEl.href = out.reportUrl;
+            reportEl.style.display = 'inline-block';
+            reportEl.textContent = 'Download Report';
+          }
+        } catch (e) {
+          resultEl.textContent = `Error: ${e.message}`;
+          resultEl.classList.remove('ok'); resultEl.classList.add('bad');
+          resultEl.style.display = 'inline-block';
+        } finally {
+          btn.disabled = false;
+          showOverlay(date, false);
+        }
+      });
+    });
+
+    // Per-event validation
+    document.querySelectorAll('.validate-event-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const event_id = btn.dataset.event;
+        const date = btn.dataset.date;
+        const resultEl = document.getElementById('event-result-' + event_id);
+        btn.disabled = true;
+        resultEl.style.display = 'none';
+
+        try {
+          const out = await postJSON('/superadmin/validate-event', { event_id, date }); // ✅ route
+          if (out.success) {
+            const s = out.status;
+            if (s === 'VALID') {
+              resultEl.textContent = `VALID ✓ (line ${out.line}, ${out.date})`;
+              resultEl.classList.add('ok'); resultEl.classList.remove('bad');
+            } else if (s === 'UNSIGNED') {
+              resultEl.textContent = `UNSIGNED (secret missing or no SIG)`;
+              resultEl.classList.remove('ok'); resultEl.classList.add('bad');
+            } else {
+              resultEl.textContent = `INVALID ✗ (line ${out.line})`;
+              resultEl.classList.remove('ok'); resultEl.classList.add('bad');
+            }
+          } else {
+            resultEl.textContent = out.message || 'Validation failed';
+            resultEl.classList.remove('ok'); resultEl.classList.add('bad');
+          }
+        } catch (e) {
+          resultEl.textContent = `Error: ${e.message}`;
+          resultEl.classList.remove('ok'); resultEl.classList.add('bad');
+        } finally {
+          resultEl.style.display = 'inline-block';
+          btn.disabled = false;
+        }
+      });
+    });
+
+
+    
+  </script>
+
+  <script>
+  // Highlight [REDACTED] tokens by wrapping them
+  function highlightRedactions(preEl) {
+    // Take the current text (already escaped) and inject highlight spans
+    const txt = preEl.textContent;
+    const html = txt.replaceAll('[REDACTED]', '<span class="redacted">[REDACTED]</span>');
+    preEl.innerHTML = html;
+  }
+
+  // Initialize highlights for all visible (short) descriptions
+  document.querySelectorAll('.desc-pre').forEach(pre => highlightRedactions(pre));
+
+  // Toggle long/short description
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.toggle-desc');
+    if (!btn) return;
+    const wrap = btn.closest('.desc');
+    const pre = wrap.querySelector('.desc-pre');
+    const state = btn.getAttribute('data-state') || 'short';
+    if (state === 'short') {
+      pre.textContent = pre.getAttribute('data-full') || '';
+      highlightRedactions(pre);
+      btn.setAttribute('data-state', 'full');
+      btn.textContent = 'Show less';
+    } else {
+      pre.textContent = pre.getAttribute('data-short') || '';
+      highlightRedactions(pre);
+      btn.setAttribute('data-state', 'short');
+      btn.textContent = 'Show more';
+    }
+  });
+</script>
+
+</body>
+</html>

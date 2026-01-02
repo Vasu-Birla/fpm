@@ -1,0 +1,111 @@
+<%
+  const safeSubject = 'Invoice';
+
+  const amountLabel = typeof totalFmt !== 'undefined'
+    ? totalFmt
+    : (typeof total !== 'undefined' ? total : '');
+
+  const clientLabel = clientName || 'Client';
+  const orgName     = (org && org.name) || 'Our team';
+%>
+
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: safeSubject,
+  subtitle: 'Your invoice is ready',
+  badge: 'Invoice',
+  preheader: clientLabel + ' – your invoice is attached and summarized below.'
+}) %>
+
+<div class="email-body">
+  <p class="email-lead">
+    Hello <strong><%= clientLabel %></strong>,
+  </p>
+
+  <p class="text">
+    <%= message || 'Please find your invoice attached. A quick summary is included below for your records.' %>
+  </p>
+
+  <div class="details-card">
+    <% if (amountLabel) { %>
+      <div style="
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0f766e, #14b8a6);
+        color: #ecfeff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      ">
+        
+        <div style="font-weight: 700; font-size: 16px;">
+          <%= amountLabel %>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (typeof invoiceNumber !== 'undefined' && invoiceNumber) { %>
+      <div class="details-row">
+        <div class="details-label">Invoice #</div>
+        <div class="details-value"><%= invoiceNumber %></div>
+      </div>
+    <% } %>
+
+    <% if (typeof dueDate !== 'undefined' && dueDate) { %>
+      <div class="details-row">
+        <div class="details-label">Due date</div>
+        <div class="details-value"><%= dueDate %></div>
+      </div>
+    <% } %>
+
+    <% if (typeof statusLabel !== 'undefined' && statusLabel) { %>
+      <div class="details-row">
+        <div class="details-label">Status</div>
+        <div class="details-value">
+          <% const s = String(statusLabel).toLowerCase(); %>
+          <span style="
+            display:inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            <% if (s.includes('paid')) { %>
+              background:#ecfdf3;color:#15803d;border:1px solid #bbf7d0;
+            <% } else if (s.includes('overdue')) { %>
+              background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;
+            <% } else { %>
+              background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;
+            <% } %>
+          ">
+            <%= statusLabel %>
+          </span>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (typeof invoiceLink !== 'undefined' && invoiceLink) { %>
+    <p style="margin-top: 18px;">
+      <a class="primary-btn"
+         href="<%= invoiceLink %>"
+         target="_blank"
+         rel="noopener">
+        View invoice online
+      </a>
+    </p>
+  <% } %>
+
+  <p class="meta-line">
+    A PDF copy of this invoice may be attached to this email. If any of the details above
+    look incorrect, please reply to this email so we can assist.
+  </p>
+
+  <p class="closing">
+    Thank you for your business,<br>
+    <strong><%= orgName %></strong>
+  </p>
+</div>
+
+<%- include('_email_footer', { org }) %>

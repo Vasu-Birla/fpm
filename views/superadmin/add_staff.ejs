@@ -1,0 +1,149 @@
+<!-- Header Start -->
+     <%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar Start -->
+     <%- include('supersidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<!-- ========================
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-0 d-flex align-items-center"> <a href="/superadmin/view_staffs" class="text-dark"> <i class="ti ti-chevron-left me-1"></i>Staff</a></h6>
+                </div>
+                <!-- page header end -->
+
+                <!-- card start -->
+                <form id="kilform" action="#" method="POST">
+                    <div class="card">
+                        <div class="card-body pb-0">
+                            <div class="form">
+                                <h6 class="fw-bold mb-3">Staff Information</h6>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="mb-3 d-flex align-items-center">
+                                            <label for="firm_logo" class="form-label mb-0">Staff Profile</label>
+                                            <div class="drag-upload-btn avatar avatar-xxl rounded-circle bg-light text-muted position-relative overflow-hidden z-1 mb-2 ms-4 p-0">
+                                                <i class="ti ti-user-plus fs-16"></i>
+                                                <input type="file" id="firm_logo" name="firm_logo" class="form-control image-sign" multiple="">
+                                                <div class="position-absolute bottom-0 end-0 star-0 w-100 h-25 bg-dark d-flex align-items-center justify-content-center z-n1">
+                                                    <a href="javascript:void(0);" class="text-white d-flex align-items-center justify-content-center">
+                                                        <i class="ti ti-photo fs-14"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="role_type" class="form-label mb-1 fw-medium">Role Type </label>
+                                            <select class="select" id="role_type" name="role_type" required>
+                                                <option value="">Select any one</option>
+                                                <option value="Finance Officer">Finance Officer</option>
+                                                <option value="Read-Only Auditor">Read-Only Auditor</option>
+                                            </select>
+                                        </div>
+                                    </div>   
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="first_name" class="form-label mb-1 fw-medium">First Name </label>
+                                            <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Enter the firstname" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="last_name" class="form-label mb-1 fw-medium">Last Name </label>
+                                            <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Enter the lastname" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="full_contact" class="form-label mb-1 fw-medium">Phone Number </label>
+                                            <div class="input-group kiltel-phone-wrap col-6">
+                                                <button type="button" class="kiltel-country-trigger"></button>
+                                                <input type="tel" class="form-control" name="full_contact" data-kilvish-tel  id="kilvishcontact" data-kilvish-preferred="JM,IN"  data-kiltel-init="JM" data-kiltel-validation="yes" required>
+                                                <input type="hidden" id="country_code" name="country_code">
+                                                <input type="hidden" id="contact" name="contact">
+                                            </div>
+                                            <div id="errorText1" style="color: red;"></div>
+                                            <div id="kiltel-error" style="color:red; font-size:0.93em; margin-top:5px;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label mb-1 fw-medium">Email Address </label>
+                                            <input type="email" id="email" name="email" class="form-control" placeholder="Enter the email" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label mb-1 fw-medium">Password </label>
+
+                                            
+                                     
+                                            <div class="position-relative mb-2">
+
+                                                <input class="form-control kilpass" id="forgotNewPassword" type="password" data-kilvish-password="8_20" placeholder="New Password">
+                                                  <span toggle="#newPassword" class="fa fa-eye-slash toggle-password text-dark fs-14"></span>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                    <!-- <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="firm_status" class="form-label mb-1 fw-medium">Status<span class="text-danger ms-1">*</span></label>
+                                            <select class="select" id="firm_status" name="firm_status" required>
+                                                <option value="active" selected>Active</option>
+                                                <option value="suspended">Suspended</option>
+                                            </select>
+                                        </div>
+                                    </div>    -->
+                                </div>
+                            
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="firm_address" class="form-label mb-1 fw-medium">Address </label>
+                                            <textarea class="form-control" id="firm_address" name="firm_address" rows="3" placeholder="Enter address, city, zip"></textarea>
+                                        </div>
+                                    </div>
+                                </div>                                 
+                            </div>
+                        </div>
+                    </div>
+                    <!-- card end -->
+
+                    <div class="d-flex align-items-center justify-content-end">
+                        <a href="/superadmin/view_staffs" class="btn btn-light me-2">Cancel</a>
+                        <button type="submit" name="submit" id="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Save Staff</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <!-- row end -->               
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Footer Start -->
+     <%- include('superfooter.ejs'); %>
+<!-- Footer End -->

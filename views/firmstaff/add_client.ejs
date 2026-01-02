@@ -1,0 +1,495 @@
+<!-- views/firmstaff/add_client.ejs -->
+
+<!-- Header -->
+<%- include('firmheader.ejs'); %>
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<%
+  const isEdit = (mode === 'edit');
+  const c = clientdata || {};
+  const clientType = c.type || 'Individual';
+%>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <div>
+        <h4 class="fw-bold mb-0"><%= isEdit ? 'Edit Client' : 'Add Client' %></h4>
+        <% if (firm && firm.firm_name) { %>
+          <div class="text-muted small mt-1">
+            Firm: <strong><%= firm.firm_name %></strong>
+          </div>
+        <% } %>
+      </div>
+      <div>
+        <a href="/firmstaff/client_list" class="btn btn-outline-secondary btn-md fs-13">
+          <i class="ti ti-chevron-left me-1"></i> Back to List
+        </a>
+      </div>
+    </div>
+
+    <% if (output && output.message) { %>
+      <div class="alert alert-<%= output.type || 'info' %>">
+        <%= output.message %>
+      </div>
+    <% } %>
+
+    <form id="kilform" method="POST" enctype="multipart/form-data" autocomplete="off">
+      <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+      <% if (isEdit) { %>
+        <input type="hidden" name="client_id" id="client_id" value="<%= c.client_id %>">
+      <% } %>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <!-- Client Type -->
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Client Type <span class="text-danger">*</span></label>
+              <select id="type" name="type" class="form-select" required>
+                <option value="Individual" <%= clientType === 'Individual' ? 'selected' : '' %>>Individual</option>
+                <option value="Business"   <%= clientType === 'Business'   ? 'selected' : '' %>>Business</option>
+              </select>
+              <div class="form-text">Choose whether client is a person or a business entity.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium" for="trn_number">TRN Number</label>
+              <input
+                id="trn_number" 
+                data-kil-trn data-kilvish-num="num_only"
+                name="trn_number"
+                type="text"
+                class="form-control"
+                inputmode="numeric"
+                placeholder="Enter TRN number"
+                value="<%= c.trn_number || '' %>">
+
+                     <div id="trnError" class="text-danger small"></div>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- Section heading changes with type -->
+          <h6 id="clientInfoHeading" class="fw-bold mb-3">
+            <%= clientType === 'Business' ? 'Primary Contact Information' : 'Personal Information' %>
+          </h6>
+
+          <div class="row g-3">
+
+            <!-- Business Name -->
+            <div class="col-md-6" id="businessNameGroup"
+                 style="<%= clientType === 'Business' ? '' : 'display:none;' %>">
+              <label class="form-label fw-medium" for="business_name">
+                Business Name <span class="text-danger">*</span>
+              </label>
+              <input
+                id="business_name"
+                name="business_name"
+                type="text"
+                class="form-control"
+                placeholder="ABC Pvt. Ltd."
+                value="<%= c.business_name || '' %>">
+            </div>
+
+            <!-- First Name -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="first_name">
+                <span id="firstNameLabel">
+                  <%= clientType === 'Business' ? 'Primary Contact First Name' : 'First Name' %>
+                </span>
+                <span class="text-danger">*</span>
+              </label>
+              <input
+                id="first_name"
+                name="first_name"
+                type="text"
+                class="form-control"
+                required
+                placeholder="<%= clientType === 'Business' ? 'Contact first name' : 'John' %>"
+                value="<%= c.first_name || '' %>">
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="last_name">
+                <span id="lastNameLabel">
+                  <%= clientType === 'Business' ? 'Primary Contact Last Name' : 'Last Name' %>
+                </span>
+                <span class="text-danger">*</span>
+              </label>
+              <input
+                id="last_name"
+                name="last_name"
+                type="text"
+                class="form-control"
+                required
+                placeholder="<%= clientType === 'Business' ? 'Contact last name' : 'Doe' %>"
+                value="<%= c.last_name || '' %>">
+            </div>
+
+
+            <!-- Client Photo -->
+        <div class="col-md-6">
+          <label class="form-label fw-medium mb-1">Client Photo (optional)</label>
+
+          <% if (c.profile_pic) { %>
+            <div class="d-flex flex-column gap-2">
+
+              <!-- Buttons: View / Replace / Remove -->
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- View from S3 via secure proxy -->
+                <a class="btn btn-outline-primary btn-sm"
+                  href="/secure/file_stream?s3key=<%= encodeURIComponent(c.profile_pic) %>"
+                  target="_blank">
+                  <i class="ti ti-external-link me-1"></i> View
+                </a>
+
+                <!-- Replace = upload new file -->
+                <label class="btn btn-outline-secondary btn-sm mb-0">
+                  <i class="ti ti-upload me-1"></i> Replace
+                  <input
+                    type="file"
+                    name="profile_pic"
+                    class="d-none"
+                    accept=".jpg,.jpeg,.png,.jfif">
+                </label>
+
+                <!-- Remove existing photo -->
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    data-ignore-kilvish="Yes"
+                    type="checkbox"
+                    id="remove_profile_pic"
+                    name="remove_profile_pic"
+                    value="1">
+                  <label class="form-check-label" for="remove_profile_pic">
+                    Remove
+                  </label>
+                </div>
+              </div>
+
+              <!-- Small inline preview (also via secure route) -->
+              <div>
+                <img
+                  src="/secure/file_stream?s3key=<%= encodeURIComponent(c.profile_pic) %>"
+                  alt="Client Photo"
+                  class="rounded border"
+                  style="width:80px;height:80px;object-fit:cover;">
+              </div>
+            </div>
+          <% } else { %>
+            <!-- No existing photo → normal file input -->
+            <input
+              type="file"
+              name="profile_pic"
+              id="profile_pic"
+              class="form-control"
+              accept=".jpg,.jpeg,.png,.jfif">
+          <% } %>
+
+          <div class="form-text">
+            Recommended square image, max 2MB. This will be stored on S3 and served via a secure URL.
+          </div>
+        </div>
+
+       
+
+
+
+
+
+
+            <!-- DOB -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="dob">Date of Birth</label>
+              <input
+                id="dob"
+                name="dob"
+                type="date"
+                class="form-control"
+                value="<%= c.dob ? String(c.dob).substring(0,10) : '' %>">
+              <div class="form-text">Optional, used for age-based checks.</div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="form-control"
+                placeholder="client@example.com"
+                value="<%= c.email || '' %>">
+              <div id="emailError" class="text-danger small"></div>
+              <div class="form-text">If provided, must be unique across all firms.</div>
+            </div>
+
+            <!-- Phone (Kiltel) -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="full_contact">Phone Number</label>
+              <div class="input-group kiltel-phone-wrap">
+                <button type="button" class="kiltel-country-trigger"></button>
+                <input
+                  data-ignore-kilvish="Yes"
+                  type="tel"
+                  class="form-control"
+                  id="full_contact"
+                  data-kilvish-tel
+                  data-kilvish-preferred="JM,IN"
+                  data-kiltel-init="<%= c.country_code || 'JM' %>"
+                  data-kiltel-validation="yes"
+                  placeholder="+1 876 000 0000"
+                  value="<%= c.full_contact || '' %>">
+                <input type="hidden" id="country_code" name="country_code" value="<%= c.country_code || '' %>">
+                <input type="hidden" id="contact"      name="contact"      value="<%= c.contact || '' %>">
+              </div>
+              <div id="phoneError" class="text-danger small"></div>
+              <div class="form-text">Phone uniqueness is checked globally.</div>
+            </div>
+
+
+            <!-- Parish + Postal Zone + Address -->
+            <div class="col-md-4">
+              <label class="form-label fw-medium" for="parish">Parish</label>
+              <select id="parish" name="parish" class="form-select">
+                <option value="">Select Parish</option>
+                <% (states || []).forEach(p => {
+                     const label = p.replace(/^Saint\s/, 'St. ');
+                %>
+                  <option value="<%= p %>" <%= c.parish === p ? 'selected' : '' %>><%= label %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-medium" for="postal_zone">Postal Zone</label>
+              <input
+                id="postal_zone"
+                name="postal_zone"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Zone 5"
+                value="<%= c.postal_zone || '' %>">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-medium" for="address">Address</label>
+              <textarea
+                id="address"
+                name="address"
+                rows="2"
+                class="form-control"
+                placeholder="Full address"><%= c.address || '' %></textarea>
+            </div>
+
+            <!-- Portal enabled -->
+            <div class="col-md-4">
+              <div class="form-check mt-4">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="portal_enabled"
+                  name="portal_enabled"
+                  value="1"
+                  <%= (c.portal_enabled === true || c.portal_enabled === 1 || (!isEdit)) ? 'checked' : '' %>>
+                <label class="form-check-label fw-medium" for="portal_enabled">
+                  Portal Access Enabled
+                </label>
+              </div>
+              <div class="form-text">
+                If enabled, this client can be given login access later.
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-md-8">
+              <label class="form-label fw-medium" for="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                rows="3"
+                class="form-control"
+                placeholder="Any important notes about this client..."><%= c.notes || '' %></textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium">
+          <%= isEdit ? 'Update Client' : 'Save Client' %>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx        = window.axiosElaw || window.axios || null;
+  const isEdit    = <%= isEdit ? 'true' : 'false' %>;
+  const clientId  = <%= isEdit ? (c.client_id || 'null') : 'null' %>;
+
+  const typeSel          = document.getElementById('type');
+  const clientInfoHeading= document.getElementById('clientInfoHeading');
+  const businessGroup    = document.getElementById('businessNameGroup');
+  const firstNameLabel   = document.getElementById('firstNameLabel');
+  const lastNameLabel    = document.getElementById('lastNameLabel');
+  const emailEl          = document.getElementById('email');
+  const trnEl          = document.getElementById('trn_number');  
+  const phoneEl          = document.getElementById('full_contact');
+  const emailErrEl       = document.getElementById('emailError');
+
+   const trnErrEl       = document.getElementById('trnError');
+
+  const phoneErrEl       = document.getElementById('phoneError');
+  const form             = document.getElementById('kilform');
+
+  function updateTypeUI() {
+    const val = (typeSel.value || 'Individual');
+    if (val === 'Business') {
+      clientInfoHeading.textContent = 'Primary Contact Information';
+      businessGroup.style.display   = '';
+      firstNameLabel.textContent    = 'Primary Contact First Name';
+      lastNameLabel.textContent     = 'Primary Contact Last Name';
+    } else {
+      clientInfoHeading.textContent = 'Personal Information';
+      businessGroup.style.display   = 'none';
+      firstNameLabel.textContent    = 'First Name';
+      lastNameLabel.textContent     = 'Last Name';
+    }
+  }
+  typeSel?.addEventListener('change', updateTypeUI);
+  updateTypeUI();
+
+
+
+
+
+    // --- Trn resolution (global + firm membership) ---
+  trnEl?.addEventListener('change', async () => {
+    const trn_number = (trnEl.value || '').trim().toLowerCase();
+    trnErrEl.textContent = '';
+    if (!trn_number|| !fx) return;
+
+    try {
+      const payload = { trn_number, client_id: clientId || undefined };
+      const { data } = await fx.post('/firmstaff/client/resolve_trn_number', payload);
+      if (data?.exists_global && data?.already_in_this_firm) {
+        trnErrEl.textContent = `Trn (${trn_number}) already exists in this firm.`;
+        window.kilToast?.danger?.(`Trn ${trn_number} already exists in this firm.`);
+        trnEl.value = '';
+        return;
+      }
+      if (data?.exists_global && data?.can_link && !isEdit) {
+        trnErrEl.textContent = `Account exists. It will be linked to this firm.`;
+      } else {
+        trnErrEl.textContent = '';
+      }
+    } catch (err) {
+      console.error('check_client_trm error', err);
+      const trnCatchErr = err?.response?.data?.message || 'Trn check failed.';
+      window.kilToast?.danger?.(trnCatchErr);
+    }
+  });
+
+
+
+  
+
+
+
+  // --- Email resolution (global + firm membership) ---
+  emailEl?.addEventListener('change', async () => {
+    const email = (emailEl.value || '').trim().toLowerCase();
+    emailErrEl.textContent = '';
+    if (!email || !fx) return;
+
+    try {
+      const payload = { email, client_id: clientId || undefined };
+      const { data } = await fx.post('/firmstaff/client/resolve_email', payload);
+      if (data?.exists_global && data?.already_in_this_firm) {
+        emailErrEl.textContent = `Email (${email}) already exists in this firm.`;
+        window.kilToast?.danger?.(`Email ${email} already exists in this firm.`);
+        emailEl.value = '';
+        return;
+      }
+      if (data?.exists_global && data?.can_link && !isEdit) {
+        emailErrEl.textContent = `Account exists. It will be linked to this firm.`;
+      } else {
+        emailErrEl.textContent = '';
+      }
+    } catch (err) {
+      console.error('check_client_email error', err);
+      emailErrEl.textContent = err?.response?.data?.message || 'Email check failed.';
+      window.kilToast?.danger?.(emailErrEl.textContent);
+    }
+  });
+
+  // --- Phone resolution (global + firm membership) ---
+  phoneEl?.addEventListener('change', async () => {
+    const phoneNumber = (phoneEl.value || '').trim();
+    phoneErrEl.textContent = '';
+    if (!phoneNumber || !fx) return;
+
+    try {
+      const payload = { phoneNumber, client_id: clientId || undefined };
+      const { data } = await fx.post('/firmstaff/client/resolve_phone', payload);
+      if (data?.exists_global && data?.already_in_this_firm) {
+        phoneErrEl.textContent = `Contact (${phoneNumber}) already exists in this firm.`;
+        window.kilToast?.danger?.(`Contact ${phoneNumber} already exists in this firm.`);
+        phoneEl.value = '';
+        return;
+      }
+      if (data?.exists_global && data?.can_link && !isEdit) {
+        phoneErrEl.textContent = `Account exists. It will be linked to this firm.`;
+      } else {
+        phoneErrEl.textContent = '';
+      }
+    } catch (err) {
+      console.error('check_client_phonenumber error', err);
+      phoneErrEl.textContent = err?.response?.data?.message || 'Phone check failed.';
+      window.kilToast?.danger?.(phoneErrEl.textContent);
+    }
+  });
+
+  // --- Submit via axios (expects JSON { success, message }) ---
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!fx) { form.submit(); return; }
+
+    try {
+      // Optional: your kilValidate
+      if (window.kilvish && window.kilvish.validate) {
+        const ok = window.kilvish.validate(form);
+        if (!ok) return;
+      }
+
+      const fd  = new FormData(form);
+      const url = isEdit ? '/firmstaff/edit_client' : '/firmstaff/add_client';
+
+      const { data } = await fx.post(url, fd);
+      if (!data || !data.success) {
+        const msg = data?.message || 'Failed to save client.';
+        window.kilToast?.danger?.(msg);
+        return;
+      }
+
+      window.kilToast?.success?.(data.message || 'Client saved.');
+      location.href = '/firmstaff/client_list';
+    } catch (err) {
+      console.error('Save client error', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to save client.';
+      window.kilToast?.danger?.(msg);
+    }
+  });
+})();
+</script>

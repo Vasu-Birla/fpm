@@ -1,0 +1,79 @@
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-3 mb-3 border-bottom">
+      <div>
+        <h5 class="fw-bold mb-0">Notifications</h5>
+        <div class="text-muted small">Firm alerts and activity updates.</div>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" id="markAllReadBtn">Mark all read</button>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="notifStatus">
+              <option value="">All</option>
+              <option value="unread">Unread</option>
+              <option value="read">Read</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="notifType">
+              <option value="">All</option>
+              <option value="case_update">Case Update</option>
+              <option value="task_assigned">Task Assigned</option>
+              <option value="event_reminder">Event Reminder</option>
+              <option value="invoice">Invoice</option>
+              <option value="system">System</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Search</label>
+            <input type="text" class="form-control" id="notifSearch" placeholder="Search notifications">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="notificationTable" class="table table-striped table-bordered table-nowrap">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+  window.NOTIFY_PAGE_CONTEXT = {
+    listUrl: "/firmstaff/notifications/json",
+    readUrl: "/firmstaff/notifications/read",
+    readAllUrl: "/firmstaff/notifications/read_all"
+  };
+</script>
+<script src="/js/notify-page.js"></script>

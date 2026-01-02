@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>reCAPTCHA Failed</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #0288d1);
+      color: #003c8f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .robot {
+      max-width: 300px;
+      margin-bottom: 30px;
+      animation: floaty 2s ease-in-out infinite;
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .btn-home {
+      margin-top: 20px;
+      background-color: #0077cc;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .btn-home:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712038.png" class="robot" alt="Sad Robot">
+  <h1>Oops! reCAPTCHA Failed</h1>
+  <h4 style="color: rgb(244, 17, 17);"><%= message || '' %></h4>
+  <p> Your action couldn’t be verified. Are you a bot ?</p>
+ <button onclick="history.back()" class="btn-home">Go Back</button>
+</body>
+</html>

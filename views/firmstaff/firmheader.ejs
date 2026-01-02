@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Meta Tags -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'eLaw Lawyer' %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Cyber Impulses Software Solutions">
+  <meta name="csrf-token" content="<%= csrfToken || '' %>">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="../superadminassets/img/favicon.png">
+  <link rel="apple-touch-icon" href="../superadminassets/img/apple-icon.png">
+
+  <!-- CSS libs -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-4@5.39.0/build/css/tempusdominus-bootstrap-4.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/css/fontawesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@6.3.2/dist/simplebar.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.2/css/buttons.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../superadminassets/css/style.css">
+  <!-- Kilvish custom style -->
+  <link rel="stylesheet" href="../superadminassets/css/kil.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+
+  <!-- Toast styles -->
+  <style>
+    .kwe-toast-wrap{position:fixed; top:16px; right:16px; z-index:1080;}
+    .kwe-toast{ min-width:260px; margin-top:10px; padding:12px 16px;
+      border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.18);
+      font-weight:600; letter-spacing:.2px; }
+    .kwe-success{ background:#16a34a; color:#fff; border:0; }
+    .kwe-danger { background:#dc2626; color:#fff; border:0; }
+    .kwe-warning{ background:#f59e0b; color:#111; border:0; }
+  </style>
+  <style>
+    .notify-bell { position: relative; }
+    .notify-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      line-height: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
+  </style>
+
+  <!-- Plan chip styles -->
+  <style>
+    .plan-chip{display:inline-flex;align-items:center;gap:10px;border:1px solid #e5e7eb;background:#fff;
+      padding:8px 12px;border-radius:999px;font-weight:700;line-height:1}
+    .plan-chip .dot{width:8px;height:8px;border-radius:999px}
+    .plan-chip .dot.free{background:#6b7280}      /* gray */
+    .plan-chip .dot.active{background:#16a34a}    /* green */
+    .plan-chip .name{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .plan-chip .sep{opacity:.35}
+    .plan-chip .muted{font-weight:600;color:#64748b}
+    .plan-chip .renew{font-size:12px;color:#64748b}
+    .plan-chip .btn-link{padding:0;margin-left:6px;text-decoration:none}
+    .plan-chip .btn-link:hover{text-decoration:underline}
+    @media (max-width: 992px){ .plan-chip .renew{display:none} }
+    @media (max-width: 576px){ .plan-chip .name{max-width:120px} }
+  </style>
+</head>
+<body>
+  <!-- Wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Topbar -->
+    <header class="navbar-header">
+      <div class="page-container topbar-menu">
+        <div class="d-flex align-items-center gap-2">
+          <!-- Logo -->
+          <a href="/firmstaff" class="logo">
+            <span class="logo-light">
+              <span class="logo-lg"><img src="../superadminassets/img/logo.png" alt="logo"></span>
+              <span class="logo-sm"><img src="../superadminassets/img/logo.png" alt="small logo"></span>
+            </span>
+            <span class="logo-dark">
+              <span class="logo-lg"><img src="../superadminassets/img/logo.png" alt="dark logo"></span>
+            </span>
+          </a>
+
+          <!-- Sidebar Mobile Button -->
+          <a id="mobile_btn" class="mobile-btn" href="#sidebar">
+            <i class="ti ti-menu-deep fs-24"></i>
+          </a>
+
+          <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
+            <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Current Plan Chip (auto-fills) -->
+          <div id="planChip" class="d-none">
+            <span class="plan-chip">
+              <span class="dot free" id="planDot"></span>
+              <span class="name" id="planName">Free</span>
+              <span class="sep">·</span>
+              <span class="muted" id="planPeriod">monthly</span>
+              <span class="renew" id="planRenew"></span>
+              <a href="/firmstaff/subscribe" class="btn btn-link" id="planCta">Upgrade</a>
+            </span>
+          </div>
+
+          <!-- Notifications -->
+          <div class="header-item d-none d-sm-flex me-2">
+            <a href="/firmstaff/notifications" class="topbar-link btn btn-icon notify-bell" title="Notifications">
+              <i class="ti ti-bell fs-16"></i>
+              <span class="notify-badge" id="notifyBellCount" hidden></span>
+            </a>
+          </div>
+
+          <!-- Light/Dark -->
+          <div class="header-item d-none d-sm-flex me-2">
+            <button class="topbar-link btn btn-icon topbar-link" id="light-dark-mode" type="button">
+              <i class="ti ti-moon fs-16"></i>
+            </button>
+          </div>
+
+          <!-- User dropdown -->
+          <div class="dropdown profile-dropdown d-flex align-items-center justify-content-center">
+            <a href="javascript:void(0);" class="topbar-link dropdown-toggle drop-arrow-none position-relative"
+               data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
+              <img src="../superadminassets/img/favicon.png" width="32" class="rounded-circle d-flex" alt="user-image">
+              <span class="online text-success"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+              <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
+                <img src="../superadminassets/img/favicon.png" class="rounded-circle" width="42" height="42" alt="">
+                <div class="ms-2">
+                  <p class="fw-medium text-dark mb-0"><%= (firmstaff && firmstaff.first_name) ? (firmstaff.first_name + ' ' + (firmstaff.last_name||'')) : 'Lawyer Admin' %></p>
+                  <span class="d-block fs-13">Lawyer</span>
+                </div>
+              </div>
+
+              <a href="/firmstaff/profile" class="dropdown-item">
+                <i class="ti ti-user-circle me-1 align-middle"></i>
+                <span class="align-middle">Profile Setting</span>
+              </a>
+
+              <div class="pt-2 mt-2 border-top">
+                <a href="/firmstaff/logout" class="dropdown-item text-danger">
+                  <i class="ti ti-logout me-1 fs-17 align-middle"></i>
+                  <span class="align-middle">Log Out</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- /Topbar -->
+
+    <script>
+      window.NOTIFY_CONTEXT = {
+        user_type: "FirmStaff",
+        user_id: <%= (typeof firmstaff !== 'undefined' && firmstaff?.staff_id)
+          ? Number(firmstaff.staff_id)
+          : 0 %>
+      };
+    </script>
+    <script defer src="/socket.io/socket.io.js"></script>
+    <script defer src="/js/notify-bell.js"></script>
+
+    <!-- ⬇️ preload current subscription if server provided it -->
+    <script>
+    (function(){
+      // Accept any of these locals if your middleware injects them:
+      const PRE = <%- JSON.stringify(
+        (typeof currentSub !== 'undefined' && currentSub) ||
+        (typeof firmSubscription !== 'undefined' && firmSubscription) ||
+        null
+      ) %>;
+
+      // tiny utils
+      const fmtDate = (d)=>{
+        try{
+          const x = (typeof d === 'string' || typeof d === 'number') ? new Date(d) : d;
+          if (!x || !x.getTime) return '';
+          return new Intl.DateTimeFormat('en-GB',{year:'numeric',month:'short',day:'2-digit'}).format(x);
+        }catch{ return ''; }
+      };
+
+      const state = { current: null }; // will be exposed to window
+
+      function paintChip(sub){
+        const wrap = document.getElementById('planChip');
+        const dot  = document.getElementById('planDot');
+        const name = document.getElementById('planName');
+        const per  = document.getElementById('planPeriod');
+        const rn   = document.getElementById('planRenew');
+        const cta  = document.getElementById('planCta');
+        if (!wrap || !dot) return;
+
+        const isActive = (sub && sub.status === 'active');
+        const planName = (sub && (sub.plan_name || sub.plan?.name)) || 'Free';
+        const period   = (sub && (sub.billing_period || sub.plan?.billing_period)) || 'monthly';
+        const renews   = sub && (sub.renews_at || sub.next_renewal || null);
+
+        dot.className = 'dot ' + (isActive && planName.toLowerCase() !== 'free' ? 'active' : 'free');
+        name.textContent = planName;
+        per.textContent = period;
+
+        rn.textContent = renews ? ('· renews ' + fmtDate(renews)) : '';
+        rn.style.marginLeft = renews ? '6px' : '0';
+
+        if (!isActive || planName.toLowerCase() === 'free') {
+          cta.textContent = 'Upgrade';
+          cta.href = '/firmstaff/subscribe';
+          cta.classList.remove('text-danger');
+        } else {
+          cta.textContent = 'Manage';
+          cta.href = '/firmstaff/subscribe';
+          cta.classList.remove('text-danger');
+        }
+
+        wrap.classList.remove('d-none');
+      }
+
+      async function fetchCurrent(){
+        try{
+          const r = await fetch('/firmstaff/api/v1/subscriptions/current', { credentials:'same-origin' });
+		
+          const j = await r.json();
+
+
+		    console.log('---->>> ', j)
+          if (j && j.success && j.subscription){
+            state.current = j.subscription;
+            window.ELAW_SUBS = { current: state.current }; // expose for plans page highlighting
+            paintChip(state.current);
+          } else { paintChip(null); }
+        }catch{ paintChip(null); }
+      }
+
+      if (PRE) {
+        state.current = PRE;
+        window.ELAW_SUBS = { current: PRE };
+        paintChip(PRE);
+      } else {
+        fetchCurrent();
+      }
+    })();
+    </script>

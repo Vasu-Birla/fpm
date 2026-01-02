@@ -1,0 +1,177 @@
+<!-- Header -->
+<%- include('superheader.ejs'); %>
+<%- include('supersidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+
+        <div class="mb-4">
+          <h6 class="fw-bold mb-0 d-flex align-items-center">
+            <a href="/superadmin" class="text-dark"><i class="ti ti-chevron-left me-1"></i> Upload Asset</a>
+          </h6>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form id="uploadForm" action="#" method="POST" enctype="multipart/form-data">
+              <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+              <div class="row g-3">
+                <!-- Type selector that can preset folder -->
+                <div class="col-md-4">
+                  <label class="form-label">Type</label>
+                  <select data-ignore-kilvish="" id="type" class="form-select">
+                    <option value="images/profiles">Profile Image</option>
+                    <option value="images">Image</option>
+                    <option value="docs">Document</option>
+                    <option value="uploads">Generic Upload</option>
+                  </select>
+                  <small class="text-muted">Sets the folder; you can override below.</small>
+                </div>
+
+                <!-- Folder (overridable) -->
+                <div class="col-md-4">
+                  <label class="form-label">Folder</label>
+                  <div class="input-group">
+                    <input data-ignore-kilvish=""  type="text" id="asset_folder" name="asset_folder" class="form-control"
+                           value="<%= (defaults && defaults.folder) || 'images/profiles' %>">
+                    <span class="input-group-text">/</span>
+                  </div>
+                  <small class="text-muted">No leading/trailing slashes; we’ll add it.</small>
+                </div>
+
+                <!-- Filename -->
+                <div class="col-md-4">
+                  <label class="form-label">File name (with extension)</label>
+                  <input data-ignore-kilvish="" type="text" id="asset_keyname" name="asset_keyname" class="form-control"
+                         value="<%= (defaults && defaults.keyname) || 'user.png' %>" placeholder="user.png">
+                  <small class="text-muted">We’ll sanitize and force the correct extension from the uploaded file.</small>
+                </div>
+
+                <!-- File chooser -->
+                <div class="col-md-12">
+                  <label class="form-label">Select File</label>
+                  <input data-ignore-kilvish="" type="file" id="asset" name="asset" class="form-control" required>
+                  <small class="text-muted">Images / PDFs / videos / audio allowed per your filter.</small>
+                </div>
+
+                <!-- Image preview -->
+                <div class="col-md-12 d-flex align-items-center gap-3">
+                  <img id="previewImg" src="/superadminassets/img/placeholder-image.png"
+                       style="display:none;width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
+                  <div class="small text-muted" id="keyPreview"></div>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-12 d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+              </div>
+            </form>
+
+            <hr class="my-4">
+
+            <div id="resultBox" class="alert d-none" role="alert"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('superfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = (window.axiosKwe || window.axios || null);
+  if (!fx) { console.error('axiosKwe missing'); }
+
+  const $ = (s, c=document)=>c.querySelector(s);
+
+  const typeSel = $('#type');
+  const folderInp = $('#asset_folder');
+  const keyInp = $('#asset_keyname');
+  const fileInp = $('#asset');
+  const form = $('#uploadForm');
+  const img = $('#previewImg');
+  const keyPrev = $('#keyPreview');
+  const resultBox = $('#resultBox');
+
+  function sanitizeBase(v){
+    v = String(v || '').toLowerCase();
+    v = v.replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g,'-').replace(/^\.+/,'').slice(0,120);
+    return v;
+  }
+  function normFolder(v){
+    v = String(v || 'uploads').replace(/^\/*/,'').replace(/\/*$/,'');
+    return v || 'uploads';
+  }
+  function updatePreview(){
+    const f = normFolder(folderInp.value);
+    const k = sanitizeBase(keyInp.value);
+    if (k) keyPrev.textContent = `Will upload to: ${f}/${k}`;
+    else keyPrev.textContent = '';
+  }
+
+  // type presets folder (still editable)
+  if (typeSel) typeSel.addEventListener('change', ()=>{
+    folderInp.value = typeSel.value;
+    updatePreview();
+  });
+
+  // sanitize on input
+  if (folderInp) folderInp.addEventListener('input', updatePreview);
+  if (keyInp) keyInp.addEventListener('input', ()=>{
+    keyInp.value = sanitizeBase(keyInp.value);
+    updatePreview();
+  });
+
+  // live preview if image
+  if (fileInp) fileInp.addEventListener('change', ()=>{
+    const f = fileInp.files?.[0];
+    if (!f) { img.style.display='none'; return; }
+    if ((f.type || '').startsWith('image/')) {
+      img.src = URL.createObjectURL(f);
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+  });
+
+  updatePreview();
+
+  // submit
+  if (form) form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    resultBox.classList.add('d-none');
+    resultBox.classList.remove('alert-success','alert-danger');
+
+    // Build multipart
+    const fd = new FormData(form);
+    // ensure overrides present
+    fd.set('asset_folder', normFolder(folderInp.value));
+    if (keyInp.value) fd.set('asset_keyname', sanitizeBase(keyInp.value));
+
+    try{
+      const { data } = await fx.post('/superadmin/upload_asset', fd, {
+        headers: { 'Content-Type':'multipart/form-data' }
+      });
+      if (data?.ok) {
+        resultBox.textContent = `Uploaded ✔  Key: ${data.key}`;
+        resultBox.classList.remove('d-none','alert-danger');
+        resultBox.classList.add('alert-success');
+      } else {
+        throw new Error(data?.message || 'Upload failed');
+      }
+    } catch (err){
+      const msg = err?.response?.data?.message || err?.message || 'Upload failed';
+      resultBox.textContent = msg;
+      resultBox.classList.remove('d-none','alert-success');
+      resultBox.classList.add('alert-danger');
+    }
+  });
+})();
+</script>

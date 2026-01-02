@@ -1,0 +1,249 @@
+<!-- views/firmstaff/subscription_plans.ejs -->
+<%- include('firmheader.ejs'); %>
+<%- include('firmsidebar.ejs'); %>
+
+<style>
+/* —— polished minimal theme —— */
+.plan-skeleton{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.plan-skeleton .card{border:0;border-radius:16px;box-shadow:0 8px 24px rgba(16,24,40,.08);overflow:hidden}
+.skel{height:16px;background:linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9);background-size:200% 100%;animation:sh 1.2s infinite; border-radius:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.card.plan{transition:transform .12s ease, box-shadow .12s ease;border:1px solid #e5e7eb;border-radius:16px}
+.card.plan:hover{transform:translateY(-2px); box-shadow:0 10px 28px rgba(16,24,40,.12)}
+.badge.float{position:absolute;top:.75rem}
+.badge.left{left:.75rem}
+.badge.right{right:.75rem}
+.price{font-size:2rem; line-height:1; font-weight:800}
+.price-suffix{color:#64748b}
+.feature-item{display:flex;gap:.5rem;align-items:center;margin:.3rem 0}
+.feature-item i{opacity:.9}
+.btn-wide{padding:.65rem 1rem;border-radius:12px}
+.card-cta{display:grid;gap:.5rem}
+
+/* —— current plan highlight —— */
+.card.plan.current{
+  border:2px solid #2563eb !important;
+  box-shadow:0 16px 40px rgba(37,99,235,.25) !important;
+}
+.ribbon{
+  position:absolute; top:.75rem; right:.75rem;
+  background:#e0e7ff; color:#1e40af; border:1px solid #c7d2fe;
+  font-weight:800; font-size:.75rem; padding:.2rem .5rem; border-radius:999px;
+}
+@keyframes pulseGlow {
+  0% { box-shadow:0 0 0 0 rgba(37,99,235,.45); }
+  70%{ box-shadow:0 0 0 12px rgba(37,99,235,0); }
+  100%{ box-shadow:0 0 0 0 rgba(37,99,235,0); }
+}
+.pulse-once {
+  animation: pulseGlow 1.4s ease-out 1;
+}
+</style>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+      <div><h4 class="fw-bold mb-0">Choose a Subscription Plan</h4></div>
+    </div>
+
+    <!-- skeleton while loading -->
+    <div id="plansSkeleton" class="plan-skeleton mb-3">
+      <% for (let i=0;i<3;i++){ %>
+      <div class="card p-4">
+        <div class="skel" style="width:40%;height:20px"></div>
+        <div class="skel" style="width:80%;height:12px;margin-top:8px"></div>
+        <div class="skel" style="width:65%;height:12px;margin-top:8px"></div>
+        <div class="skel" style="width:50%;height:28px;margin-top:18px"></div>
+        <div class="skel" style="width:90%;height:12px;margin-top:18px"></div>
+        <div class="skel" style="width:70%;height:12px;margin-top:8px"></div>
+        <div class="skel" style="width:60%;height:12px;margin-top:8px"></div>
+        <div class="skel" style="width:100%;height:40px;margin-top:18px;border-radius:12px"></div>
+      </div>
+      <% } %>
+    </div>
+
+    <div id="plansRow" class="row g-4 d-none"></div>
+    <input type="hidden" id="csrfHidden" value="<%= csrfToken %>">
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function(){
+  const $ = (s,p=document)=>p.querySelector(s);
+  const el = $('#plansRow');
+  const sk = $('#plansSkeleton');
+  const fx = window.axiosElaw;
+
+  const money = (n, c='USD') => {
+    try { return new Intl.NumberFormat('en-US',{style:'currency',currency:c}).format(Number(n||0)); }
+    catch { return `${c} ${Number(n||0).toFixed(2)}`; }
+  };
+
+  function featureList(obj){
+    if (!obj || typeof obj !== 'object') return '';
+    return Object.entries(obj).map(([k,v])=>{
+      const val = (typeof v==='boolean') ? (v ? 'Yes' : 'No') : (Number(v)===-1 ? 'Unlimited' : v);
+      return `<div class="feature-item"><i class="ti ti-check text-success"></i><span class="small"><b>${k}</b>: ${val}</span></div>`;
+    }).join('') || `<div class="text-muted small">—</div>`;
+  }
+
+  function priceSuffix(period){
+    if (period === 'monthly') return '/month';
+    if (period === 'yearly')  return '/year';
+    return 'one-time';
+  }
+
+  // Render one plan card with awareness of current subscription
+  function planCard(p, current){
+    const isCurrent = !!current && Number(current.plan_id) === Number(p.plan_id) && (current.status === 'active');
+    const pill  = p.is_popular ? `<span class="badge bg-primary-subtle text-primary float left">Popular</span>` : '';
+    const badge = p.badge      ? `<span class="badge bg-info-subtle text-info float right">${p.badge}</span>`  : '';
+    const ribbon = isCurrent ? `<span class="ribbon">Current</span>` : '';
+
+    const priceHtml = p.is_free
+      ? `<div class="price">Free</div>`
+      : `<div class="d-flex align-items-baseline gap-2 mb-1">
+           <div class="price">${money(p.price_major, p.currency)}</div>
+           <div class="price-suffix">${priceSuffix(p.billing_period)}</div>
+         </div>`;
+
+    // CTA logic
+    let ctaHtml = '';
+    if (isCurrent){
+      ctaHtml = `
+        <button class="btn btn-outline-primary btn-wide" disabled data-current="${p.plan_id}">
+          <i class="ti ti-badge-check me-1"></i> Current Plan
+        </button>
+        <a class="btn btn-light btn-wide" href="/firmstaff/subscribe">
+          <i class="ti ti-settings me-1"></i> Manage
+        </a>`;
+    } else if (p.is_free){
+      ctaHtml = `
+        <button class="btn btn-success btn-wide" data-select-free="${p.plan_id}">
+          <i class="ti ti-circle-check me-1"></i> Select Free
+        </button>`;
+    } else {
+      ctaHtml = `
+        <button class="btn btn-primary btn-wide" data-buy="${p.plan_id}">
+          <i class="ti ti-credit-card me-1"></i> ${p.billing_period === 'yearly' ? 'Choose Yearly' : p.billing_period === 'monthly' ? 'Choose Monthly' : 'Buy Now'}
+        </button>`;
+    }
+
+    return `
+      <div class="col-12 col-sm-6 col-lg-4">
+        <div class="card plan h-100 position-relative ${isCurrent ? 'current pulse-once' : ''}" data-plan-card="${p.plan_id}">
+          ${pill}${badge}${ribbon}
+          <div class="card-body p-4 d-flex flex-column">
+            <h5 class="fw-bold mb-1">${p.name}</h5>
+            <div class="text-muted mb-3">${p.description || ''}</div>
+            ${priceHtml}
+            <div class="mt-3 mb-4">
+              ${featureList(p.features)}
+            </div>
+            <div class="mt-auto card-cta">
+              ${ctaHtml}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function getCurrentSub(){
+    // Prefer data from header preload (window.ELAW_SUBS.current)
+    if (window.ELAW_SUBS && window.ELAW_SUBS.current) return window.ELAW_SUBS.current;
+
+    try{
+      const r = await fetch('/firmstaff/api/v1/subscriptions/current', { credentials:'same-origin' });
+      const j = await r.json();
+      if (j && j.success) return j.subscription || null;
+    }catch{}
+    return null;
+  }
+
+  async function loadPlans(){
+    try{
+      const [subRes, plansRes] = await Promise.allSettled([
+        getCurrentSub(),
+        fx.get('/firmstaff/api/v1/subscriptions/plans')
+      ]);
+
+      const current = (subRes.status === 'fulfilled') ? subRes.value : null;
+      const data = (plansRes.status === 'fulfilled') ? plansRes.value.data : {};
+      if (!data?.success) throw new Error('Load failed');
+
+      const html = (data.plans||[]).map(p => planCard(p, current)).join('');
+      el.innerHTML = html || `<div class="col-12"><div class="alert alert-warning">No plans configured.</div></div>`;
+      sk.classList.add('d-none');
+      el.classList.remove('d-none');
+
+      // Scroll current into view (if any)
+      if (current && current.plan_id){
+        const card = el.querySelector(`[data-plan-card="${current.plan_id}"]`);
+        if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
+      }
+    } catch(e){
+      console.log('Failed to load plans:', e);
+      sk.classList.add('d-none');
+      el.classList.remove('d-none');
+      el.innerHTML = `<div class="col-12"><div class="alert alert-danger">Failed to load plans.</div></div>`;
+    }
+  }
+
+  function postWithForm(action, fields = {}){
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    const csrf = ($('#csrfHidden')?.value) || (window.getCsrf && window.getCsrf()) || '';
+    if (csrf) {
+      const c = document.createElement('input');
+      c.type='hidden'; c.name='_csrf'; c.value=csrf; form.appendChild(c);
+    }
+    for (const [k,v] of Object.entries(fields)){
+      const i = document.createElement('input');
+      i.type='hidden'; i.name=k; i.value=v ?? '';
+      form.appendChild(i);
+    }
+    document.body.appendChild(form); form.submit();
+  }
+
+  el.addEventListener('click', async (ev)=>{
+    const btnFree = ev.target.closest('[data-select-free]');
+    const btnBuy  = ev.target.closest('[data-buy]');
+
+    if (btnFree){
+      const plan_id = btnFree.getAttribute('data-select-free');
+      btnFree.disabled = true;
+      try{
+        const { data } = await fx.post('/firmstaff/api/v1/subscriptions/select_free', { plan_id });
+        if (!data?.success) throw new Error(data?.message || 'Activation failed');
+        await Swal.fire({ icon:'success', title:'Activated', text:'Your free plan is now active.' });
+        location.href = '/firmstaff';
+      } catch(e){
+        kilToast?.danger(e?.response?.data?.message || e?.message || 'Activation failed');
+      } finally {
+        btnFree.disabled = false;
+      }
+      return;
+    }
+
+    if (btnBuy){
+      const plan_id = btnBuy.getAttribute('data-buy');
+      btnBuy.disabled = true;
+      try{
+        const { data } = await fx.post('/firmstaff/api/v1/subscriptions/checkout', { plan_id });
+        if (!data?.success) throw new Error(data?.message || 'Checkout failed');
+        postWithForm('/firmstaff/api/v1/subscriptions/payment/start', { order_id: data.order_id });
+      } catch(e){
+        kilToast?.danger(e?.response?.data?.message || e?.message || 'Checkout failed');
+      } finally {
+        btnBuy.disabled = false;
+      }
+      return;
+    }
+  });
+
+  loadPlans();
+})();
+</script>

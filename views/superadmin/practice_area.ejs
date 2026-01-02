@@ -1,0 +1,495 @@
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('supersidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <div>
+        <h4 class="fw-bold mb-0">Practice Area Management</h4>
+        <div class="text-muted small">Create a clean hierarchy of practice areas. Search, expand, and manage with ease.</div>
+      </div>
+      <div class="d-none d-sm-flex gap-2">
+        <button id="btnExpandAll" class="btn btn-outline-secondary btn-sm"><i class="ti ti-arrows-maximize me-1"></i>Expand All</button>
+        <button id="btnCollapseAll" class="btn btn-outline-secondary btn-sm"><i class="ti ti-arrows-minimize me-1"></i>Collapse All</button>
+        <button id="pa_refresh" class="btn btn-outline-primary btn-sm"><i class="ti ti-refresh me-1"></i>Refresh</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Left: Add -->
+      <div class="col-lg-4 col-xl-3 mb-4">
+        <div class="card pa-card shadow-sm border-0">
+          <div class="card-header bg-white fw-semibold border-0 pb-0">
+            <div class="d-flex align-items-center gap-2">
+              <span class="pa-dot"></span>
+              Add Practice Area
+            </div>
+            <div class="text-muted small mt-1">Use parent only if this is a sub-area.</div>
+          </div>
+          <div class="card-body">
+            <form id="paForm" class="row g-3" autocomplete="off">
+              <div class="col-12">
+                <label class="form-label">Name <span class="text-danger">*</span></label>
+                <input data-kilvish-char="mix_,_-_ _" type="text" name="name" id="pa_name" class="form-control" placeholder="e.g., Domestic Violence" required>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Parent (optional)</label>
+                <select data-ignore-kilvish="Yes" name="parent_id" id="pa_parent" class="form-select">
+                  <option value="">— Root —</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Aliases / Synonyms (optional) </label>
+                <input data-kilvish-char="mix_,_-_ _" type="text" name="aliases" id="pa_aliases" class="form-control" placeholder="DV, Domestic Abuse, Restraining Orders">
+                <div class="form-text">Comma-separated keywords to improve search.</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea required data-ignore-kilvish="Yes" name="description" id="pa_desc" rows="3" class="form-control" placeholder="Optional description..."></textarea>
+              </div>
+
+              <div class="col-12 d-grid">
+                <button type="submit" class="btn btn-primary">
+                  <i class="ti ti-plus me-1"></i> Add Area
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Tree + Search -->
+      <div class="col-lg-8 col-xl-9">
+        <div class="card pa-card shadow-sm border-0">
+          <div class="card-header bg-white border-0 pb-0">
+            <div class="d-flex align-items-center justify-content-between flex-column flex-sm-row gap-2">
+              <div class="fw-semibold d-flex align-items-center gap-2">
+                <span class="pa-dot"></span> Practice Areas
+              </div>
+              <div class="pa-search">
+                <i class="ti ti-search"></i>
+                <input data-kilvish-char="mix_,_-_ _" id="pa_search" type="text" class="form-control" placeholder="Search by name or alias…">
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="paTree" class="pa-tree"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('superfooter.ejs'); %>
+
+<style>
+/* ======= Look & Feel ======= */
+.pa-card{ border-radius:16px; overflow:hidden; }
+.pa-dot{
+  width:10px;height:10px;border-radius:50%;
+  background: linear-gradient(135deg,#6366f1 0%, #22d3ee 100%);
+  display:inline-block;
+}
+
+/* Search */
+.pa-search{ position:relative; min-width:260px; }
+.pa-search i{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#64748b; }
+.pa-search input{
+  padding-left:36px; border-radius:10px; border:1px solid #e5e7eb;
+  box-shadow:0 1px 2px rgba(16,24,40,.04);
+}
+
+/* Tree */
+.pa-tree { --indent: 18px; }
+.pa-node{
+  border:1px solid #eef2f7; border-radius:14px; padding:10px 12px;
+  margin-bottom:10px; background:#fff; box-shadow:0 2px 10px rgba(17,24,39,.06);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .06s ease;
+}
+.pa-node:hover{ border-color:#dbeafe; box-shadow:0 4px 18px rgba(17,24,39,.08); }
+.pa-row{ display:flex; align-items:center; gap:10px; }
+.pa-toggle{
+  width:28px; height:28px; border-radius:8px; border:1px solid #e2e8f0;
+  display:flex; align-items:center; justify-content:center; background:#f8fafc; cursor:pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+.pa-toggle:hover{ background:#eef2f7; border-color:#d1d5db; }
+.pa-title{ font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px; }
+.pa-title .bullet{
+  width:8px;height:8px;border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, #22d3ee, #6366f1);
+  box-shadow:0 0 0 2px #eef2ff inset;
+}
+.pa-actions{ margin-left:auto; display:flex; gap:6px; }
+.pa-actions .btn{
+  border-radius:8px; padding:.25rem .5rem; line-height:1;
+}
+.pa-meta{
+  color:#64748b; font-size:12px; margin-left:38px; margin-top:6px;
+  display:flex; gap:12px; flex-wrap:wrap;
+}
+.pa-badge{
+  font-size:11px; padding:2px 8px; border-radius:999px;
+  background:#f1f5f9; color:#334155; border:1px solid #e2e8f0;
+}
+.pa-children{
+  margin-left: var(--indent); margin-top:8px;
+  overflow: hidden; transition: grid-template-rows .25s ease;
+  display: grid; grid-template-rows: 1fr;
+}
+.pa-children.collapsed{ grid-template-rows: 0fr; }
+.pa-children > div{ overflow: hidden; }
+.pa-muted{ color:#94a3b8; }
+
+/* SweetAlert tune */
+.swal2-popup{ border-radius:16px !important; }
+.swal2-input, .swal2-textarea, .swal2-select{ border-radius:10px !important; }
+</style>
+
+<script>
+(function(){
+  const fx = window.axiosElaw;            // CSRF-aware
+  
+  const $ = (s,p=document)=>p.querySelector(s);
+
+  const parentSel = $('#pa_parent');
+  const treeWrap  = $('#paTree');
+  const searchInp = $('#pa_search');
+
+  // State
+  let flat = [];   // flat list for search/parent select
+  let tree = [];   // nested structure
+  let expanded = new Set(); // expanded node ids
+
+  /* -------------- API -------------- */
+  async function fetchAll(){
+    const { data } = await fx.get('/superadmin/practice_areas_json');
+    if (!data?.success) throw new Error(data?.message || 'Load failed');
+    flat = data.flat || [];
+    tree = data.tree || [];
+    buildParentSelect();
+    renderTree();
+  }
+
+  /* -------------- Parent Select -------------- */
+  function buildParentSelect(){
+    parentSel.innerHTML = '<option value="">— Root —</option>';
+    const addOptions = (nodes, depth=0) => {
+      nodes.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.practice_area_id;
+        opt.textContent = `${'— '.repeat(depth)}${n.name}`;
+        parentSel.appendChild(opt);
+        if (n.children?.length) addOptions(n.children, depth+1);
+      });
+    };
+    addOptions(tree, 0);
+  }
+
+  /* -------------- Utils -------------- */
+  function hi(str, q){
+    if (!q) return escapeHtml(str||'');
+    try{
+      const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+      return escapeHtml(str||'').replace(re,'<mark>$1</mark>');
+    }catch{ return escapeHtml(str||''); }
+  }
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+  function pruneBySearch(nodes, q){
+    if (!q) return nodes;
+    const rec = (n)=>{
+      const nameHit = (n.name||'').toLowerCase().includes(q);
+      const aliasHit = (n.aliases||[]).some(a => (a||'').toLowerCase().includes(q));
+      const kids = (n.children||[]).map(rec).filter(Boolean);
+      if (nameHit || aliasHit || kids.length){
+        if (kids.length) expanded.add(n.practice_area_id);
+        return { ...n, children:kids };
+      }
+      return null;
+    };
+    return nodes.map(rec).filter(Boolean);
+  }
+
+  function childrenWrapper(html, open){
+    // CSS grid trick for animated collapse
+    return `<div class="pa-children ${open?'':'collapsed'}"><div>${html}</div></div>`;
+  }
+
+  /* -------------- Rendering -------------- */
+  function nodeRowHTML(n){
+    const hasChildren = (n.children && n.children.length);
+    const isOpen = expanded.has(n.practice_area_id);
+    const toggle = hasChildren
+      ? `<div class="pa-toggle" data-toggle="${n.practice_area_id}" title="Expand/Collapse">
+           <i class="ti ${isOpen ? 'ti-chevron-down' : 'ti-chevron-right'}"></i>
+         </div>`
+      : `<div class="pa-toggle pa-muted" title="No children"><i class="ti ti-dot"></i></div>`;
+
+    const q = (searchInp.value||'').trim();
+    const name = `<span class="bullet"></span><span>${ q ? hi(n.name,q) : escapeHtml(n.name) }</span>`;
+
+    const aliasCount = n.aliases_count ? `<span class="pa-badge">Aliases: ${n.aliases_count}</span>` : '';
+    const childCount = n.children_count ? `<span class="pa-badge">Children: ${n.children_count}</span>` : '';
+
+    return `
+      <div class="pa-row">
+        ${toggle}
+        <div class="pa-title">${name}</div>
+        <div class="pa-actions">
+          <button class="btn btn-outline-primary btn-sm pa-add-child" data-id="${n.practice_area_id}" data-name="${escapeHtml(n.name)}" title="Add sub-area"><i class="ti ti-plus"></i></button>
+          <button class="btn btn-outline-secondary btn-sm pa-edit" data-id="${n.practice_area_id}" title="Edit"><i class="ti ti-edit"></i></button>
+          <button class="btn btn-outline-danger btn-sm pa-del" data-id="${n.practice_area_id}" data-name="${escapeHtml(n.name)}" title="Delete"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="pa-meta">
+        <span class="pa-badge">Slug: <code>${escapeHtml(n.slug)}</code></span>
+        ${aliasCount} ${childCount}
+      </div>
+    `;
+  }
+
+  function renderNodes(nodes){
+    return nodes.map(n => {
+      const open = expanded.has(n.practice_area_id);
+      const children = (n.children && n.children.length)
+        ? childrenWrapper(renderNodes(n.children), open)
+        : '';
+      return `<div class="pa-node" data-id="${n.practice_area_id}">
+        ${nodeRowHTML(n)}
+        ${children}
+      </div>`;
+    }).join('');
+  }
+
+  function renderTree(){
+    const q = searchInp.value.trim().toLowerCase();
+    const pruned = pruneBySearch(tree, q);
+    treeWrap.innerHTML = renderNodes(pruned);
+  }
+
+  /* -------------- Add -------------- */
+  $('#paForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const body = {
+        name: $('#pa_name').value.trim(),
+        parent_id: $('#pa_parent').value || null,
+        aliases: $('#pa_aliases').value.trim(),
+        description: $('#pa_desc').value.trim()
+      };
+      if (!body.name) { kilToast.danger('Name is required.'); return; }
+
+      const { data } = await fx.post('/superadmin/add_practice_area', body);
+      if (!data?.success) return  kilToast.danger(data?.message || 'Failed to add.');  
+  
+       kilToast.success(data?.message || 'Practice area added.')
+
+      // reset minimal fields
+      $('#pa_name').value = '';
+      $('#pa_aliases').value = '';
+      $('#pa_desc').value = '';
+      $('#pa_parent').value = '';
+
+      await fetchAll();
+    } catch (err) {     
+      kilToast.danger(err?.response?.data?.message || 'Failed to add.')
+      console.error(err);
+    }
+  });
+
+  /* -------------- Actions (delegated) -------------- */
+  treeWrap.addEventListener('click', async (e) => {
+    const tgl = e.target.closest('[data-toggle]');
+    if (tgl) {
+      const id = +tgl.getAttribute('data-toggle');
+      if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+      return renderTree();
+    }
+    const addChild = e.target.closest('.pa-add-child');
+    if (addChild) {
+      const id = addChild.dataset.id, parentName = addChild.dataset.name;
+      addChildModal(id, parentName);
+      return;
+    }
+    const edit = e.target.closest('.pa-edit');
+    if (edit) {
+      const id = edit.dataset.id;
+      editModal(id);
+      return;
+    }
+    const del = e.target.closest('.pa-del');
+    if (del) {
+      const id = del.dataset.id, name = del.dataset.name;
+      confirmDelete(id, name);
+      return;
+    }
+  });
+
+  $('#pa_refresh').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    await fetchAll();
+    
+    kilToast.success('Refreshed')
+  });
+
+  $('#btnExpandAll').addEventListener('click', (e)=>{
+    e.preventDefault();
+    flat.forEach(n => expanded.add(n.practice_area_id));
+    renderTree();
+  });
+
+  $('#btnCollapseAll').addEventListener('click', (e)=>{
+    e.preventDefault();
+    expanded.clear();
+    renderTree();
+  });
+
+  // Live search
+  searchInp.addEventListener('input', () => renderTree());
+
+  /* -------------- Modals -------------- */
+  async function addChildModal(parent_id, parentName){
+    const { value: formValues } = await Swal.fire({
+      title: `Add Sub-area — ${parentName}`,
+      html: `
+        <input data-kilvish-char="mix_,_-_ _" id="sw_name" class="swal2-input" placeholder="Name">
+        <input data-kilvish-char="mix_,_-_ _" id="sw_aliases" class="swal2-input" placeholder="Aliases (comma separated)">
+        <textarea data-ignore-kilvish="Yes" id="sw_desc" class="swal2-textarea" placeholder="Description (optional)"></textarea>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Add',
+      preConfirm: () => {
+        const name = document.getElementById('sw_name').value.trim();
+        const aliases = document.getElementById('sw_aliases').value.trim();
+        const description = document.getElementById('sw_desc').value.trim();
+        if (!name) { Swal.showValidationMessage('Name is required'); return false; }
+        return { name, aliases, description };
+      }
+    });
+    if (!formValues) return;
+    try {
+      const { data } = await fx.post('/superadmin/add_practice_area', {
+        name: formValues.name, parent_id, aliases: formValues.aliases, description: formValues.description
+      });
+      if (!data?.success) return kilToast.danger(data?.message || 'Failed to add sub-area.');     
+      kilToast.success('Sub-area added')
+      expanded.add(Number(parent_id));   // keep parent open
+      await fetchAll();
+    } catch (err) {
+    
+      kilToast.danger(err?.response?.data?.message || 'Failed to add sub-area.')
+    }
+  }
+
+  async function editModal(id){
+    try {
+      const node = flat.find(x => String(x.practice_area_id) === String(id));
+      if (!node) return kilToast.danger('Area not found.') ;
+      const { value: formValues } = await Swal.fire({
+        title: `Edit — ${node.name}`,
+        html: `
+          <input id="sw_name" class="swal2-input" placeholder="Name" value="${escapeHtml(node.name).replace(/"/g,'&quot;')}">
+          <select id="sw_parent" class="swal2-select">
+            <option value="">— Root —</option>
+            ${treeToOptions(tree, node.practice_area_id, node.parent_id)}
+          </select>
+          <input id="sw_aliases" class="swal2-input" placeholder="Aliases (comma separated)" value="${escapeHtml((node.aliases||[]).join(', '))}">
+          <textarea id="sw_desc" class="swal2-textarea" placeholder="Description">${escapeHtml(node.description||'')}</textarea>
+        `,
+        width: 720,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Save',
+        preConfirm: () => {
+          const val = (id)=>document.getElementById(id).value;
+          const name = val('sw_name').trim();
+          if (!name) { Swal.showValidationMessage('Name is required'); return false; }
+          return {
+            name,
+            parent_id: val('sw_parent') || null,
+            aliases: val('sw_aliases'),
+            description: document.getElementById('sw_desc').value.trim()
+          };
+        }
+      });
+      if (!formValues) return;
+      const { data } = await fx.post('/superadmin/update_practice_area', { id, ...formValues });
+      if (!data?.success) return kilToast.danger(data?.message || 'Failed to update.');
+     
+      kilToast.success('Updated')
+      expanded.add(Number(id)); // keep open
+      await fetchAll();
+    } catch (err) {
+      console.error(err);
+   
+      kilToast.danger(err?.response?.data?.message || 'Failed to update.')
+    }
+  }
+
+  function treeToOptions(nodes, forbidId, selectedId, depth=0){
+    let html = '';
+    for (const n of nodes){
+      if (Number(n.practice_area_id) === Number(forbidId)) continue; // cannot set parent to itself
+      const sel = Number(n.practice_area_id) === Number(selectedId) ? 'selected':'';
+      html += `<option value="${n.practice_area_id}" ${sel}>${'— '.repeat(depth)}${escapeHtml(n.name)}</option>`;
+      if (n.children?.length) html += treeToOptions(n.children, forbidId, selectedId, depth+1);
+    }
+    return html;
+  }
+
+async function confirmDelete(id, name){
+  const { isConfirmed } = await Swal.fire({
+    icon: 'warning',
+    title: 'Soft Delete Practice Area?',
+    html: `
+      <div class="text-start">
+        <p class="mb-2">You are about to <b>soft delete</b> the practice area: <b>${escapeHtml(name)}</b></p>
+        <div class="alert alert-warning" style="background:#fff8e1;border:1px solid #ffe69c;color:#7a5b00;border-radius:8px;">
+          <i class="ti ti-alert-triangle me-1"></i>
+          <b>Important:</b> If this area has children, the action will be blocked
+          unless you <u>re-parent</u> or <u>delete the children</u> first.
+        </div>
+        <p class="small text-muted mb-0">This operation does not permanently remove the record.</p>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Soft Delete',
+    confirmButtonColor: '#d97706' // amber-ish
+  });
+
+  if (!isConfirmed) return;
+  try {
+    const { data } = await fx.post('/superadmin/delete_practice_area', { id });
+    if (!data?.success) return kilToast.danger(data?.message || 'Failed to delete.');
+    kilToast.success(data?.message || 'Soft deleted')
+   
+    await fetchAll();
+  } catch (err) {
+    
+    kilToast.danger(err?.response?.data?.message || 'Failed to delete.')
+  }
+}
+
+
+  // Init
+  fetchAll().catch(err => {
+    console.error(err);
+  
+    kilToast.danger(err?.message || 'Failed to load practice areas.')
+  });
+})();
+</script>

@@ -1,0 +1,369 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+        
+          <%
+/**
+ * Smart mask: show 2 chars at start and 2 at end if possible.
+ * If too short, just show the first and mask the rest, or just mask.
+ */
+function maskValue(str, maskChar = '*') {
+  str = (str == null) ? '' : String(str);
+  const len = str.length;
+  if (len === 0) return '';
+  if (len === 1) return maskChar;
+  if (len === 2) return str[0] + maskChar;
+  if (len <= 4) return str[0] + maskChar.repeat(len - 2) + str[len - 1];
+  // For emails, keep domain visible
+  if (str.includes('@')) {
+    const at = str.indexOf('@');
+    if (at <= 2) return maskChar.repeat(at) + str.substring(at);
+    return str[0] + maskChar.repeat(at - 2) + str[at - 1] + str.substring(at);
+  }
+  // For other strings (phones, etc): 2 start, 2 end
+  return str.slice(0, 2) + maskChar.repeat(len - 4) + str.slice(-2);
+}
+%>
+
+
+<div class="container">
+    <div class="page-inner">
+        <div class="page-header">
+              <h3 class="fw-bold mb-3"></h3>
+              <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                  <a href="/superadmin">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="/superadmin/view_subadmins">Subadmin Management</a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="/superadmin/view_subadmins">View Subadmin</a>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+             
+
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="d-flex align-items-center">
+                      <h4 class="card-title"> View Subadmin</h4>
+                      <a href="/superadmin/add_subadmin" class="btn btn-primary btn-round ms-auto" style="border-color: #f5f7fd !important; color: #fff; font-weight: bold;">
+                        <i class="fa fa-plus"></i>
+                        Add Subadmin
+                      </a>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                                                 <% if (output.toLowerCase().includes('successfully')) { %>
+        <p id="message" class="success-text" style="color: green;"> <%= output %> </p>
+        <% } else { %>
+          <p id="message" class="error-text" style="color: red;"> <%= output %> </p>
+          <% } %>
+             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <table id="table_subadmin"  class="display table table-striped table-hover" >
+  <thead>
+    <tr>
+      <th>Sr.No.</th>
+      <th>Role</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Mobile Number</th>
+      <th>Profile Image</th>
+      <th>Address</th>
+      <th>Permission</th>
+      <th>Status</th>
+      <th style="width: 10%">Action</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <th>Sr.No.</th>
+      <th>Role</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Mobile Number</th>
+      <th>Profile Image</th>
+      <th>Address</th>
+      <th>Permission</th>
+      <th>Status</th>
+      <th style="width: 10%">Action</th>
+    </tr>
+  </tfoot>
+  <tbody>
+    <% subadmins.forEach((admin, index) => { %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= admin.role_id %></td>
+        <td><%= admin.first_name %> <%= admin.last_name %></td>
+        <td>
+          <a href="mailto:<%= admin.email %>" style="text-decoration: none; color: #007bff;">
+            <%= maskValue(admin.email) %>
+          </a>
+        </td>
+        <td>
+          <a href="tel:<%= admin.country_code + admin.contact %>" style="text-decoration: none; color: #28a745;">
+            <%= admin.country_code %> <%= maskValue(admin.contact) %>
+          </a>
+        </td>
+        <td>
+          <% if (admin.image) { %>
+
+          
+            <img src="/image" class="img-circle" alt="Image" style="width:50px; height:50px;">
+          <% } else { %>
+            No image
+          <% } %>
+        </td>
+        <td><%= admin.state || 'N/A' %></td>
+        <td>
+          <% if (admin.permissions === 'full') { %>
+            Full Access
+          <% } else { %>
+            <% admin.permissions.split(',').forEach(permission => { %>
+              <%= permission.replace('/','').replace(/_/g, ' ') %><hr>
+            <% }) %>
+          <% } %>
+        </td>
+      
+
+<td class="status-container" data-user-id="<%= admin.admin_id %>" data-user-status="<%= admin.status %>">
+  <% if (admin.status === 'Active') { %>
+    <span class="badge badge-info">Activated</span>
+  <% } else { %>
+    <span class="badge badge-danger">De-activated</span>
+  <% } %>
+  <div class="status-overlay"></div>
+  <p id="msg<%= admin.admin_id %>" style="color: green !important;"></p>
+</td>
+
+<td>
+  <div class="form-button-action">
+    <!-- Edit Button -->
+    <a href="#" class="btn btn-link btn-primary btn-lg subadmin-edit"
+       data-admin-id="<%= admin.admin_id %>" title="Edit Subadmin">
+      <i class="fa fa-edit"></i>
+    </a>
+
+    <!-- Status Toggle Button -->
+    <% if (admin.status === 'Active') { %>
+      <button type="button" class="btn btn-link btn-danger subadmin-status-toggle"
+              title="Deactivate Subadmin"
+              data-admin-id="<%= admin.admin_id %>"
+              data-admin-name="<%= admin.admin_name %>"
+              data-new-status="Inactive">
+        <i class="fa fa-ban"></i>
+      </button>
+    <% } else { %>
+      <button type="button" class="btn btn-link btn-success subadmin-status-toggle"
+              title="Activate Subadmin"
+              data-admin-id="<%= admin.admin_id %>"
+              data-admin-name="<%= admin.admin_name %>"
+              data-new-status="Active">
+        <i class="fa fa-check"></i>
+      </button>
+    <% } %>
+  </div>
+</td>
+
+
+
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+    <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // ✅ Do the deletion logic here (e.g., AJAX, remove row, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // ❌ Cancelled
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+  });
+</script>
+
+  </body>
+</html>
+
+
+<script>
+
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'sscl_subadmin_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+
+    let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.cookie = 'sscl_msg=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // TODO: Implement deletion logic here (AJAX, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else {
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.subadmin-edit').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const adminId = this.dataset.adminId;
+        document.cookie = `sscl_subadmin_id=${adminId}`;
+        window.location.href = '/superadmin/edit_subadmin';
+      });
+    });
+
+
+
+    // Subadmin Status Toggle
+    document.querySelectorAll('.subadmin-status-toggle').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const adminId = this.dataset.adminId;
+        const adminName = this.dataset.adminName;
+        const newStatus = this.dataset.newStatus;
+        update_subadmin_status(adminId, newStatus, adminName);
+      });
+    });
+
+
+
+  });
+
+
+
+
+
+   function update_subadmin_status(admin_id, newStatus, username) {
+    event.preventDefault();
+    const action = newStatus === 'Inactive' ? 'Inactivated' : 'Activated';
+
+    const userStatusElement = document.getElementById(`userStatus${admin_id}`);
+    const pmsgElement = document.getElementById(`msg${admin_id}`);
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+    $.ajax({
+      url: '/superadmin/update_subadmin_status',
+      type: 'POST',
+      data: { id: admin_id, status: newStatus, _csrf: csrfToken },
+      beforeSend: function () {
+        $('.kilstatus').hide();
+      },
+      success: function (response) {
+        if (response.success === true) {
+          $('[data-user-id="' + admin_id + '"]').attr('data-user-status', newStatus);
+
+          const imgSrc = (newStatus === 'Active') ? '../images/icons/active.png' : '../images/icons/inactive.png';
+          $('[data-user-id="' + admin_id + '"] .status-image').attr('src', imgSrc);
+          $('[data-user-id="' + admin_id + '"] .status-tooltip').attr('title', (newStatus === 'Active') ? 'deactivate' : 'activate');
+
+          const bgColor = (newStatus === 'Active') ? 'rgba(163,209,121,0.5)' : 'rgba(227,99,99,0.5)';
+          const textColor = (newStatus === 'Active') ? '#3c763d' : '#ffffff';
+
+          $('[data-user-id="' + admin_id + '"] .status-overlay').css({
+            'background-color': bgColor,
+            'color': textColor + ' !important'
+          }).fadeIn();
+
+          pmsgElement.innerHTML = response.msg;
+          const msg = `Subadmin (${username}) ${action} successfully`;
+          document.cookie = `sscl_msg=${msg}`;
+
+          setTimeout(() => {
+            $('[data-user-id="' + admin_id + '"] .status-overlay').fadeOut();
+            window.location.href = '/superadmin/view_subadmins';
+          }, 1500);
+
+        } else {
+          console.error('Error:', response.msg);
+          $("#errorMessage").text(response.msg).removeClass("d-none");
+          $("#successMessage").addClass("d-none");
+        }
+      },
+      error: function (error) {
+        console.error('Error:', error);
+        $("#errorMessage").text('Ajax Error').removeClass("d-none");
+        $("#successMessage").addClass("d-none");
+      }
+    });
+  }
+
+
+
+  
+</script>
+

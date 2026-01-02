@@ -1,0 +1,802 @@
+<!-- Header Start -->
+<%- include('clientheader.ejs'); %>
+<!-- Header End -->
+
+<style>
+  :root{
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --line: #e7edf6;
+    --text: #182233;
+    --muted: #6b778a;
+    --muted2:#8996aa;
+    --primary:#2c58a0;
+    --primarySoft: rgba(44, 88, 160, .12);
+    --shadow: 0 18px 50px rgba(18, 38, 78, .10);
+    --r16: 16px;
+    --r18: 18px;
+    --r22: 22px;
+  }
+
+  .page-support{ background: var(--bg); padding: 26px 0 80px; }
+  .support-wrap{ max-width: 1280px; }
+
+  /* Header */
+  .support-topbar{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap: 16px; margin-bottom: 14px;
+  }
+  .support-topbar h2{ margin:0; font-size: 1.55rem; font-weight: 900; color: var(--text); }
+  .support-topbar p{ margin:6px 0 0; color: var(--muted); }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 12px; border-radius: 999px;
+    background: var(--primarySoft); color: var(--primary);
+    font-weight: 900; font-size:.82rem;
+  }
+
+  /* Layout: top row (form + cards) */
+  .support-grid-top{
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items:start;
+  }
+
+  /* Cards */
+  .cardx{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r22);
+    box-shadow: var(--shadow);
+  }
+
+  /* Form */
+  .form-card{ padding: 18px; }
+  .form-card h3{ margin:0; font-size:1.25rem; font-weight: 950; color: var(--text); }
+  .form-card .desc{ margin:6px 0 14px; color: var(--muted); }
+  .lbl{ font-weight: 800; color:#243043; font-size:.9rem; margin-bottom: 6px; }
+  .inp{
+    width:100%;
+    border-radius: 14px;
+    border: 1px solid #d7ddea;
+    background:#f8f9fc;
+    padding: 11px 12px;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .inp:focus{
+    outline:none;
+    background:#fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(44, 88, 160, .14);
+  }
+  .inp[readonly], .inp[disabled]{ background:#eef2f7; color:#6f7b8b; }
+  .form-note{ margin:10px 0 0; color: var(--muted2); font-size:.86rem; }
+
+  .btnx{
+    border-radius: 12px;
+    font-weight: 950;
+    padding: 10px 14px;
+  }
+
+  /* Side cards */
+  .side-stack{ display:grid; gap: 12px; }
+  .side-card{ padding: 16px; }
+  .side-card h5{ margin:0 0 6px; font-weight: 950; color: var(--text); font-size: 1.05rem; }
+  .side-card .mut{ margin:0 0 12px; color: var(--muted); font-size:.93rem; }
+
+  .contact-row{
+    display:flex; gap: 12px; align-items:center;
+    padding: 10px 0; border-bottom: 1px solid #eef2f7;
+  }
+  .contact-row:last-child{ border-bottom:0; padding-bottom:0; }
+  .iconbox{
+    width: 40px; height: 40px; border-radius: 14px;
+    display:grid; place-items:center;
+    background:#f1f4fb; color: var(--primary);
+    font-size: 18px;
+  }
+  .contact-row span{ display:block; font-size:.83rem; color: var(--muted2); }
+  .contact-row strong{ display:block; font-size:.95rem; color: var(--text); }
+
+  .checklist{ list-style:none; padding:0; margin:0; display:grid; gap: 10px; }
+  .checklist li{ display:flex; gap: 10px; align-items:flex-start; color:#445165; font-size:.93rem; }
+  .checklist i{ color: var(--primary); font-size: 18px; margin-top: 1px; }
+
+  .cta{
+    background: linear-gradient(135deg, #233a64 0%, var(--primary) 100%);
+    border: 0;
+    color:#fff;
+  }
+  .cta h5{ color:#fff; }
+  .cta .mut{ color: rgba(255,255,255,.82); }
+  .cta a{
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#fff; color: var(--primary);
+    font-weight: 950; padding: 10px 14px;
+    border-radius: 12px; text-decoration:none;
+  }
+
+  /* --- 360 redesign: Ticket Hub --- */
+  .hub{
+    border-radius: 26px;
+    overflow:hidden;
+  }
+  .hub-head{
+    padding: 14px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+  .hub-head h4{ margin:0; font-size: 1.15rem; font-weight: 950; color: var(--text); }
+  .hub-head .sub{ margin:0; color: var(--muted); font-size: .9rem; }
+
+  .hub-body{
+    display:grid;
+    grid-template-columns: 320px 1fr 320px;
+    min-height: 720px; /* give real helpdesk feel */
+    background: #fff;
+  }
+
+  /* Left: Ticket list */
+  .hub-list{
+    border-right: 1px solid var(--line);
+    background: #fbfcff;
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .list-top{
+    padding: 12px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom: 1px solid var(--line);
+  }
+  .list-top .ttl{ font-weight: 950; color: var(--text); }
+  .count{
+    background: var(--primarySoft);
+    color: var(--primary);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 950;
+    font-size: .78rem;
+  }
+  .list-search{ padding: 10px 12px; }
+  .list-search .w{ position:relative; }
+  .list-search i{
+    position:absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color:#93a0b6; font-size: 16px;
+  }
+  .list-search input{
+    width:100%;
+    border-radius: 14px;
+    border: 1px solid #dbe3ef;
+    padding: 10px 10px 10px 38px;
+    outline:none;
+    background:#fff;
+    font-size:.88rem;
+  }
+  .list-search input:focus{
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(44, 88, 160, .12);
+  }
+
+  .list-items{
+    padding: 10px;
+    display:grid;
+    gap: 10px;
+    overflow:auto;
+    flex:1;
+    min-height:0;
+  }
+
+  .ticket-row{
+    text-decoration:none;
+    color: inherit;
+    background:#fff;
+    border: 1px solid #edf2f8;
+    border-radius: 16px;
+    padding: 12px 12px;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .ticket-row:hover{
+    transform: translateY(-1px);
+    border-color:#d7e2f6;
+    box-shadow: 0 12px 22px rgba(28,37,51,.08);
+  }
+  .ticket-row.active{
+    border-color: var(--primary);
+    box-shadow: 0 14px 26px rgba(44,88,160,.14);
+    background: #f3f8ff;
+  }
+  .ticket-row .top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap: 10px;
+  }
+  .ticket-row .subj{
+    font-weight: 950;
+    color: var(--text);
+    font-size: .95rem;
+    line-height: 1.2;
+    display:-webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow:hidden;
+  }
+  .ticket-row .time{
+    font-size: .74rem;
+    color: var(--muted2);
+    white-space: nowrap;
+  }
+  .ticket-row .meta{
+    margin-top: 8px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 10px;
+  }
+  .tknum{
+    font-weight: 950;
+    font-size: .78rem;
+    color: var(--primary);
+    background: var(--primarySoft);
+    padding: 5px 9px;
+    border-radius: 999px;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .mini{
+    font-size:.78rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+  }
+
+  /* Center: Chat */
+  .hub-chat{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    background:#fff;
+  }
+
+  .chat-top{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+  .chat-top h5{
+    margin:0;
+    font-size: 1.05rem;
+    font-weight: 950;
+    color: var(--text);
+  }
+  .chat-top .meta{
+    margin-top: 6px;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px;
+    align-items:center;
+    color: var(--muted);
+    font-size: .86rem;
+  }
+
+  .chip{
+    display:inline-flex; align-items:center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background:#f1f4fb;
+    color: var(--primary);
+    font-weight: 950;
+    font-size: .74rem;
+    letter-spacing:.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .chip.gray{
+    background:#eef2f7;
+    color:#445165;
+    text-transform:none;
+    letter-spacing:0;
+    font-weight: 900;
+  }
+
+  .sep{ color:#b4bdcb; }
+
+  .chat-scroll{
+    flex: 1;
+    min-height: 0;
+    overflow:auto;
+    padding: 18px 16px;
+    background: radial-gradient(circle at top left, #f6f9ff 0%, #ffffff 55%, #f9fbff 100%);
+  }
+
+  .msg{
+    display:flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items:flex-end;
+  }
+  .msg.mine{ flex-direction: row-reverse; }
+  .av{
+    width: 36px; height: 36px; border-radius: 14px;
+    display:grid; place-items:center;
+    background:#eef2fb; color: var(--primary);
+    font-weight: 950;
+    flex-shrink:0;
+  }
+  .bubble-wrap{ max-width: 76%; display:grid; gap: 6px; }
+  .msg.mine .bubble-wrap{ justify-items:end; }
+
+  .mmeta{
+    display:flex; gap: 8px; align-items:center;
+    font-size: .76rem;
+    color: var(--muted2);
+  }
+  .mmeta .who{ font-weight: 950; color:#4a5a71; }
+  .msg.mine .mmeta .who{ color: var(--primary); }
+
+  .bubble{
+    border-radius: 18px;
+    padding: 11px 12px;
+    background:#f3f6fb;
+    border: 1px solid #e5eaf3;
+    box-shadow: 0 10px 18px rgba(28,37,51,.05);
+  }
+  .msg.mine .bubble{
+    background: var(--primary);
+    color:#fff;
+    border-color: transparent;
+    box-shadow: 0 14px 26px rgba(44,88,160,.18);
+  }
+  .bubble p{ margin:0; white-space: pre-line; line-height: 1.6; font-size: .95rem; }
+
+  /* Reply bar */
+  .reply{
+    border-top: 1px solid var(--line);
+    padding: 12px 12px;
+    background:#fff;
+  }
+  .reply .row{
+    display:flex; gap: 10px; align-items:flex-end;
+  }
+  .reply textarea{ resize: vertical; min-height: 52px; max-height: 160px; }
+  .tiny{ margin:8px 0 0; color: var(--muted2); font-size:.84rem; }
+
+  /* Right: Details */
+  .hub-info{
+    border-left: 1px solid var(--line);
+    background:#fbfcff;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .info-top{
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 10px;
+  }
+  .info-top .ttl{ font-weight: 950; color: var(--text); }
+  .info-body{
+    padding: 12px;
+    overflow:auto;
+    min-height:0;
+    display:grid;
+    gap: 12px;
+  }
+
+  .ibox{
+    background:#fff;
+    border: 1px solid #edf2f8;
+    border-radius: 16px;
+    padding: 12px;
+  }
+  .ibox .k{ color: var(--muted2); font-size:.82rem; margin-bottom: 6px; }
+  .ibox .v{ color: var(--text); font-weight: 900; }
+
+  .badge-route{
+    display:inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 167, 38, .16);
+    color:#b26a12;
+    font-weight: 950;
+    font-size:.76rem;
+    white-space: nowrap;
+  }
+
+  .status{
+    display:inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 950;
+    font-size:.76rem;
+    letter-spacing:.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status-open{ background: rgba(44,88,160,.15); color: var(--primary); }
+  .status-pending{ background: rgba(255,167,38,.2); color:#b26a12; }
+  .status-on_hold{ background: rgba(141,151,160,.2); color:#5c6775; }
+  .status-resolved{ background: rgba(54,179,126,.2); color:#1f7a52; }
+  .status-closed{ background: rgba(88,97,115,.2); color:#3b4352; }
+
+  .emptybox{
+    margin: 12px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px dashed #dbe3ef;
+    background:#fff;
+    color: var(--muted);
+    text-align:center;
+  }
+
+  /* Responsive */
+  @media (max-width: 991px){
+    .support-grid-top{ grid-template-columns: 1fr; }
+    .hub-body{ grid-template-columns: 1fr; min-height: 680px; }
+    .hub-list{ border-right:0; border-bottom: 1px solid var(--line); }
+    .hub-info{ border-left:0; border-top: 1px solid var(--line); }
+  }
+</style>
+
+<!-- Breadcrumb Start -->
+<div class="breadcrumb-box">
+  <ul>
+    <li><a href="/home" title="HOME">HOME</a></li>
+    <li><a href="/support" title="Support">Support</a></li>
+  </ul>
+</div>
+<!-- Breadcrumb End -->
+
+<section class="page-support">
+  <div class="container support-wrap">
+
+    <div class="support-topbar">
+      <div>
+        <h2>Support Center</h2>
+        <p>Open a ticket, then continue the conversation in a clean, full-size chat below.</p>
+      </div>
+      <div class="pill">
+        <i class="ti ti-ticket"></i>
+        <span><%= (tickets || []).length %> Tickets</span>
+      </div>
+    </div>
+
+    <!-- TOP: Form + 3 cards -->
+    <div class="support-grid-top">
+      <div class="cardx form-card">
+        <h3>Open a new support ticket</h3>
+        <p class="desc">Select a case or firm so we can route your request quickly.</p>
+
+        <form method="post" action="/support" class="row g-3">
+          <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+
+          <div class="col-12">
+            <div class="lbl">Case</div>
+            <select class="inp" name="case_id" id="case_id" data-ignore-kilvish="Yes">
+              <option value="">Not related to a case</option>
+              <% (cases || []).forEach((kase) => { %>
+                <option value="<%= kase.case_id %>" data-firm-id="<%= kase.firm_id %>">
+                  <%= kase.title %><%= kase.case_number ? ` (${kase.case_number})` : '' %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <div class="lbl">Firm</div>
+            <select class="inp" name="firm_id" id="firm_id">
+              <option value="">Not related to a firm (Direct to Admin)</option>
+              <% (firms || []).forEach((firm) => { %>
+                <option value="<%= firm.firm_id %>" <%= activeFirmId && Number(activeFirmId) === Number(firm.firm_id) ? 'selected' : '' %>>
+                  <%= firm.firm_name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <div class="lbl">Subject</div>
+            <input type="text" class="inp" name="subject" id="subject" data-ignore-kilvish="Yes"
+                   placeholder="Case or request summary" required>
+          </div>
+
+          <div class="col-12">
+            <div class="lbl">Contact Email</div>
+            <input type="email" class="inp" value="<%= clientAccount?.email || '' %>" readonly>
+          </div>
+
+          <div class="col-12">
+            <div class="lbl">Message</div>
+            <textarea class="inp" name="message" id="message" rows="6" data-ignore-kilvish="Yes"
+                      placeholder="Describe your issue, relevant dates, and any deadlines..." required></textarea>
+          </div>
+
+          <div class="col-12 d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary btnx">Submit Ticket</button>
+          </div>
+
+          <div class="col-12">
+            <p class="form-note">If you select a case, the firm will lock automatically. Choose no firm to route directly to admin.</p>
+          </div>
+        </form>
+      </div>
+
+      <div class="side-stack">
+        <div class="cardx side-card">
+          <h5>Contact Support</h5>
+          <p class="mut">Mon–Fri, 9:00 AM – 6:00 PM</p>
+
+          <div class="contact-row">
+            <div class="iconbox"><i class="ti ti-phone"></i></div>
+            <div><span>Phone</span><strong>+1 876 123 4567</strong></div>
+          </div>
+          <div class="contact-row">
+            <div class="iconbox"><i class="ti ti-mail"></i></div>
+            <div><span>Email</span><strong>support@elaw.com</strong></div>
+          </div>
+          <div class="contact-row">
+            <div class="iconbox"><i class="ti ti-map-pin"></i></div>
+            <div><span>Office</span><strong>Kingston, Jamaica</strong></div>
+          </div>
+        </div>
+
+        <div class="cardx side-card">
+          <h5>Help us resolve faster</h5>
+          <ul class="checklist">
+            <li><i class="ti ti-check"></i>Include your case ID if available.</li>
+            <li><i class="ti ti-check"></i>Share relevant dates / deadlines.</li>
+            <li><i class="ti ti-check"></i>Tell us the outcome you want.</li>
+          </ul>
+        </div>
+
+        <div class="cardx side-card cta">
+          <h5>Need immediate guidance?</h5>
+          <p class="mut">For time-sensitive matters, schedule a call with a legal advisor.</p>
+          <a href="/contact">Talk to an Advisor</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 360: Ticket Hub -->
+    <div class="cardx hub">
+      <div class="hub-head">
+        <div>
+          <h4>Your Ticket Hub</h4>
+          <p class="sub">A proper helpdesk view: tickets, chat, and details.</p>
+        </div>
+
+        <% if (activeTicket) { %>
+          <div class="d-flex gap-2 flex-wrap align-items-center">
+            <span class="status status-<%= activeTicket.status %>"><%= activeTicket.status_label %></span>
+            <span class="chip gray"><%= activeTicket.priority_label %> Priority</span>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="hub-body">
+        <!-- Left: Tickets -->
+        <div class="hub-list">
+          <div class="list-top">
+            <div class="ttl">Tickets</div>
+            <div class="count"><%= (tickets || []).length %></div>
+          </div>
+
+          <div class="list-search">
+            <div class="w">
+              <i class="ti ti-search"></i>
+              <input id="ticketSearch" type="text" placeholder="Search by subject or number...">
+            </div>
+          </div>
+
+          <div class="list-items" id="ticketItems">
+            <% if (tickets && tickets.length) { %>
+              <% tickets.forEach((ticket) => { %>
+                <a class="ticket-row <%= activeTicket && activeTicket.ticket_id === ticket.ticket_id ? 'active' : '' %>"
+                   href="/support?ticket_id=<%= ticket.ticket_id %>"
+                   data-search="<%= ((ticket.subject||'') + ' ' + (ticket.ticket_number||'') + ' ' + (ticket.case_label||'') + ' ' + (ticket.firm_label||'')).toLowerCase() %>">
+                  <div class="top">
+                    <div class="subj"><%= ticket.subject || 'Untitled Ticket' %></div>
+                    <div class="time" data-utc="<%= ticket.last_activity_iso %>"></div>
+                  </div>
+                  <div class="meta">
+                    <span class="tknum"><%= ticket.ticket_number %></span>
+                    <span class="mini"><%= ticket.case_label || '' %></span>
+                  </div>
+                </a>
+              <% }) %>
+            <% } else { %>
+              <div class="emptybox">No tickets yet. Create one above.</div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Center: Chat -->
+        <div class="hub-chat">
+          <% if (activeTicket) { %>
+            <div class="chat-top">
+              <div>
+                <h5><%= activeTicket.subject %></h5>
+                <div class="meta">
+                  <span class="chip"><%= activeTicket.ticket_number %></span>
+                  <span class="sep">|</span>
+                  <span><%= activeTicket.case_label %></span>
+                  <span class="sep">|</span>
+                  <span><%= activeTicket.firm_label %></span>
+                </div>
+              </div>
+              <div class="d-flex gap-2 flex-wrap align-items-center justify-content-end">
+                <span class="status status-<%= activeTicket.status %>"><%= activeTicket.status_label %></span>
+                <span class="chip gray"><%= activeTicket.priority_label %> Priority</span>
+              </div>
+            </div>
+
+            <div class="chat-scroll" id="chatScroll">
+              <% if (messages && messages.length) { %>
+                <% messages.forEach((msg) => { %>
+                  <div class="msg <%= msg.is_mine ? 'mine' : '' %>">
+                    <div class="av"><%= (msg.sender_label || 'S').trim().charAt(0).toUpperCase() %></div>
+                    <div class="bubble-wrap">
+                      <div class="mmeta">
+                        <span class="who"><%= msg.sender_label %></span>
+                        <span class="sep">•</span>
+                        <span data-utc="<%= msg.created_iso %>"></span>
+                      </div>
+                      <div class="bubble">
+                        <p><%= msg.body %></p>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="emptybox" style="margin:0;">
+                  No messages yet. Our team will respond shortly.
+                </div>
+              <% } %>
+            </div>
+
+            <div class="reply">
+              <form method="post" action="/support/reply">
+                <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+                <input type="hidden" name="ticket_id" value="<%= activeTicket.ticket_id %>">
+
+                <div class="row">
+                  <textarea class="inp" id="reply_message" name="message"
+                            placeholder="Write your update or question..." required></textarea>
+                  <button type="submit" class="btn btn-primary btnx">Send</button>
+                </div>
+
+                <p class="tiny">Times are shown in your local time zone.</p>
+              </form>
+            </div>
+          <% } else { %>
+            <div class="chat-top">
+              <div>
+                <h5>Select a ticket</h5>
+                <div class="meta">Choose one from the left to open the conversation.</div>
+              </div>
+            </div>
+            <div class="chat-scroll">
+              <div class="emptybox" style="max-width:540px;margin:0 auto;">
+                No ticket selected. Click any ticket to view messages.
+              </div>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Right: Details -->
+        <div class="hub-info">
+          <div class="info-top">
+            <div class="ttl">Details</div>
+            <% if (activeTicket?.route_admin) { %>
+              <div class="badge-route">Admin Route</div>
+            <% } %>
+          </div>
+
+          <div class="info-body">
+            <% if (activeTicket) { %>
+              <div class="ibox">
+                <div class="k">Ticket Number</div>
+                <div class="v"><%= activeTicket.ticket_number %></div>
+              </div>
+
+              <div class="ibox">
+                <div class="k">Status</div>
+                <div class="v">
+                  <span class="status status-<%= activeTicket.status %>"><%= activeTicket.status_label %></span>
+                </div>
+              </div>
+
+              <div class="ibox">
+                <div class="k">Priority</div>
+                <div class="v"><%= activeTicket.priority_label %></div>
+              </div>
+
+              <div class="ibox">
+                <div class="k">Case</div>
+                <div class="v"><%= activeTicket.case_label %></div>
+              </div>
+
+              <div class="ibox">
+                <div class="k">Firm</div>
+                <div class="v"><%= activeTicket.firm_label %></div>
+              </div>
+
+              <div class="ibox">
+                <div class="k">Last Activity</div>
+                <div class="v" data-utc="<%= activeTicket.last_activity_iso %>"></div>
+              </div>
+            <% } else { %>
+              <div class="emptybox">Select a ticket to view details here.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(() => {
+  // Case -> Firm lock
+  const caseSelect = document.getElementById("case_id");
+  const firmSelect = document.getElementById("firm_id");
+
+  const syncFirmLock = () => {
+    if (!caseSelect || !firmSelect) return;
+    const selected = caseSelect.options[caseSelect.selectedIndex];
+    const firmId = selected?.dataset?.firmId || "";
+    if (caseSelect.value && firmId) {
+      firmSelect.value = firmId;
+      firmSelect.disabled = true;
+    } else {
+      firmSelect.disabled = false;
+    }
+  };
+
+  if (caseSelect && firmSelect) {
+    caseSelect.addEventListener("change", syncFirmLock);
+    syncFirmLock();
+  }
+
+  // UTC formatter
+  const formatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+  document.querySelectorAll("[data-utc]").forEach((el) => {
+    const v = el.getAttribute("data-utc");
+    if (!v) return;
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) return;
+    el.textContent = formatter.format(d);
+    el.title = d.toLocaleString();
+  });
+
+  // Ticket search
+  const search = document.getElementById("ticketSearch");
+  const itemsWrap = document.getElementById("ticketItems");
+  if (search && itemsWrap) {
+    search.addEventListener("input", () => {
+      const q = (search.value || "").trim().toLowerCase();
+      itemsWrap.querySelectorAll(".ticket-row").forEach((a) => {
+        const hay = a.getAttribute("data-search") || "";
+        a.style.display = (!q || hay.includes(q)) ? "" : "none";
+      });
+    });
+  }
+
+  // Auto-scroll chat bottom
+  const chat = document.getElementById("chatScroll");
+  if (chat) chat.scrollTop = chat.scrollHeight;
+})();
+</script>
+
+<!-- Footer Start -->
+<%- include('clientfooter.ejs'); %>
+<!-- Footer End -->

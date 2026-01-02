@@ -1,0 +1,758 @@
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar scroll-->
+<%- include('firmsidebar.ejs'); %>
+<!-- End Sidebar scroll-->
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header">
+      <h3 class="fw-bold mb-3">Profile</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="/firmstaff">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="/firmstaff/profile">Firm Profile</a>
+        </li>
+      </ul>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <!--   ------ Start  Kil profile pic  -------   -->
+
+        <!-- Profile Image -->
+        <div id="successMessage" class="alert alert-success d-none">
+          Profile picture updated successfully!
+        </div>
+
+        <div id="errorMessage" class="alert alert-danger d-none">
+          Error updating profile picture. Please try again.
+        </div>
+        <div id="errmsg1"></div>
+
+        <div class="card card-primary card-outline">
+          <div class="card-body box-profile text-center">
+            <div class="profile-pic_kil mt-3">
+              <label class="-label" for="file">
+                <span class="glyphicon glyphicon-camera"></span>
+              </label>
+              <input id="file" type="file" data-kilvish-file="image" />
+
+              <img src="/secure/file_stream?s3key=<%= encodeURIComponent(loggeduser.avatar) %>" id="output" alt="Change" width="200" />
+            </div>
+
+            <h3 class="profile-username text-center">
+              <span id="profileName"><%= loggeduser.first_name %> <%= loggeduser.last_name %></span>
+            </h3>
+            <p class="text-center">Adminstration</p>
+          </div>
+        </div>
+        <!-- Profile Image -->
+
+        <p style="color: gray; text-align: left;">Choose a nice & professional picture to get more interviews! </p>
+        &nbsp;
+        <!--   ------ END Kil profile pic  -------   -->
+      </div>
+
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+              <li class="nav-item">
+                <a class="nav-link active" href="#edit-profile" data-bs-toggle="tab">Profile Details</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#change-password" data-bs-toggle="tab">Change Password</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#multifact" data-bs-toggle="tab">MFA (Multi Factor Authentication)</a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content">
+              <!-- Edit Profile Tab -->
+              <div class="tab-pane active" id="edit-profile">
+                <form method="post" id="kilform">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="first_name">First Name</label>
+                      <div class="form-group">
+                        <input id="first_name" type="text" class="form-control" placeholder="First Name" name="first_name"
+                          value="<%= loggeduser.first_name %>" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="last_name">Last Name</label>
+                      <div class="form-group">
+                        <input id="last_name" type="text" class="form-control" placeholder="Last Name" name="last_name"
+                          value="<%= loggeduser.last_name %>" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="email">Email</label>
+                      <div class="form-group">
+                        <input id="email" type="email" class="form-control" placeholder="Email" name="email"
+                          value="<%= loggeduser.email %>" required>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="full_contact">Phone</label>
+                      <div class="form-group kiltel-phone-wrap">
+                        <button type="button" class="kiltel-country-trigger"></button>
+                        <input type="tel"
+                               class="form-control"
+                               value="<%= (loggeduser.country_code || '') + (loggeduser.contact || '') %>"
+                               data-kilvish-preferred="JM"
+                               data-kilvish-tel
+                               id="kilvishcontact"
+                               name="full_contact"
+                               placeholder="Enter mobile number"
+                               data-kiltel-init="JM"
+                               data-ignore-kilvish="yes"
+                               data-kiltel-validation="yes"
+                               required>
+
+                        <input type="hidden" id="country_code" name="country_code" value="<%= loggeduser.country_code || '' %>">
+                        <input type="hidden" id="contact" name="contact" value="<%= loggeduser.contact || '' %>">
+                      </div>
+                      <div id="kiltel-error" style="color:red; font-size:0.93em; margin-top:5px;"></div>
+                    </div>
+                  </div>
+                  <div class="text-end mt-3">
+                    <button id="profileSaveBtn" type="submit" class="btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Change Password Tab -->
+              <div class="tab-pane" id="change-password">
+                <form method="post" id="kilform2">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                  <div class="mb-3">
+                    <label class="form-label fw-medium">Current Password</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+                      <input type="password" data-ignore-kilvish="Yes" id="opass" data-kileye-color="#001489" class="form-control" placeholder="Old password" required>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-medium">New Password</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-lock text-primary"></i></span>
+                      <input type="password" id="npass" data-kileye-color="#001489" class="form-control" placeholder="New password" required>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-medium">Confirm New Password</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="ti ti-lock-check text-primary"></i></span>
+                      <input data-ignore-kilvish="Yes" data-kileye-color="#001489" type="password" id="cpass" class="form-control" placeholder="Confirm new password" required>
+                    </div>
+                  </div>
+
+                  <div class="text-end mt-3">
+                    <button id="passwordSaveBtn" type="submit" class="btn btn-primary">Update Password</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- MFA Tab -->
+              <div class="tab-pane" id="multifact">
+                <!-- ----------- START KIL-STEP 2-FACTOR AUTHENTICATION ---------------- -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="status-container" id="mfaStatus"
+                         data-user-id="<%= loggeduser.staff_id %>"
+                         data-user-status="<%= loggeduser.two_step_verification %>">
+
+                      <% if (loggeduser.two_step_verification==='On' ) { %>
+                        <span id="mfaBadge" class="badge badge-soft-info">Activated</span>
+                      <% } else if (loggeduser.two_step_verification==='Pending' ) { %>
+                        <span id="mfaBadge" class="badge badge-soft-warning">Pending</span>
+                      <% } else { %>
+                        <span id="mfaBadge" class="badge badge-soft-danger">De-activated</span>
+                      <% } %>
+
+                      <p id="2fa_msg"
+                         style="color: <%= loggeduser.two_step_verification === 'On' ? 'rgb(230, 20, 20)' : 'green' %>">
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6 text-end">
+                    <button id="mfaToggleBtn"
+                            type="button"
+                            class="btn btn-link p-0"
+                            data-next="<%= loggeduser.two_step_verification==='On' ? 'Off' : 'On' %>"
+                            data-username="<%= loggeduser.first_name %>">
+                      <% if (loggeduser.two_step_verification==='On' ) { %>
+                        <span id="mfaToggleText" class="text-soft-danger">Turn Off</span>
+                      <% } else { %>
+                        <span id="mfaToggleText" class="text-soft-info">Turn On</span>
+                      <% } %>
+                    </button>
+                  </div>
+                </div>
+                <!-- ----------- END KIL-STEP 2-FACTOR AUTHENTICATION ---------------- -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kiltel Phone Input -->
+<input type="tel" id="hidden-iti-input" style="display:none;">
+<!-- Kiltel Phone Input -->
+
+<!-- Footer Start -->
+<%- include('firmfooter.ejs'); %>
+<!-- Footer End -->
+
+<!-- 🔐 RSA PUBLIC KEY + helper (same pattern as login/signup) -->
+<script>
+  const RSA_PUBLIC_KEY = `<%- (RSA_PUBLIC_KEY || '').replace(/\r?\n/g, '\\n') %>`;
+
+  function pemToArrayBuffer(pem) {
+    if (!pem) return null;
+    const b64 = pem
+      .replace(/-----BEGIN [^-]+-----/g, '')
+      .replace(/-----END [^-]+-----/g, '')
+      .replace(/\s+/g, '');
+    const raw = atob(b64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+    return buf.buffer;
+  }
+
+  let rsaPubKeyPromise = null;
+
+  async function getRsaPubKey() {
+    if (!window.crypto || !crypto.subtle) {
+      throw new Error('WebCrypto not available');
+    }
+    if (!rsaPubKeyPromise) {
+      rsaPubKeyPromise = (async () => {
+        const keyData = pemToArrayBuffer(RSA_PUBLIC_KEY);
+        if (!keyData) throw new Error('Missing RSA_PUBLIC_KEY');
+        return await crypto.subtle.importKey(
+          'spki',
+          keyData,
+          { name: 'RSA-OAEP', hash: 'SHA-256' },
+          false,
+          ['encrypt']
+        );
+      })().catch(err => {
+        console.error('RSA import failed:', err);
+        rsaPubKeyPromise = null;
+        throw err;
+      });
+    }
+    return rsaPubKeyPromise;
+  }
+
+  // Encrypt text -> base64 RSA-OAEP ciphertext
+  async function rsaEncrypt(plain) {
+    if (!plain) return '';
+    try {
+      const key = await getRsaPubKey();
+      const data = new TextEncoder().encode(String(plain));
+      const enc = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, data);
+      const bytes = new Uint8Array(enc);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    } catch (e) {
+      console.error('RSA encrypt error:', e);
+      return '';
+    }
+  }
+</script>
+
+<script>
+  (function(){
+    const fx = window.axiosElaw || window.axios || null;
+    const flashMsg = <%- JSON.stringify(output || '') %>;
+
+    const toast = (type, msg) => {
+      const t = window.kilToast;
+      if (!msg) return;
+      if (t?.[type]) return t[type](msg);
+      if (type === 'danger' && t?.danger) return t.danger(msg);
+      if (type === 'warning' && t?.warning) return t.warning(msg);
+      if (type === 'success' && t?.success) return t.success(msg);
+      return console.log(type, msg);
+    };
+
+    function setBusy(btn, busy, labelWhenBusy, labelWhenIdle){
+      if (!btn) return;
+      btn.disabled = !!busy;
+      btn.innerHTML = busy
+        ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${labelWhenBusy || 'Working...'}`
+        : (labelWhenIdle || btn.textContent);
+    }
+
+    async function encryptOrThrow(value, label){
+      const enc = await rsaEncrypt(String(value || '').trim());
+      if (!enc) throw new Error(`Encryption failed (${label})`);
+      return enc;
+    }
+
+    if (flashMsg) toast('success', flashMsg);
+
+    // ===================== Profile update (RSA + AJAX) =====================
+    const profileForm = document.getElementById('kilform');
+    const profileSaveBtn = document.getElementById('profileSaveBtn');
+
+    profileForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!fx?.post) { toast('danger', 'HTTP client not available'); return; }
+
+      const first_name = (document.getElementById('first_name')?.value || '').trim();
+      const last_name  = (document.getElementById('last_name')?.value || '').trim();
+      const email      = (document.getElementById('email')?.value || '').trim();
+      const country_code = (document.getElementById('country_code')?.value || '').trim();
+      const contact      = (document.getElementById('contact')?.value || '').trim();
+
+      if (!first_name || !last_name || !email) {
+        toast('warning', 'Please fill first name, last name and email.');
+        return;
+      }
+
+      try {
+        setBusy(profileSaveBtn, true, 'Saving...', 'Save Changes');
+
+        const payload = {
+          first_name: await encryptOrThrow(first_name, 'first_name'),
+          last_name:  await encryptOrThrow(last_name, 'last_name'),
+          email:      await encryptOrThrow(email, 'email'),
+        };
+        if (country_code) payload.country_code = await encryptOrThrow(country_code, 'country_code');
+        if (contact)      payload.contact      = await encryptOrThrow(contact, 'contact');
+
+        const { data } = await fx.post('/firmstaff/profile', payload, { headers: { 'Accept': 'application/json' } });
+        if (!data?.success) throw new Error(data?.message || 'Failed to update profile.');
+
+        const u = data?.user || {};
+        const name = `${u.first_name || first_name} ${u.last_name || last_name}`.trim();
+        const nameEl = document.getElementById('profileName');
+        if (nameEl) nameEl.textContent = name;
+
+        const phoneEl = document.getElementById('kilvishcontact');
+        if (phoneEl && u.full_contact) phoneEl.value = u.full_contact;
+
+        toast('success', data?.message || 'Profile updated.');
+      } catch (err) {
+        console.error(err);
+        toast('danger', err?.response?.data?.message || err?.message || 'Failed to update profile.');
+      } finally {
+        setBusy(profileSaveBtn, false, 'Saving...', 'Save Changes');
+      }
+    });
+
+    // ===================== Change password (RSA + AJAX) =====================
+    const passForm = document.getElementById('kilform2');
+    const passBtn  = document.getElementById('passwordSaveBtn');
+
+    passForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!fx?.post) { toast('danger', 'HTTP client not available'); return; }
+
+      const opass = (document.getElementById('opass')?.value || '').trim();
+      const npass = (document.getElementById('npass')?.value || '').trim();
+      const cpass = (document.getElementById('cpass')?.value || '').trim();
+
+      if (!opass || !npass || !cpass) { toast('warning', 'Please fill all password fields.'); return; }
+      if (npass !== cpass) { toast('warning', 'New password and confirm password do not match.'); return; }
+
+      try {
+        setBusy(passBtn, true, 'Updating...', 'Update Password');
+
+        const payload = {
+          opass: await encryptOrThrow(opass, 'opass'),
+          npass: await encryptOrThrow(npass, 'npass'),
+          cpass: await encryptOrThrow(cpass, 'cpass'),
+        };
+
+        const { data } = await fx.post('/firmstaff/changepass', payload, { headers: { 'Accept': 'application/json' } });
+        if (!data?.success) throw new Error(data?.message || 'Failed to update password.');
+
+        document.getElementById('opass').value = '';
+        document.getElementById('npass').value = '';
+        document.getElementById('cpass').value = '';
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Password updated',
+          text: data?.message || 'Please login again to continue.',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          timer: 1000,
+          timerProgressBar: true
+        });
+        window.location.assign(data?.redirect || '/firmstaff/login');
+      } catch (err) {
+        console.error(err);
+        toast('danger', err?.response?.data?.message || err?.message || 'Failed to update password.');
+      } finally {
+        setBusy(passBtn, false, 'Updating...', 'Update Password');
+      }
+    });
+
+    // ===================== Avatar upload (crop + AJAX) =====================
+    const fileInput = document.getElementById('file');
+    const avatarImg = document.getElementById('output');
+    const okBox = document.getElementById('successMessage');
+    const errBox = document.getElementById('errorMessage');
+    const errTxt = document.getElementById('errmsg1');
+
+    function showAvatarOk(msg){
+      if (okBox) okBox.classList.remove('d-none');
+      if (errBox) errBox.classList.add('d-none');
+      toast('success', msg || 'Profile picture updated.');
+    }
+    function showAvatarErr(msg){
+      if (errBox) errBox.classList.remove('d-none');
+      if (okBox) okBox.classList.add('d-none');
+      toast('danger', msg || 'Error updating profile picture.');
+    }
+
+    fileInput?.addEventListener('change', async (event) => {
+      const inputField = event.target;
+      const file1 = inputField.files?.[0] || null;
+
+      const validImageTypes = [
+        'image/jpeg','image/png','image/gif','image/bmp',
+        'image/tiff','image/webp','image/svg+xml'
+      ];
+
+      if (!file1 || !validImageTypes.includes(file1.type)) {
+        if (errTxt) {
+          errTxt.textContent = 'Please select a valid image file (JPEG, PNG, etc.)!';
+          errTxt.style.color = 'red';
+        }
+        inputField.value = '';
+        return;
+      }
+
+      if (errTxt) errTxt.textContent = '';
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        let cropper;
+
+        Swal.fire({
+          title: 'Crop Your Image',
+          html: '<div style="width:100%; text-align:center;"><img id="image-to-crop" style="max-width:100%;"></div>',
+          didOpen: () => {
+            const img = document.getElementById('image-to-crop');
+            img.src = e.target.result;
+            cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Crop & Upload',
+          preConfirm: () => new Promise((resolve, reject) => {
+            if (!cropper) return reject(new Error('Cropper not ready'));
+            cropper.getCroppedCanvas().toBlob((blob) => resolve(blob), 'image/png');
+          }),
+        }).then(async (result) => {
+          if (!result.isConfirmed || !result.value) return;
+          if (!fx?.post) { toast('danger', 'HTTP client not available'); return; }
+
+          const blob = result.value;
+          const croppedFile = new File([blob], 'avatar.png', { type: 'image/png' });
+          if (avatarImg) avatarImg.src = URL.createObjectURL(croppedFile);
+
+          try {
+            const fd = new FormData();
+            fd.append('image', croppedFile);
+            const { data } = await fx.post('/firmstaff/update_admin_pic', fd, { headers: { 'Accept': 'application/json' } });
+            if (data?.msg !== 'success') throw new Error(data?.msg || 'Upload failed');
+
+            if (avatarImg && data?.avatar) {
+              avatarImg.src = `/secure/file_stream?s3key=${encodeURIComponent(data.avatar)}&t=${Date.now()}`;
+            }
+
+            showAvatarOk('Profile picture updated successfully!');
+          } catch (err) {
+            console.error(err);
+            showAvatarErr(err?.response?.data?.msg || err?.message || 'Upload failed');
+          }
+        }).catch((err) => console.error(err));
+      };
+
+      reader.readAsDataURL(file1);
+    });
+
+    // ===================== MFA toggle (RSA + AJAX) =====================
+    const mfaBtn = document.getElementById('mfaToggleBtn');
+    const mfaBadge = document.getElementById('mfaBadge');
+    const mfaToggleText = document.getElementById('mfaToggleText');
+    const mfaStatus = document.getElementById('mfaStatus');
+
+    function paintMfa(status){
+      const s = (status === 'On') ? 'On' : 'Off';
+      if (mfaStatus) mfaStatus.dataset.userStatus = s;
+
+      if (mfaBadge) {
+        mfaBadge.className = (s === 'On') ? 'badge badge-soft-info' : 'badge badge-soft-danger';
+        mfaBadge.textContent = (s === 'On') ? 'Activated' : 'De-activated';
+      }
+
+      if (mfaBtn) mfaBtn.dataset.next = (s === 'On') ? 'Off' : 'On';
+      if (mfaToggleText) {
+        mfaToggleText.className = (s === 'On') ? 'text-soft-danger' : 'text-soft-info';
+        mfaToggleText.textContent = (s === 'On') ? 'Turn Off' : 'Turn On';
+      }
+    }
+
+    mfaBtn?.addEventListener('click', async () => {
+      if (!fx?.post) { toast('danger', 'HTTP client not available'); return; }
+
+      const next = mfaBtn.dataset.next || 'On';
+      const username = mfaBtn.dataset.username || '';
+
+      const { value: pwd } = await Swal.fire({
+        title: `Confirm it's you`,
+        html: `
+          <p class="mb-2">Enter your <b>current password</b> to turn <b>${next}</b> MFA for <b>${username}</b>.</p>
+          <input id="mfaConfirmPwd" type="password" class="swal2-input" placeholder="Current password" autocomplete="current-password">
+        `,
+        input: null,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        preConfirm: () => {
+          const v = document.getElementById('mfaConfirmPwd').value || '';
+          if (!v.trim()) {
+            Swal.showValidationMessage('Please enter your current password');
+            return false;
+          }
+          return v;
+        }
+      });
+
+      if (!pwd) return;
+
+      try {
+        const encPwd = await encryptOrThrow(pwd, 'confirm_password');
+        const { data } = await fx.post('/firmstaff/on_off_multifactor', { status: next, confirm_password: encPwd }, { headers: { 'Accept': 'application/json' } });
+        if (!data?.success) throw new Error(data?.msg || 'Failed to update MFA');
+
+        paintMfa(data?.status || next);
+        toast('success', 'MFA updated');
+      } catch (err) {
+        console.error(err);
+        toast('danger', err?.response?.data?.msg || err?.message || 'Failed to update MFA');
+      }
+    });
+
+    paintMfa(mfaStatus?.dataset?.userStatus || 'Off');
+  })();
+</script>
+
+<script>
+if(false){
+  document.addEventListener("DOMContentLoaded", function () {});
+
+  // ============   Encrypt password (change password tab) with RSA before form submission
+  const cpForm = document.getElementById('kilform2');
+  if (cpForm) {
+    cpForm.addEventListener('submit', async function (event) {
+      event.preventDefault(); // Prevent immediate form submission
+
+      const opass = document.getElementById('opass').value || '';
+      const npass = document.getElementById('npass').value || '';
+      const cpass = document.getElementById('cpass').value || '';
+
+      if (!opass || !npass || !cpass) {
+        window.kilToast?.warning?.('Please fill all password fields.');
+        return;
+      }
+      if (npass !== cpass) {
+        window.kilToast?.warning?.('New password and confirm password do not match.');
+        return;
+      }
+
+      try {
+        const encO = await rsaEncrypt(opass);
+        const encN = await rsaEncrypt(npass);
+        const encC = await rsaEncrypt(cpass);
+
+        if (!encO || !encN || !encC) {
+          throw new Error('Encryption failed');
+        }
+
+        document.getElementById('encryptedOpass').value = encO;
+        document.getElementById('encryptedNpass').value = encN;
+        document.getElementById('encryptedCpass').value = encC;
+
+        // (Optional) clear plain fields before submit
+        document.getElementById('opass').value = '';
+        document.getElementById('npass').value = '';
+        document.getElementById('cpass').value = '';
+
+        this.submit();
+      } catch (e) {
+        console.error('Change password RSA error:', e);
+        window.kilToast?.danger?.('Unable to encrypt password. Please refresh and try again.');
+      }
+    });
+  }
+
+  //====================== Profile Picture Updation with cropper ========================================
+  document.getElementById('file').addEventListener('change', function (event) {
+    loadFile(event)
+  });
+
+  var loadFile = function (event) {
+    const inputField = event.target;
+    const errorMessageDiv = document.getElementById('errmsg1');
+    const file1 = inputField.files[0];
+
+    const validImageTypes = [
+      'image/jpeg','image/png','image/gif','image/bmp',
+      'image/tiff','image/webp','image/svg+xml'
+    ];
+
+    if (!file1 || !validImageTypes.includes(file1.type)) {
+      errorMessageDiv.textContent = 'Please select a valid image file (JPEG, PNG, etc.)!';
+      errorMessageDiv.style.color = 'red';
+      inputField.value = '';
+      return;
+    }
+
+    errorMessageDiv.textContent = '';
+    const file = inputField.files[0];
+    if (!file) {
+      console.error("No file selected.");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      let cropper;
+
+      Swal.fire({
+        title: 'Crop Your Image',
+        html: '<div style="width:100%; text-align:center;"><img id="image-to-crop" style="max-width:100%;"></div>',
+        didOpen: () => {
+          const img = document.getElementById('image-to-crop');
+          img.src = e.target.result;
+          cropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+          });
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Crop & Upload',
+        preConfirm: () => {
+          return new Promise((resolve, reject) => {
+            if (!cropper) {
+              reject("Cropper instance is undefined");
+            }
+            const canvas = cropper.getCroppedCanvas();
+            canvas.toBlob((blob) => {
+              resolve(blob);
+            });
+          });
+        },
+      }).then((result) => {
+        if (result.isConfirmed && result.value) {
+          const croppedImageBlob = result.value;
+          const croppedFile = new File([croppedImageBlob], "cropped-image.png", { type: "image/png" });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(croppedFile);
+          inputField.files = dataTransfer.files;
+
+          const image = document.getElementById("output");
+          image.src = URL.createObjectURL(croppedFile);
+
+          var formData = new FormData();
+          formData.append("image", croppedFile);
+
+          // legacy ajax removed (use axiosElaw in active script below)
+        }
+      }).catch((err) => {
+        console.error(err);
+      });
+    };
+
+    if (file) {
+      reader.readAsDataURL(file);
+    } else {
+      console.error("File is not valid.");
+    }
+  };
+
+  //====================== End Profile Picture Updation with cropper =====================================
+
+  // Older on_off_multifactor_working kept for reference (no encryption)
+  function on_off_multifactor_working(newStatus, username) {
+    event.preventDefault();
+    var action = (newStatus == 'Off') ? 'Deactivated' : 'Activated';
+
+    const pmsgElement = document.getElementById(`2fa_msg`);
+
+    // legacy ajax removed (use axiosElaw in active script below)
+  }
+}
+</script>
+
+<script>
+if(false){
+  // 🔐 RSA-based MFA on/off (step-up re-auth with current password)
+  async function on_off_multifactor(newStatus, username){
+    const { value: pwd } = await Swal.fire({
+      title: `Confirm it's you`,
+      html: `
+        <p class="mb-2">Enter your <b>current password</b> to turn <b>${newStatus}</b> MFA for <b>${username}</b>.</p>
+        <input id="mfaConfirmPwd" type="password" class="swal2-input" placeholder="Current password" autocomplete="current-password">
+      `,
+      input: null,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Confirm',
+      preConfirm: () => {
+        const v = document.getElementById('mfaConfirmPwd').value || '';
+        if (!v.trim()) {
+          Swal.showValidationMessage('Please enter your current password');
+          return false;
+        }
+        return v;
+      }
+    });
+
+    if (!pwd) return; // cancelled
+
+    let encPwd = '';
+    try {
+      encPwd = await rsaEncrypt(pwd.trim());
+      if (!encPwd) throw new Error('Encrypt failed');
+    } catch (e) {
+      console.error('RSA MFA encrypt error:', e);
+      window.kweToast?.('danger', 'Encryption failed. Please refresh and try again.');
+      return;
+    }
+
+    // legacy ajax removed (use axiosElaw in active script below)
+  }
+}
+</script>

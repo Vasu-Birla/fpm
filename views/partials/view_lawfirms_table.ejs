@@ -1,0 +1,180 @@
+<!-- Start Table -->
+<div class="table-responsive">
+  <table id="lawfirmTable" class="table table-striped table-bordered table-nowrap">
+    <thead>
+      <tr>
+        <th>Sr. No.</th>
+        <th>Firm</th>
+        <th>Reg. No.</th>
+        <th>Email</th>
+        <th>Phone</th> 
+         <th>Practice Area</th>     
+        <th>Addresses</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% (lawfirms || []).forEach((lf, index) => { %>
+        <tr>
+          <td><%= index + 1 %></td>
+
+          <!-- Firm name + (slug) -->
+          <td>
+            <h6 class="mb-0 fw-semibold"><%= lf.firm_name || 'N/A' %></h6>
+            <div class="text-muted small"><%= lf.slug || '' %></div>
+          </td>
+
+          <td><%= lf.registration_number || 'N/A' %></td>
+
+          <!-- Mask email -->
+          <td><%= maskValue(lf.email) || 'N/A' %></td>
+
+          <!-- Country code + masked phone -->
+          <td><%= lf.country_code || '' %><%= maskValue(lf.contact) || '' %></td>
+
+
+          <td>
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm view-pas-btn"
+    data-firm-id="<%= lf.firm_id %>"
+    data-firm-name="<%- lf.firm_name %>"
+  >
+    <i class="ti ti-folders me-1"></i>
+    Practice Areas (<%= lf.practice_areas_count || 0 %>)
+  </button>
+</td>
+
+
+        <td>
+  <button
+    type="button"
+    class="btn btn-outline-primary btn-sm view-locs-btn"
+    data-firm-id="<%= lf.firm_id %>"
+    data-firm-name="<%- lf.firm_name %>"
+  >
+    <i class="ti ti-map-pin me-1"></i>
+    Locations (<%= lf.locations_count %>)
+  </button>
+</td>
+
+          <td><%= formatDate(lf.createdAt) || 'N/A' %></td>
+
+          <!-- Status badge -->
+          <td class="status-container" data-firm-id="<%= lf.firm_id %>" data-firm-status="<%= lf.status %>">
+         
+                  <% if (lf.status === 'active') { %>
+                                           <span class="badge bg-success-subtle text-success">Activated</span>
+                                        <% } else if (lf.status == 'pending') { %>
+                                            <!-- Add an image for Pending status here -->
+                                            <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                        <% } else { %>
+                                          
+                                             <span class="badge bg-danger-subtle text-danger">De-activated</span>
+                                        <% } %>
+            </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="d-flex align-items-center gap-1">
+              <a href="javascript:void(0);"
+                 id="actions-<%= lf.firm_id %>"
+                 class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1"
+                 data-bs-toggle="dropdown"
+                 aria-expanded="false">
+                <i class="ti ti-dots-vertical"></i>
+              </a>
+
+              <ul class="dropdown-menu p-2" aria-labelledby="actions-<%= lf.firm_id %>">
+            
+
+
+                    <!-- Edit -->
+                                                <li>
+                                                    <a href="javascript:void(0);"
+                                                    class="dropdown-item lawfirm-edit"
+                                                    title="Edit LawFirm"
+                                                    data-firm-id="<%= lf.firm_id %>"
+                                                    data-firm-name="<%= lf.firm_name %>">
+                                                    <i class="ti ti-edit me-2"></i> Edit
+                                                    </a>
+                                                </li>
+
+
+                <!-- Activate / Suspend toggle -->
+                <% if (lf.status === 'active') { %>
+                  <li>
+                    <a href="javascript:void(0);"
+                       class="dropdown-item text-danger lawfirm-status-toggle"
+                       data-firm-id="<%= lf.firm_id %>"
+                       data-firm-name="<%= lf.firm_name %>"
+                       data-new-status="admin_disabled">
+                      <i class="ti ti-power me-2 text-danger"></i> Suspend
+                    </a>
+                  </li>
+                <% } else { %>
+                  <li>
+                    <a href="javascript:void(0);"
+                       class="dropdown-item text-success lawfirm-status-toggle"
+                       data-firm-id="<%= lf.firm_id %>"
+                       data-firm-name="<%= lf.firm_name %>"
+                       data-new-status="active">
+                      <i class="ti ti-power me-2 text-success"></i> Activate
+                    </a>
+                  </li>
+                <% } %>
+
+                <!-- Optional: soft delete -->
+                
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a href="javascript:void(0);"
+                     class="dropdown-item text-danger lawfirm-delete"
+                     data-firm-id="<%= lf.firm_id %>"
+                     data-firm-name="<%= lf.firm_name %>">
+                    <i class="ti ti-trash me-2"></i> Delete
+                  </a>
+                </li>
+               
+              </ul>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<!-- End Table -->
+
+<%
+/**
+ * Smart mask: show 2 chars at start and 2 at end if possible.
+ * If email -> keep domain visible.
+ */
+function maskValue(str, maskChar = '*') {
+  str = (str == null) ? '' : String(str);
+  const len = str.length;
+  if (!len) return '';
+  if (str.includes('@')) {
+    const [local, domain] = str.split('@');
+    if (!domain) return maskChar.repeat(len);
+    if (local.length <= 2) return maskChar.repeat(local.length) + '@' + domain;
+    return local.slice(0,1) + maskChar.repeat(Math.max(local.length - 2, 1)) + local.slice(-1) + '@' + domain;
+  }
+  if (len <= 4) return str[0] + maskChar.repeat(Math.max(len - 2, 0)) + (len > 1 ? str[len - 1] : '');
+  return str.slice(0,2) + maskChar.repeat(len - 4) + str.slice(-2);
+}
+function pad(n){ return n < 10 ? '0'+n : n; }
+function formatDate(d) {
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt)) return '';
+    // yyyy-mm-dd hh:mm (24h)
+    return dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate()) + ' '
+         + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+  } catch { return ''; }
+}
+%>

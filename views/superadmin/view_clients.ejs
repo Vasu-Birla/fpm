@@ -1,0 +1,427 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+                  <%
+/**
+ * Smart mask: show 2 chars at start and 2 at end if possible.
+ * If too short, just show the first and mask the rest, or just mask.
+ */
+function maskValue(str, maskChar = '*') {
+  str = (str == null) ? '' : String(str);
+  const len = str.length;
+  if (len === 0) return '';
+  if (len === 1) return maskChar;
+  if (len === 2) return str[0] + maskChar;
+  if (len <= 4) return str[0] + maskChar.repeat(len - 2) + str[len - 1];
+  // For emails, keep domain visible
+  if (str.includes('@')) {
+    const at = str.indexOf('@');
+    if (at <= 2) return maskChar.repeat(at) + str.substring(at);
+    return str[0] + maskChar.repeat(at - 2) + str[at - 1] + str.substring(at);
+  }
+  // For other strings (phones, etc): 2 start, 2 end
+  return str.slice(0, 2) + maskChar.repeat(len - 4) + str.slice(-2);
+}
+%>
+
+
+
+
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Start Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h4 class="fw-bold mb-0">Client List <span class="badge badge-soft-primary fw-medium border py-1 px-2 border-primary fs-13 ms-1">Total Client : 10</span></h4>
+            </div>
+            <div class="text-end d-flex">
+                <!-- <a href="/superadmin/add_client" class="btn btn-primary ms-2 fs-13 btn-md"><i class="ti ti-plus me-1"></i>Add Client</a> -->
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!-- Start Filter --
+        <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+            <div>
+                <div class="search-set">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="table-search d-flex align-items-center mb-0">
+                            <div class="search-input">
+                                <input type="text" class="form-control" placeholder="Search by Name, Email, TRN">
+                                <a href="javascript:void(0);" class="btn-searchset"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Filter Dropdown --
+            <div>
+                <select class="form-select">
+                    <option value="">Filter by Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Suspended">Suspended</option>
+                </select>
+            </div>
+        </div>
+        <!-- End Filter -->
+
+                 <% if (output.toLowerCase().includes('successfully')) { %>
+        <p id="message" class="success-text" style="color: green;"> <%= output %> </p>
+        <% } else { %>
+          <p id="message" class="error-text" style="color: red;"> <%= output %> </p>
+          <% } %>
+
+                  
+              <%- include('partials/view_clients_table', { clients }) %>
+
+
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+    <script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'elaw_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'elaw_client_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+
+    let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // ✅ Do the deletion logic here (e.g., AJAX, remove row, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // ❌ Cancelled
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+  });
+</script>
+
+  </body>
+</html>
+
+<script>
+
+
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.slideshow-trigger').forEach(el => {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        const imagesString = this.dataset.images;
+        openImageSlideshow(imagesString);
+      });
+    });
+  });
+
+
+function openImageSlideshow(imagesString) {
+    const images = imagesString.split(','); // Split the images by comma
+    let currentIndex = 0;
+
+    // Function to update the content inside SweetAlert
+    function updateImage(index) {
+        const totalImages = images.length;
+        const imgSrc = `${images[index].trim()}`;
+        const imageTag = `<img src="${imgSrc}" style="width:100%; height:auto;" />`;
+        const navigationText = `${index + 1} of ${totalImages} Images`;
+
+        // Display SweetAlert
+        Swal.fire({
+            title: navigationText, // Display image count
+            html: imageTag,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Next',
+            cancelButtonText: 'Previous',
+            allowOutsideClick: false,
+            showCloseButton: true,
+            preConfirm: () => {
+                if (currentIndex < totalImages - 1) {
+                    currentIndex++;
+                    updateImage(currentIndex); // Go to next image
+                }
+            },
+            preCancel: () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateImage(currentIndex); // Go to previous image
+                }
+            }
+        });
+    }
+
+    // Start slideshow with the first image
+    updateImage(currentIndex);
+}
+
+
+
+
+
+
+
+
+//==========================  Edit Client / Make Disable Client  ( Inactive /delete) ======================
+document.addEventListener('click', (e) => {
+  const edit = e.target.closest('.client-edit');
+  if (edit) {
+    const id = edit.dataset.clientId;
+    document.cookie = `elaw_client_id=${id}`;
+    window.location.href = '/superadmin/edit_client';
+    return;
+  }
+
+  const toggle = e.target.closest('.client-status-toggle');
+  if (toggle) {
+    update_client_status(
+      toggle.dataset.clientId,
+      toggle.dataset.newStatus,
+      toggle.dataset.clientName
+    );
+    return;
+  }
+
+  const del = e.target.closest('.client-delete');
+  if (del) {
+    deleteClient(del.dataset.clientId, del.dataset.clientName);
+  }
+});
+
+
+  function deleteClient(clientId, clientName) {
+    var msg = `deleteting ${clientId } ----  ${clientName }`
+  
+    // You can add your SweetAlert confirmation here if needed
+    console.log(`Delete client ${clientName} (${clientId})`);
+
+    // NOTE -> Make inactive or diable User can be consider as SOFT delete of user so am not developing it 
+ 
+  }
+
+
+
+
+function update_client_status(client_id, newStatus,username ) {
+   
+    var msg = `updateing  ${client_id } ----  ${newStatus }`
+ 
+
+  event.preventDefault(); 
+  var action;
+if(newStatus== 'admin_disabled'){
+  action = 'Inactived'
+}else{
+  action = 'approved '
+}
+ 
+
+  const userStatusElement = document.getElementById(`userStatus${client_id}`);
+  const pmsgElement  = document.getElementById(`msg${client_id}`);
+
+    $.ajax({
+        url: '/superadmin/update_client_status',
+        type: 'POST',
+        data: { id: client_id, status: newStatus,  _csrf: csrfToken  },
+        beforeSend: function() {
+            // Hide the kilstatus paragraph before the request
+            $('.kilstatus').hide();
+        },
+        success: function(response) {  
+           console.log(response)       
+           
+                    if (response.success == true) {
+               
+                                                      $('[data-user-id="' + client_id + '"]').attr('data-user-status', newStatus);
+
+                                // Update image source and tooltip based on new status
+                                var imgSrc = (newStatus === 'active') ? '../images/icons/active.png' : '../images/icons/inactive.png';
+                                $('[data-user-id="' + client_id + '"] .status-image').attr('src', imgSrc);
+                                $('[data-user-id="' + client_id + '"] .status-tooltip').attr('title', (newStatus === 'active') ? 'deactive' : 'active');
+
+                                // Add fade in overlay and change background color based on new status
+                                var bgColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+
+                                var textColor = (newStatus === 'active') ? '#3c763d' : '#ffffff'; // White font for non-Approve status
+                                // var textColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+                                // $('[data-user-id="' + client_id + '"] .status-overlay').css('background-color', bgColor).fadeIn();
+
+
+
+                                $('[data-user-id="' + client_id + '"] .status-overlay').css({
+                                    'background-color': bgColor,
+                                    'color': textColor + ' !important', // Force the font color change
+                                  
+                                }).fadeIn();
+
+
+                                pmsgElement.innerHTML = response.msg;
+                                var msg = 'Client ('+username+') '+action+' successfully'
+                                document.cookie = `elaw_msg=${msg}`;
+
+                                // Fade out the overlay after a delay
+                                setTimeout(function() {
+                                 
+                                    $('[data-user-id="' + client_id + '"] .status-overlay').fadeOut();
+                                    window.location.href = '/superadmin/view_clients'
+                                }, 1500);
+
+                                // $('.kilstatus').show();
+
+
+              } else {
+                  console.error('Error:', response.msg);
+                  $("#errorMessage").removeClass("d-none");
+                  $("#successMessage").addClass("d-none");
+              }
+
+
+        },
+        error: function(error) { alert("ajax error")
+          console.error('Error:', error);
+          $("#errorMessage").text('Ajax Error');
+    $("#errorMessage").removeClass("d-none");
+    $("#successMessage").addClass("d-none");
+        }
+    });
+}
+
+
+
+
+
+//============================= Make Disable client End =============================
+
+
+</script>
+
+
+
+
+
+<script>
+
+function showSweetLogs(logs ,total) {
+  if (!logs || logs.length === 0) {
+    return Swal.fire('No Logs Found', 'There are no audit logs available for this user.', 'info');
+  }
+
+  const logHtml = logs.map((log, index) => {
+    const date = log.timestamp || 'Invalid Date';
+    const resultColor = (log.result || '').toLowerCase().includes('success') ? 'green' : 'red';
+        //const displayIndex1 = logs.length - index; // latest gets highest #
+        const displayIndex = parseInt(total)  - index;  // Real database index
+
+    return `
+      <div style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; padding: 15px; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); font-size: 14px;">
+        <div style="margin-bottom: 5px; font-weight: bold; color: #444;">#${displayIndex} | <span style="color: #555;">${log.action}</span></div>
+        
+        <div style="margin-bottom: 6px;"><strong>Actor:</strong> ${log.actor}</div>
+        <div style="margin-bottom: 6px;"><strong>Client ID:</strong> ${log.client_id || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Candidate ID:</strong> ${log.candidate_id || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Timestamp:</strong> ${date}</div>
+        
+        <div style="margin: 8px 0;"><strong>Description:</strong><br>
+          <div style="white-space: pre-wrap; padding-left: 10px; margin-top: 3px; color: #333;">
+            ${log.description}
+          </div>
+        </div>
+
+        <div style="margin: 6px 0;"><strong>URL:</strong><br>
+          <code style="white-space: break-spaces; background: #f4f4f4; padding: 4px 6px; border-radius: 4px; display: inline-block;">${log.url}</code>
+        </div>
+
+        <div style="margin-top: 10px;"><strong>Result:</strong> 
+          <span style="color: ${resultColor}; font-weight: bold;">${log.result}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  Swal.fire({
+    title: 'Audit Logs',   
+    html: `
+      <div style="max-height: 600px; overflow-y: auto;">
+        ${logHtml}
+      </div>
+    `,
+    showCloseButton: true,
+    confirmButtonText: 'Close',
+    scrollbarPadding: false
+  });
+}
+
+  $(document).on('click', '.view-logs-btn', function () {
+  const candidateId = $(this).data('candidate-id') || null;
+  const clientId = $(this).data('client-id') || null;
+
+  $.ajax({
+    url: '/superadmin/get_logs',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ candidate_id: candidateId, client_id: clientId, _csrf: csrfToken }),
+    success: function (res) {
+      if (res.success) {
+        showSweetLogs(res.logs,res.total); // custom function to show logs in SweetAlert2
+      } else {
+        Swal.fire('Error', res.message || 'Something went wrong', 'error');
+      }
+    },
+    error: function () {
+      Swal.fire('Error', 'Server error occurred.', 'error');
+    }
+  });
+});
+
+</script>
+
+

@@ -1,0 +1,247 @@
+
+<style>
+/* Active link look */
+#sidebar-menu a.active {
+  background: #001489;          /* Bootstrap primary */
+  color: #fff !important;   
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Parent submenu label highlight */
+#sidebar-menu .submenu > a.active {
+  color: #0d6efd;
+}
+
+/* Ensure opened submenu is visible */
+#sidebar-menu .submenu.menu-open > ul {
+  display: block;
+}
+</style>
+<!-- Sidenav Menu Start -->
+<div class="sidebar" id="sidebar">
+    
+    <!-- Start Logo -->   
+    <div class="sidebar-logo">   
+        <div>    
+            <!-- Logo Normal -->
+            <a href="/superadmin" class="logo logo-normal">
+                <img src="../superadminassets/img/logo.png" alt="Logo" style="width: 49px;">
+            </a>
+
+            <!-- Logo Small -->
+            <a href="/superadmin" class="logo-small">
+                <img src="../superadminassets/img/logo.png" alt="Logo">
+            </a>
+
+            <!-- Logo Dark -->
+            <a href="/superadmin" class="dark-logo">
+                <img src="../superadminassets/img/logo.png" alt="Logo">
+            </a>
+        </div>
+        <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn"> 
+            <i class="ti ti-arrow-left"></i>
+        </button>
+
+        <!-- Sidebar Menu Close -->
+        <button class="sidebar-close">
+            <i class="ti ti-x align-middle"></i>
+        </button>                
+    </div>
+    <!-- End Logo -->
+
+    <!-- Sidenav Menu -->
+    <div class="sidebar-inner" data-simplebar>                
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <li class="menu-title"><span>Main Menu</span></li>
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/superadmin">
+                                <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="menu-title"><span>Law Firm Management</span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-building-bank"></i><span>Law Firm</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/superadmin/add_lawfirm">Add Law Firm</a></li>
+                                <li><a href="/superadmin/view_lawfirms">Law Firm List</a></li>
+                                
+                            </ul>
+                        </li>             
+                    </ul>
+                </li>
+                <li class="menu-title"><span>Lawyer Management</span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-gavel"></i><span>Staff Management</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+
+                                
+                                <li><a href="/superadmin/add_firm_staff">Add Firm Staff</a></li>
+                                <li><a href="/superadmin/firm_staff">Firm Staff List</a></li>
+                            
+                            </ul>
+                        </li>             
+                    </ul>
+                </li>
+                <li class="menu-title"><span>Client Management</span></li>
+                <li>
+                    <ul>
+                        <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-users-group"></i><span>Clients</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="/superadmin/view_clients">Client List</a></li>
+                                <!-- <li><a href="client-create.php">Add Client</a></li> -->
+                            </ul>
+                        </li>                
+                    </ul>
+                </li>
+                <li class="menu-title"><span>Role, Payment, Invoice</span></li>
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/superadmin/practice_area">
+                                <i class="ti ti-briefcase"></i><span>Practice Area</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/superadmin/role_mgmt">
+                                <i class="ti ti-key"></i><span>Roles & Permissions</span>
+                            </a>
+                        </li>
+          
+
+
+
+                            <li class="menu-title"><span> Subscription Plans</span></li>
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/superadmin/plans">
+                                <i class="ti ti-layout-bucket"></i><span>Plans</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                        plans
+                        <!-- <li class="submenu">
+                            <a href="javascript:void(0);">
+                                <i class="ti ti-scale"></i><span>Cases</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <ul>
+                                <li><a href="cases-list.php">Cases List</a></li>
+                                <li><a href="cases-create.php">Add Case</a></li>
+                            </ul>
+                        </li>                
+                        <li>
+                            <a href="report.php">
+                                <i class="ti ti-report-analytics"></i><span>Report</span>
+                            </a>
+                        </li> -->
+                        <li>
+                            <a href="/superadmin/transaction_history">
+                                <i class="ti ti-file-invoice"></i><span>Transactions & Invoicing</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>     
+                <li class="menu-title"><span>Setting</span></li>
+
+                  <li>
+                            <a href="/superadmin/logs">
+                                <i class="ti ti-key"></i><span>Audit Logs</span>
+                            </a>
+                        </li>
+                <li>
+                    <ul>
+                        <li>
+                            <a href="/superadmin/user_tandc">
+                                <i class="ti ti-file-time"></i><span>Terms & Conditions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/superadmin/user_pandp">
+                                <i class="ti ti-shield-check"></i><span>Privacy Policy</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/superadmin/notifications">
+                                <i class="ti ti-bell"></i><span>Notifications</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/superadmin/tickets">
+                                <i class="ti ti-headset"></i><span>Ticket Center</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/superadmin/support_system">
+                                <i class="ti ti-headset"></i><span>Support & Help</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>                        
+            </ul>                   
+        </div>
+    </div>
+
+</div>
+<!-- Sidenav Menu End -->
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get current path without query/hash
+    let currentPath = window.location.pathname.split("/").pop().toLowerCase();
+
+    // If blank (like "/"), assume "/superadmin"
+    if (currentPath === "" || currentPath === "/") {
+        currentPath = "/superadmin";
+    }
+
+    // Select all sidebar links
+    const links = document.querySelectorAll("#sidebar-menu a[href]");
+
+    links.forEach(link => {
+        let linkPath = link.getAttribute("href").split("/").pop().toLowerCase();
+
+        if (linkPath === currentPath) {
+            // Add active class to this link
+            link.classList.add("active");
+
+            // Open submenu if inside one
+            const submenu = link.closest(".submenu");
+            if (submenu) {
+                submenu.classList.add("menu-open");
+                const parentLink = submenu.querySelector(":scope > a");
+                if (parentLink) parentLink.classList.add("active");
+                const subUl = submenu.querySelector("ul");
+                if (subUl) subUl.style.display = "block";
+            }
+        }
+    });
+});
+</script>
+
+

@@ -1,0 +1,234 @@
+<%- include('superheader.ejs'); %>
+<%- include('supersidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+
+    <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-bottom">
+      <div class="flex-grow-1">
+        <h4 class="fw-bold mb-0">Firm Users</h4>
+        <div class="text-muted small">FirmAdmin is excluded from this list.</div>
+      </div>
+      <div class="d-flex">
+        <a href="/superadmin/add_firm_staff" class="btn btn-primary ms-2 fs-13 btn-md">
+          <i class="ti ti-plus me-1"></i> Add Firm User
+        </a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Law Firm</label>
+            <select id="filterFirm" class="form-select">
+              <option value="">All</option>
+              <% (lawfirms || []).forEach(f => { %>
+                <option value="<%= f.firm_id %>"><%= f.firm_name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">User Type</label>
+            <select id="filterRole" class="form-select">
+              <option value="">All</option>
+              <% (rolesDistinct || []).forEach(r => { %>
+                <option value="<%= r.name %>"><%= r.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select id="filterStatus" class="form-select">
+              <option value="">All</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Invited">Invited</option>
+            </select>
+          </div>
+          <div class="col-md-2 text-end">
+            <button id="resetFilters" class="btn btn-light w-100">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="firmUserTable" class="table table-striped table-bordered table-nowrap">
+            <thead>
+              <tr>
+                <th>Sr. No.</th>
+                <th>Firm</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('superfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = window.axiosElaw;
+  const $ = jQuery;
+
+  function maskValue(str){
+    str = (str == null) ? '' : String(str);
+    const len = str.length;
+    if (!len) return '';
+    if (str.includes('@')) {
+      const [local, domain] = str.split('@');
+      if (!domain) return '*'.repeat(len);
+      if (local.length <= 2) return '*'.repeat(local.length) + '@' + domain;
+      return local.slice(0,1) + '*'.repeat(Math.max(local.length - 2, 1)) + local.slice(-1) + '@' + domain;
+    }
+    if (len <= 4) return str[0] + '*'.repeat(Math.max(len - 2, 0)) + (len > 1 ? str[len - 1] : '');
+    return str.slice(0,2) + '*'.repeat(len - 4) + str.slice(-2);
+  }
+
+  // DataTable (server-side)
+  const dt = $('#firmUserTable').DataTable({
+    processing: true,
+    serverSide: true,
+    searching: true,
+    responsive: true,
+    dom: "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+         "<'row'<'col-sm-12'tr>>" +
+         "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+    buttons: [
+      { extend: 'excel', className: 'btn btn-primary me-2' },
+      { extend: 'csv', className: 'btn btn-primary me-2' },
+    ],
+    pageLength: 10,
+    ajax: {
+      url: '/superadmin/firm_staff_data',
+      type: 'POST',
+      headers: { 'CSRF-Token': csrfToken },
+      data: function(d){
+        d.firm_id  = $('#filterFirm').val() || '';
+        d.role_name = $('#filterRole').val() || '';
+        d.status = $('#filterStatus').val() || '';
+        return d;
+      }
+    },
+    columns: [
+      { data: null, render: (d,t,r,meta) => meta.row + meta.settings._iDisplayStart + 1 },
+      { data: 'firm_name', defaultContent: '' },
+      { data: 'name', defaultContent: '' },
+      { data: 'role', defaultContent: '' },
+      { data: 'email', render: (v)=> maskValue(v || '') },
+      { data: 'phone', render: (v)=> maskValue(v || '') },
+      { data: 'createdAt', render: (v)=> {
+          try{ const d = new Date(v); if (!isNaN(d)) return d.toISOString().slice(0,16).replace('T',' '); }catch{}
+          return '';
+        }
+      },
+      { data: 'status', render: (s)=> {
+          if (s === 'Active')   return '<span class="badge bg-success-subtle text-success">Active</span>';
+          if (s === 'Invited')  return '<span class="badge bg-warning-subtle text-warning">Invited</span>';
+          return '<span class="badge bg-danger-subtle text-danger">Inactive</span>';
+        }
+      },
+      { data: null, orderable:false, render: (row)=> {
+          return `
+            <div class="dropdown">
+              <a href="javascript:void(0);" class="shadow-sm fs-14 d-inline-flex border rounded-2 p-1 me-1" data-bs-toggle="dropdown">
+                <i class="ti ti-dots-vertical"></i>
+              </a>
+              <ul class="dropdown-menu p-2">
+                <li>
+                  <a href="javascript:void(0);" class="dropdown-item fu-edit" data-user-id="${row.staff_id}">
+                    <i class="ti ti-edit me-2"></i> Edit
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                ${
+                  row.status === 'Active'
+                  ? `<li><a href="javascript:void(0);" class="dropdown-item text-danger fu-status" data-user-id="${row.staff_id}" data-status="Inactive"><i class="ti ti-power me-2"></i> Deactivate</a></li>`
+                  : `<li><a href="javascript:void(0);" class="dropdown-item text-success fu-status" data-user-id="${row.staff_id}" data-status="Active"><i class="ti ti-power me-2"></i> Activate</a></li>`
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li><a href="javascript:void(0);" class="dropdown-item text-danger fu-delete" data-user-id="${row.staff_id}" data-name="${row.name}"><i class="ti ti-trash me-2"></i> Delete</a></li>
+              </ul>
+            </div>
+          `;
+        }
+      }
+    ]
+  });
+
+  // Filters → redraw
+  $('#filterFirm,#filterRole,#filterStatus').on('change', function(){ dt.ajax.reload(null, true); });
+  $('#resetFilters').on('click', function(e){ e.preventDefault(); $('#filterFirm').val(''); $('#filterRole').val(''); $('#filterStatus').val(''); dt.ajax.reload(null, true); });
+
+  // Actions
+  $(document).on('click', '.fu-edit', function(){
+    const id = $(this).data('user-id');
+    // open edit in same SPA-like page (no reload). We’ll navigate, but your header/footer keep SPA feel.
+    window.location.href = `/superadmin/edit_firm_staff?staff_id=${id}`;
+  });
+
+  $(document).on('click', '.fu-status', async function(){
+    const staff_id = $(this).data('user-id');
+    const status  = $(this).data('status');
+    try {
+      const { data } = await fx.post('/superadmin/update_firm_staff_status', { staff_id, status });
+      if (!data?.success) return kilToast.danger(data?.message || 'Failed to update status.');
+      kilToast.success(data?.message || 'Status updated.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to update status.';
+      kilToast.danger(msg);
+    }
+  });
+
+  $(document).on('click', '.fu-delete', async function(){
+    const staff_id = $(this).data('user-id');
+    const name = $(this).data('name') || 'User';
+    const res = await Swal.fire({
+      title: 'Delete User?',
+      html: `
+        <div style="text-align:left">
+          <p>You're about to delete <strong>${name}</strong> (ID: ${staff_id}).</p>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+            <input type="checkbox" id="hardDelChk"/>
+            <span><strong>Hard delete</strong> (permanent)</span>
+          </label>
+        </div>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Soft Delete',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => ({ hard: !!document.getElementById('hardDelChk')?.checked })
+    });
+    if (!res.isConfirmed) return;
+    const { hard } = res.value || { hard:false };
+    try {
+      const { data } = await fx.post('/superadmin/delete_firm_staff', { staff_id, hard });
+      if (!data?.success) return kilToast.danger(data?.message || 'Failed to delete user.');
+      kilToast.success(data?.message || 'User deleted.');
+      dt.ajax.reload(null, false);
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to delete user.';
+      kilToast.danger(msg);
+    }
+  });
+})();
+</script>

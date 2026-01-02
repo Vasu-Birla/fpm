@@ -1,0 +1,89 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'Subscription payment failed',
+  subtitle: 'We were unable to process your recent payment.',
+  badge: 'PAYMENT FAILED',
+  preheader: 'We could not process your recent subscription payment. Please update your billing details and try again.'
+}) %>
+
+<%
+  const amountLabel =
+    receipt?.amountFmt ||
+    ((receipt?.currencyLabel || 'J$') + ' ' + Number(total || 0).toFixed(2));
+  const failureReason = reason || 'Payment was declined, cancelled, or could not be authorised.';
+%>
+
+<p class="email-title">Payment attempt failed</p>
+
+<p class="email-lead">
+  Hello <strong><%= username %></strong>,
+</p>
+
+<p class="text">
+  We attempted to charge your saved payment method for your subscription on
+  <strong><%= (org && org.name) || 'our service' %></strong>, but the payment
+  did not complete successfully.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="border-collapse:collapse;margin:18px 0 12px 0;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+  <tr>
+    <td style="padding:16px 18px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;">
+              Order #
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= orderId %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;">
+              Amount
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= amountLabel %>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" style="padding:6px 0 0 0;vertical-align:top;">
+            <div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;">
+              Reason
+            </div>
+            <div style="font-size:14px;font-weight:600;color:#b91c1c;">
+              <%= failureReason %>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<% if (portalUrl) { %>
+  <div style="margin:12px 0 4px 0;">
+    <a href="<%= portalUrl.replace(/\/+$/,'') %>/firmstaff/billing"
+       target="_blank" rel="noopener"
+       style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;
+              padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;">
+      Update payment &amp; try again
+    </a>
+  </div>
+<% } %>
+
+<div class="info-box" style="margin-top:18px;">
+  <strong>Your subscription may be interrupted</strong> if a valid payment method is not provided.
+  Please check your card details or use a different payment method, then try the payment again.
+</div>
+
+<p class="text" style="margin-top:14px;">
+  If you believe this failure is a mistake, you can also contact our support team and
+  share this order number: <strong><%= orderId %></strong>.
+</p>
+
+<%- include('_email_footer', { org }) %>

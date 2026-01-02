@@ -1,0 +1,63 @@
+<!-- views/client/choose_firm.ejs -->
+
+<%- include('clientheader.ejs'); %>
+
+<section class="page-login">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4 p-4">
+          <div class="text-center mb-4">
+            <h4 class="fw-bold text-primary">Choose Your Firm</h4>
+            <p class="text-muted mb-0">Select the firm you want to work with in this session.</p>
+          </div>
+
+          <% if (output && output.message) { %>
+            <div class="alert alert-<%= output.type || 'info' %>">
+              <%= output.message %>
+            </div>
+          <% } %>
+
+          <div class="row g-3">
+            <% (memberships || []).forEach(m => { 
+                 const firm = m.firm || {};
+                 const logoKey = firm.firm_logo || '';
+            %>
+              <div class="col-md-6">
+                <form method="POST" action="/choose_firm">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken || '' %>">
+                  <input type="hidden" name="firm_id" value="<%= firm.firm_id || '' %>">
+                  <button type="submit" class="btn w-100 text-start border rounded-3 p-3 firm-card">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="firm-logo">
+                        <% if (logoKey) { %>
+                          <img
+                            src="/secure/file_stream?s3key=<%= encodeURIComponent(logoKey) %>"
+                            alt="<%= firm.firm_name || 'Firm' %> Logo"
+                            class="rounded-circle border"
+                            style="width:44px;height:44px;object-fit:cover;">
+                        <% } else { %>
+                          <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border"
+                               style="width:44px;height:44px;font-weight:600;">
+                            <%= (firm.firm_name || 'F').slice(0,1).toUpperCase() %>
+                          </div>
+                        <% } %>
+                      </div>
+                      <div>
+                        <div class="fw-semibold text-dark"><%= firm.firm_name || 'Unnamed Firm' %></div>
+                        <div class="text-muted small">Continue to this firm</div>
+                      </div>
+                    </div>
+                  </button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('clientfooter.ejs'); %>
+

@@ -1,0 +1,529 @@
+<!-- Header/Sidebar includes -->
+<%- include('superheader.ejs'); %>
+<%- include('supersidebar.ejs'); %>
+
+<style>
+  /* ===== THEME TOKENS DRIVEN BY data-theme ON <html> ===== */
+  :root[data-theme="dark"]{
+    --bg:#0b0f17; --card:#0f1623; --muted:#9fb3c8; --text:#e6effa;
+    --chip-bg:#1a2435; --chip-fg:#cfe1f3; --hair:rgba(148,163,184,.18);
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f8fb; --card:#ffffff; --muted:#475569; --text:#0f172a;
+    --chip-bg:#eef2f7; --chip-fg:#243044; --hair:rgba(2,6,23,.12);
+  }
+
+  /* severity brand colors (chips + borders) */
+  :root{
+    --info:#16a34a;     /* green */
+    --error:#dc2626;    /* red */
+    --warning:#f59e0b;  /* amber */
+    --security:#38bdf8; /* light blue */
+
+    /* sizing */
+    --radius:14px;
+    --pad-card: clamp(10px, 1.8vw, 16px);
+    --gap: clamp(6px, 1vw, 12px);
+    --fs-12: clamp(11px, 1.3vw, 12px);
+    --fs-13: clamp(12px, 1.4vw, 13px);
+    --fs-14: clamp(13px, 1.5vw, 14px);
+    --fs-16: clamp(14px, 1.6vw, 16px);
+  }
+
+  /* Root containers */
+  .aiwrap{padding:8px}
+  .aihead{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    align-items:center;
+    gap: var(--gap);
+    margin-bottom: 12px;
+  }
+  @media (max-width: 680px){
+    .aihead{ grid-template-columns: 1fr; }
+  }
+  .aititle h5{ font-size: clamp(16px, 2vw, 18px); margin: 0 0 2px 0; color: var(--text) }
+  .aititle .muted{ font-size: var(--fs-12); color: var(--muted) }
+
+  /* Segmented mode toggle (Basic | Advance) — accessible + touch targets */
+  .seg-toggle{
+    background:var(--card); border:1px solid var(--hair); border-radius:999px; padding:4px;
+    display:inline-flex; gap:4px; align-items:center;
+  }
+  .seg-toggle button{
+    min-width:110px; padding:10px 14px; border:0; outline:0; border-radius:999px;
+    font-weight:700; font-size: var(--fs-12); cursor:pointer;
+    color:var(--text); background:transparent; line-height:1;
+  }
+  .seg-toggle button[aria-pressed="true"]{
+    background:linear-gradient(180deg, rgba(0, 72, 71, 0.08), rgba(4, 249, 253, 0.23));
+    box-shadow:0 2px 10px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  @media (max-width: 420px){
+    .seg-toggle button{ min-width:90px; padding:9px 12px; }
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .seg-toggle button{ transition: transform .06s ease; }
+    .seg-toggle button:hover{ transform:translateY(-1px); }
+  }
+
+  /* Filters — responsive grid */
+  .card .filters{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: var(--gap);
+  }
+  .filters .grow{ grid-column: span 2; }
+  .filters .d-flex{ align-items: end; }
+  @media (max-width: 1200px){
+    .card .filters{ grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+    .filters .grow{ grid-column: span 1; }
+  }
+  @media (max-width: 900px){
+    .card .filters{ grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+  }
+  @media (max-width: 560px){
+    .card .filters{ grid-template-columns: 1fr; }
+    .filters .d-flex{ order: 99; }
+  }
+
+  /* Card (uniform background; border color = severity) */
+  .ai-card{
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: var(--pad-card);
+    margin-bottom: 12px;
+    border:1.5px solid transparent; /* colored per severity below */
+    color: var(--text);
+  }
+  .ai-card.sev-info{     border-color: var(--info); }
+  .ai-card.sev-warning{  border-color: var(--warning); }
+  .ai-card.sev-error{    border-color: var(--error); }
+  .ai-card.sev-security{ border-color: var(--security); }
+
+  /* Header layout — responsive grid */
+  .row-head{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--gap);
+    align-items:start;
+  }
+  @media (max-width: 820px){
+    .row-head{ grid-template-columns: 1fr; }
+  }
+  .meta-left{display:flex; flex-direction:column; gap:6px; min-width:0}
+  .meta-left .time{font-weight:700; opacity:.95; font-size: var(--fs-14)}
+  .meta-left .actor{color:var(--muted); font-size: var(--fs-12); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+  .meta-right{
+    display:flex; flex-wrap:wrap; gap:6px; margin-left:auto; justify-content:flex-end;
+    max-width:100%;
+  }
+  @media (max-width: 480px){
+    .meta-right{
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .meta-right::-webkit-scrollbar{ height:6px }
+  }
+
+  /* Chips (only top-right changes color by type) */
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px; font-size: var(--fs-12); font-weight:800;
+    background:var(--chip-bg); color:var(--chip-fg); border:0; white-space:nowrap;
+  }
+  .chip.code{ font-family: ui-monospace, Menlo, Consolas, monospace; font-weight:700; }
+
+  /* Per-type chips */
+  .chip.sev-info   { background: var(--info);    color:#fff; }
+  .chip.sev-error  { background: var(--error);   color:#fff; }
+  .chip.sev-warning{ background: var(--warning); color:#111; }
+  .chip.sev-security{background: var(--security); color:#0b1220; }
+
+  /* Body rows */
+  .row-flex{
+    display:grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: var(--gap);
+    align-items:center;
+    margin-top: 10px;
+  }
+  .row-flex .grow{ display:none }
+  @media (max-width: 980px){
+    .row-flex{ grid-template-columns: 1fr auto; }
+  }
+  @media (max-width: 560px){
+    .row-flex{ grid-template-columns: 1fr; }
+  }
+  .mono{font-family: ui-monospace, Menlo, Consolas, monospace; color:inherit; font-size: var(--fs-12) }
+  .muted{color:var(--muted)}
+
+  /* Description block */
+  .desc{
+    background:linear-gradient(180deg, rgba(148,163,184,.08), rgba(124,58,237,.06));
+    border:1px solid var(--hair);
+    border-left:3px solid rgba(124,58,237,.65);
+    border-radius:12px; padding:8px 10px; margin-top:10px
+  }
+  .desc pre{margin:0;white-space:pre-wrap;word-break:break-word;font-size: var(--fs-12); color:inherit}
+
+  /* Basic Mode hides .adv-only bits */
+  [data-view="Basic"] .adv-only{ display:none !important; }
+
+  /* Buttons responsive sizes */
+  #btnExport{ padding:8px 12px; font-size: var(--fs-12); }
+  #btnApply{  font-size: var(--fs-12); }
+</style>
+
+<div class="page-wrapper" id="logWrap" data-view="<%= viewMode %>">
+  <div class="content" style="background:var(--bg);">
+    <div class="aiwrap">
+      <div class="aihead">
+        <div class="aititle">
+          <h5 class="fw-bold mb-1"><i class="ti ti-shield-lock me-1"></i> KWE Audit Logs</h5>
+          <div class="muted">HMAC-verified daily JSONL • <span id="modeLabel"><%= viewMode %></span> View</div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2" style="flex-wrap:wrap; justify-content:flex-end">
+          <!-- Segmented toggle -->
+          <div class="seg-toggle" id="modeToggle" role="group" aria-label="View mode">
+            <button type="button" id="btnBasic"   aria-pressed="<%= viewMode==='Basic'?'true':'false' %>">Basic</button>
+            <button type="button" id="btnAdvance" aria-pressed="<%= viewMode==='Advance'?'true':'false' %>">Advance</button>
+          </div>
+
+          <button id="btnExport" class="btn btn-primary btn-sm">
+            <i class="ti ti-download me-1"></i> Download TXT
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="filters">
+            <div>
+              <label class="form-label mb-1">Date Range</label>
+              <select data-ignore-kilvish="Yes" id="fRange" class="form-select">
+                <option value="today" <%= rangeKey==='today'?'selected':'' %>>Today</option>
+                <option value="yesterday" <%= rangeKey==='yesterday'?'selected':'' %>>Yesterday</option>
+                <option value="last7" <%= rangeKey==='last7'?'selected':'' %>>Last 7 Days</option>
+                <option value="last30" <%= rangeKey==='last30'?'selected':'' %>>Last 30 Days</option>
+                <option value="last6m" <%= rangeKey==='last6m'?'selected':'' %>>Last 6 Months</option>
+                <option value="custom" <%= rangeKey==='custom'?'selected':'' %>>Custom</option>
+              </select>
+            </div>
+            <div id="customRange" style="display:none">
+              <label class="form-label mb-1">From</label>
+              <input id="fStart" type="date" class="form-control" value="<%= startYMD %>">
+            </div>
+            <div id="customRange2" style="display:none">
+              <label class="form-label mb-1">To</label>
+              <input id="fEnd" type="date" class="form-control" value="<%= endYMD %>">
+            </div>
+            <div>
+              <label class="form-label mb-1">Actor</label>
+              <select id="fActor" class="form-select">
+                <option value="all" <%= actorType==='all'?'selected':'' %>>All</option>
+                <option value="superadmin" <%= actorType==='superadmin'?'selected':'' %>>Superadmin</option>
+                <option value="subadmin" <%= actorType==='subadmin'?'selected':'' %>>Subadmin</option>
+                <option value="admin" <%= actorType==='admin'?'selected':'' %>>Admin</option>
+                <option value="client" <%= actorType==='client'?'selected':'' %>>Client</option>
+                <option value="Business Client" <%= actorType==='Business Client'?'selected':'' %>>Business Client</option>
+                <option value="Individual Client" <%= actorType==='Individual Client'?'selected':'' %>>Individual Client</option>
+                <option value="guest" <%= actorType==='guest'?'selected':'' %>>Guest</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label mb-1">Severity</label>
+              <select id="fSev" class="form-select">
+                <option value="all" <%= severity==='all'?'selected':'' %>>All</option>
+                <option value="info" <%= severity==='info'?'selected':'' %>>Info</option>
+                <option value="warning" <%= severity==='warning'?'selected':'' %>>Warning</option>
+                <option value="error" <%= severity==='error'?'selected':'' %>>Error</option>
+                <option value="security" <%= severity==='security'?'selected':'' %>>Security</option>
+              </select>
+            </div>
+            <div class="grow">
+              <label class="form-label mb-1">Search</label>
+              <input data-ignore-kilvish="Yes" id="fQ" type="text" class="form-control"
+                     placeholder="action, url, description, result, event_id, req_id, ip, or actor name"
+                     value="<%- q %>">
+            </div>
+            <div class="d-flex">
+              <button id="btnApply" class="btn btn-outline-primary">
+                <i class="ti ti-filter me-1"></i> Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div id="list">
+        <% if (!items || !items.length) { %>
+          <div class="muted">No logs found for <%= rangeLabel || 'selected range' %>.</div>
+        <% } else { %>
+          <% items.forEach(it => {
+               const sevClass = (it.severity||'info').toLowerCase();
+               const sevUpper = (it.severity||'info').toUpperCase();
+               const resultLabel = `${it.result||''}${(it.result_code!=null)?` (${it.result_code})`:''}`;
+            %>
+            <div class="ai-card sev-<%= sevClass %>">
+              <!-- Header -->
+              <div class="row-head">
+                <div class="meta-left">
+                  <div class="time"><%= it.ts_local %></div>
+                  <div class="actor"><b>Actor:</b> <%= it.actor_label %></div>
+                </div>
+                <div class="meta-right">
+                  <!-- Only these chips carry colors based on severity -->
+                  <span class="chip sev-<%= sevClass %>"><%= sevUpper %></span>
+                  <span class="chip sev-<%= sevClass %>"><%= resultLabel %></span>
+                  <span class="chip"><%= it.method || '' %></span>
+                  <span class="chip code"><%= it.url || '' %></span>
+                </div>
+              </div>
+
+              <!-- Middle row -->
+              <div class="row-flex">
+                <div><b>Action:</b> <%= it.action %></div>
+                <div class="adv-only"><b>Event:</b> <code class="mono"><%= it.event_id || '—' %></code></div>
+                <div class="adv-only"><b>req_id:</b> <code class="mono"><%= it.req_id || '—' %></code></div>
+                <div class="adv-only"><b>Latency:</b> <%= it.latency_ms!=null ? (Number(it.latency_ms).toFixed(2)+' ms') : '—' %></div>
+                <div class="adv-only"><b>IP:</b> <code class="mono"><%= it.ip || '—' %></code></div>
+                <div class="adv-only"><b>HMAC:</b> <%= it.hmac_sig ? 'present' : 'missing' %> (<%= it.validation_status %>)</div>
+              </div>
+
+              <!-- Description -->
+              <div class="desc">
+                <div class="muted" style="font-size:var(--fs-12);letter-spacing:.3px">Description</div>
+                <%
+                  const raw = it.description || '';
+                  const short = raw.length>240 ? (raw.slice(0,240)+'…') : raw;
+                %>
+                <pre class="mono" data-full="<%- raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') %>"
+                     data-short="<%- short.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') %>"><%- short.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') %></pre>
+                <% if (raw.length>240) { %>
+                  <button class="btn btn-outline-secondary btn-sm toggle mt-1">Show more</button>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('superfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = (window.axiosElaw);
+  const toast = (msg, type='info') => window.kilQuickToast?.(msg, { type });
+
+  /* ===== THEME INTEGRATION (uses your global button #light-dark-mode) ===== */
+  const THEME_KEY = 'kweTheme'; // 'dark' | 'light'
+  const html = document.documentElement;
+  const themeBtn = document.getElementById('light-dark-mode');
+
+  // 1) Init theme from localStorage; fallback to 'dark'
+  const savedTheme = (localStorage.getItem(THEME_KEY) === 'light') ? 'light' : 'dark';
+  html.setAttribute('data-theme', savedTheme);
+  // optional: set initial icon
+  if (themeBtn){
+    const icon = themeBtn.querySelector('i');
+    if (icon){
+      icon.classList.remove('ti-moon','ti-sun');
+      icon.classList.add(savedTheme === 'dark' ? 'ti-sun' : 'ti-moon'); // sun = switch to light available
+    }
+  }
+
+  // 2) Wire your header toggle
+  themeBtn?.addEventListener('click', ()=>{
+    const current = html.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_KEY, next);
+    const icon = themeBtn.querySelector('i');
+    if (icon){
+      icon.classList.remove('ti-moon','ti-sun');
+      icon.classList.add(next === 'dark' ? 'ti-sun' : 'ti-moon');
+    }
+  });
+
+  /* ===== VIEW MODE (Basic/Advance) ===== */
+  const wrap   = document.getElementById('logWrap');
+  const modeLabel  = document.getElementById('modeLabel');
+  const btnBasic   = document.getElementById('btnBasic');
+  const btnAdvance = document.getElementById('btnAdvance');
+  let viewMode = wrap.getAttribute('data-view') || 'Basic';
+
+  function setPressed(){
+    btnBasic.setAttribute('aria-pressed', String(viewMode==='Basic'));
+    btnAdvance.setAttribute('aria-pressed', String(viewMode==='Advance'));
+  }
+  function applyViewModeLocal(mode){
+    viewMode = (mode === 'Advance') ? 'Advance' : 'Basic';
+    wrap.setAttribute('data-view', viewMode);
+    modeLabel.textContent = viewMode;
+    setPressed();
+  }
+  setPressed();
+
+  btnBasic?.addEventListener('click', async ()=>{
+    if (viewMode==='Basic') return;
+    try{
+      const { data } = await fx.post('/superadmin/logs/set_view_mode', { mode:'Basic' });
+      if (!data?.success) throw new Error(data?.message || 'Failed to save mode');
+      applyViewModeLocal('Basic');
+      toast('Basic view set','success');
+    }catch(e){ toast(e?.message || 'Failed to save mode','danger'); }
+  });
+  btnAdvance?.addEventListener('click', async ()=>{
+    if (viewMode==='Advance') return;
+    try{
+      const { data } = await fx.post('/superadmin/logs/set_view_mode', { mode:'Advance' });
+      if (!data?.success) throw new Error(data?.message || 'Failed to save mode');
+      applyViewModeLocal('Advance');
+      toast('Advance view set','success');
+    }catch(e){ toast(e?.message || 'Failed to save mode','danger'); }
+  });
+
+  /* ===== Filters and List ===== */
+  const fRange = document.getElementById('fRange');
+  const fStart = document.getElementById('fStart');
+  const fEnd   = document.getElementById('fEnd');
+  const customRange = document.getElementById('customRange');
+  const customRange2 = document.getElementById('customRange2');
+  const fActor = document.getElementById('fActor');
+  const fSev   = document.getElementById('fSev');
+  const fQ     = document.getElementById('fQ');
+  const btnApply = document.getElementById('btnApply');
+  const btnExport= document.getElementById('btnExport');
+  const listEl = document.getElementById('list');
+
+  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function render(items){
+    if (!items || !items.length){
+      listEl.innerHTML = '<div class="muted">No logs found.</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.map(it=>{
+      const sev = (it.severity||'info').toLowerCase();
+      const sevUpper = (it.severity||'info').toUpperCase();
+      const resultLabel = `${it.result||''}${(it.result_code!=null)?` (${it.result_code})`:''}`;
+      const raw = it.description || '';
+      const short = raw.length>240 ? (raw.slice(0,240)+'…') : raw;
+
+      return `
+        <div class="ai-card sev-${sev}">
+          <div class="row-head">
+            <div class="meta-left">
+              <div class="time">${escapeHtml(it.ts_local||'')}</div>
+              <div class="actor"><b>Actor:</b> ${escapeHtml(it.actor_label||'')}</div>
+            </div>
+            <div class="meta-right">
+              <span class="chip sev-${sev}">${escapeHtml(sevUpper)}</span>
+              <span class="chip sev-${sev}">${escapeHtml(resultLabel)}</span>
+              <span class="chip">${escapeHtml(it.method||'')}</span>
+              <span class="chip code">${escapeHtml(it.url||'')}</span>
+            </div>
+          </div>
+
+          <div class="row-flex">
+            <div><b>Action:</b> ${escapeHtml(it.action||'')}</div>
+            <div class="adv-only"><b>Event:</b> <code class="mono">${escapeHtml(it.event_id||'—')}</code></div>
+            <div class="adv-only"><b>req_id:</b> <code class="mono">${escapeHtml(it.req_id||'—')}</code></div>
+            <div class="adv-only"><b>Latency:</b> ${it.latency_ms!=null ? (Number(it.latency_ms).toFixed(2)+' ms') : '—'}</div>
+            <div class="adv-only"><b>IP:</b> <code class="mono">${escapeHtml(it.ip||'—')}</code></div>
+            <div class="adv-only"><b>HMAC:</b> ${it.hmac_sig ? 'present':'missing'} (${escapeHtml(it.validation_status||'')})</div>
+          </div>
+
+          <div class="desc">
+            <div class="muted" style="font-size:var(--fs-12);letter-spacing:.3px">Description</div>
+            <pre class="mono" data-full="${escapeHtml(raw)}" data-short="${escapeHtml(short)}">${escapeHtml(short)}</pre>
+            ${raw.length>240 ? '<button class="btn btn-outline-secondary btn-sm toggle mt-1">Show more</button>' : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    wrap.setAttribute('data-view', viewMode);
+  }
+
+  function syncCustomVisibility(){
+    const isCustom = (fRange?.value === 'custom');
+    if (customRange) customRange.style.display = isCustom ? '' : 'none';
+    if (customRange2) customRange2.style.display = isCustom ? '' : 'none';
+  }
+  fRange?.addEventListener('change', syncCustomVisibility);
+  syncCustomVisibility();
+
+  async function apply(){
+    const rangeKey = fRange?.value || 'last7';
+    const startYMD = fStart?.value || '';
+    const endYMD   = fEnd?.value || '';
+    if (rangeKey === 'custom' && (!startYMD || !endYMD)){
+      window.kweToast?.('warning','Pick start and end dates');
+      return;
+    }
+    btnApply.disabled = true;
+    try{
+      const { data } = await fx.post('/superadmin/logs/fetch', {
+        rangeKey,
+        startYMD,
+        endYMD,
+        actorType: fActor.value,
+        severity: fSev.value,
+        q: fQ.value
+      });
+      if (!data?.success) throw new Error(data?.message || 'Fetch failed');
+      render(data.items || []);
+      window.kweToast?.('success','Logs refreshed');
+    } catch(e){
+      window.kweToast?.('danger', e?.message || 'Fetch failed');
+    } finally {
+      btnApply.disabled = false;
+    }
+  }
+  btnApply?.addEventListener('click', apply);
+
+  // Export with current mode
+  btnExport?.addEventListener('click', async ()=>{
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/superadmin/logs/export';
+    form.style.display = 'none';
+    const add = (k,v)=>{ const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=v; form.appendChild(i); };
+    add('rangeKey', fRange?.value || 'last7');
+    add('startYMD', fStart?.value || '');
+    add('endYMD', fEnd?.value || '');
+    add('actorType', fActor.value);
+    add('severity', fSev.value);
+    add('q', fQ.value);
+    add('mode', viewMode);
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (csrf){ const i=document.createElement('input'); i.type='hidden'; i.name='_csrf'; i.value=csrf; form.appendChild(i); }
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(()=>form.remove(), 1000);
+  });
+
+  // Show more/less in description
+  document.addEventListener('click', (e)=>{
+    const t = e.target.closest('.toggle');
+    if (!t) return;
+    const pre = t.closest('.desc')?.querySelector('pre');
+    if (!pre) return;
+    const isShort = t.textContent.toLowerCase().includes('more');
+    pre.textContent = isShort ? pre.getAttribute('data-full') : pre.getAttribute('data-short');
+    t.textContent = isShort ? 'Show less' : 'Show more';
+  });
+})();
+</script>

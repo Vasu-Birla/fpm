@@ -1,0 +1,329 @@
+<!-- Header -->
+<%- include('firmheader.ejs'); %>
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+      <h4 class="fw-bold mb-0">Add Firm User</h4>
+      <div><a href="/firmstaff/staff_list" class="btn btn-outline-secondary btn-md fs-13"><i class="ti ti-chevron-left me-1"></i> Back to List</a></div>
+    </div>
+
+    <form id="kilform" method="POST" enctype="multipart/form-data">
+      <div class="card">
+        <div class="card-body">
+          <div class="row g-3">
+
+            <!-- Firm -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="firm_id">Law Firm <span class="text-danger">*</span></label>
+              <select data-ignore-kilvish="Yes" id="firm_id" name="firm_id" class="form-select" required>
+                <option value="">Select Firm</option>
+                <% (firms || []).forEach(f => { %>
+                  <option value="<%= f.firm_id %>"><%= f.firm_name %></option>
+                <% }) %>
+              </select>
+              <div class="form-text">Choose the firm this user belongs to.</div>
+            </div>
+
+            <!-- Role -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="firm_role_id">User Role <span class="text-danger">*</span></label>
+              <select data-ignore-kilvish="Yes" id="firm_role_id" name="firm_role_id" class="form-select" required disabled>
+                <option value="">Select Role</option>
+              </select>
+              <div class="form-text">Roles are filtered by firm. <strong>FirmAdmin</strong> is excluded.</div>
+            </div>
+
+            <!-- Avatar -->
+            <div class="col-12">
+              <label class="form-label mb-1 fw-medium">Avatar (optional)</label>
+              <input type="file" name="avatar" id="avatar" class="form-control">
+            </div>
+
+            <!-- Name -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="first_name">First Name <span class="text-danger">*</span></label>
+              <input id="first_name" name="first_name" type="text" class="form-control" required placeholder="John">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="last_name">Last Name <span class="text-danger">*</span></label>
+              <input id="last_name" name="last_name" type="text" class="form-control" required placeholder="Doe">
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="email">Email <span class="text-danger">*</span></label>
+              <input id="email" name="email" type="email" class="form-control" required placeholder="user@firm.com">
+              <div id="emailError" class="text-danger small"></div>
+            </div>
+
+            <!-- Phone (kiltel) -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="full_contact">Primary Phone Number <span class="text-danger">*</span></label>
+              <div class="input-group kiltel-phone-wrap">
+                <button type="button" class="kiltel-country-trigger"></button>
+                <input data-ignore-kilvish="Yes" type="tel" class="form-control" id="full_contact" data-kilvish-tel data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes" required>
+                <input type="hidden" id="country_code" name="country_code">
+                <input type="hidden" id="contact" name="contact">
+              </div>
+              <div id="phoneError" class="text-danger small"></div>
+            </div>
+
+            <!-- Secondary Phone (kiltel) -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="secondary_full_contact">Secondary Phone Number</label>
+              <div class="input-group kiltel-phone-wrap" data-kiltel-name-contact="secondary_contact" data-kiltel-name-code="secondary_country_code">
+                <button type="button" class="kiltel-country-trigger"></button>
+                <input data-ignore-kilvish="Yes" type="tel" class="form-control" id="secondary_full_contact" data-kilvish-tel data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes" placeholder="+1 876 000 0000">
+                <input type="hidden" name="country_code">
+                <input type="hidden" name="contact">
+              </div>
+              <div class="form-text">Optional backup number.</div>
+            </div>
+
+            <!-- Password -->
+            <div class="col-md-6">
+              <label class="form-label fw-medium" for="password">Password <span class="text-danger">*</span></label>
+                     <div class="input-group">
+              <input id="password" name="password" type="password" class="form-control" data-kilvish-password="8_20" required placeholder="********">
+              </div>
+            </div>
+
+
+            <!-- Relatives -->
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label fw-medium mb-0">Relatives (Name & Contact)</label>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addRelativeRow"><i class="ti ti-plus"></i> Add Relative</button>
+              </div>
+              <div id="relativeRows" class="d-flex flex-column gap-2">
+                <div class="relative-row border rounded p-3">
+                  <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                      <label class="form-label fw-medium">Relative Name</label>
+                      <input type="text" name="relative_name[]" class="form-control" placeholder="Jane Doe">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-medium">Relative Contact</label>
+                      <div class="input-group kiltel-phone-wrap" data-kiltel-name-contact="relative_contact[]" data-kiltel-name-code="relative_country_code[]">
+                        <button type="button" class="kiltel-country-trigger"></button>
+                        <input data-ignore-kilvish="Yes" type="tel" class="form-control" data-kilvish-tel data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes" placeholder="+1 876 000 0000">
+                        <input type="hidden" name="country_code">
+                        <input type="hidden" name="contact">
+                      </div>
+                    </div>
+                    <div class="col-md-1">
+                      <button type="button" class="btn btn-outline-danger w-100 remove-relative" disabled title="Remove relative"><i class="ti ti-x"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-text">Add additional relatives as needed.</div>
+            </div>
+
+
+                        <!-- === NEW: Create Password (optional) === -->
+            <!-- <fieldset class="mb-4 border rounded p-3">
+              <legend class="fw-bold text-primary fs-18">Create Password <small class="text-muted">(optional)</small></legend>
+              <p class="text-muted mb-3">You can set a password now to allow **Password Login** later. If you skip, you can still login with OTP and set it anytime.</p>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="ti ti-key"></i></span>
+                    <input type="password" data-kileye-color="#001489" id="password" name="password" class="form-control kilpass" placeholder="Set a password (optional)">
+                   
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="confirm_password" class="form-label">Confirm Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="ti ti-key"></i></span>
+                    <input type="password" data-ignore-kilvish data-kileye-color="#001489"  id="confirm_password" name="confirm_password" class="form-control kilpass" placeholder="Confirm password">
+                
+                  </div>
+                </div>
+              </div>
+            </fieldset> -->
+
+ 
+
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary btn-md fs-13 fw-medium">Save User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<%- include('firmfooter.ejs'); %>
+
+<script>
+(function(){
+  const fx = window.axiosElaw;
+
+
+  const firmSel = document.getElementById('firm_id');
+  const roleSel = document.getElementById('firm_role_id');
+  const emailEl = document.getElementById('email');
+  const phoneEl = document.getElementById('full_contact');
+  const relativeRows = document.getElementById('relativeRows');
+  const addRelativeBtn = document.getElementById('addRelativeRow');
+
+  // ensure kiltel runs on all phone inputs (including dynamic) then rename hidden fields where needed
+  function renameKiltelHidden(wrapper){
+    if (!wrapper) return;
+    const contactName = wrapper.dataset.kiltelNameContact;
+    const codeName = wrapper.dataset.kiltelNameCode;
+    const contactHidden = wrapper.querySelector('input[type="hidden"][name="contact"]');
+    const codeHidden = wrapper.querySelector('input[type="hidden"][name="country_code"]');
+    if (contactHidden && contactName) contactHidden.name = contactName;
+    if (codeHidden && codeName) codeHidden.name = codeName;
+  }
+
+  function initKiltelWrapper(wrapper){
+    if (typeof window.kiltelInit === 'function') {
+      window.kiltelInit();
+    }
+    renameKiltelHidden(wrapper);
+  }
+
+  if (typeof window.kiltelInit === 'function') {
+    window.kiltelInit();
+  }
+  document.querySelectorAll('.kiltel-phone-wrap[data-kiltel-name-contact]').forEach(renameKiltelHidden);
+
+  function refreshRelativeRemovers(){
+    if (!relativeRows) return;
+    const rows = relativeRows.querySelectorAll('.relative-row');
+    rows.forEach(btnRow => {
+      const btn = btnRow.querySelector('.remove-relative');
+      if (btn) btn.disabled = rows.length === 1;
+    });
+  }
+
+  function addRelativeRow(){
+    if (!relativeRows) return;
+    const row = document.createElement('div');
+    row.className = 'relative-row border rounded p-3';
+    row.innerHTML = `
+      <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label fw-medium">Relative Name</label>
+          <input type="text" name="relative_name[]" class="form-control" placeholder="Jane Doe">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-medium">Relative Contact</label>
+          <div class="input-group kiltel-phone-wrap" data-kiltel-name-contact="relative_contact[]" data-kiltel-name-code="relative_country_code[]">
+            <button type="button" class="kiltel-country-trigger"></button>
+            <input data-ignore-kilvish="Yes" type="tel" class="form-control" data-kilvish-tel data-kilvish-preferred="JM,IN" data-kiltel-init="JM" data-kiltel-validation="yes" placeholder="+1 876 000 0000">
+            <input type="hidden" name="country_code">
+            <input type="hidden" name="contact">
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-outline-danger w-100 remove-relative" title="Remove relative"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+    `;
+    relativeRows.appendChild(row);
+    initKiltelWrapper(row.querySelector('.kiltel-phone-wrap'));
+    refreshRelativeRemovers();
+  }
+
+  addRelativeBtn?.addEventListener('click', addRelativeRow);
+
+  relativeRows?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.remove-relative');
+    if (!btn) return;
+    const row = btn.closest('.relative-row');
+    if (!row) return;
+    if (relativeRows.querySelectorAll('.relative-row').length === 1) return;
+    row.remove();
+    refreshRelativeRemovers();
+  });
+  refreshRelativeRemovers();
+
+  firmSel?.addEventListener('change', async ()=>{
+    roleSel.innerHTML = `<option value="">Loading...</option>`;
+    roleSel.disabled = true;
+    const firm_id = firmSel.value || '';
+    if (!firm_id) { roleSel.innerHTML = `<option value="">Select Role</option>`; return; }
+    try {
+      const { data } = await fx.post('/firmstaff/firm_roles_json', { firm_id });
+      if (!data?.success) throw new Error(data?.message || 'Failed to load roles.');
+      roleSel.innerHTML = `<option value="">Select Role</option>` + (data.roles||[]).map(r => `<option value="${r.firm_role_id}">${r.name}</option>`).join('');
+      roleSel.disabled = false;
+    } catch (err) {
+      console.error(err); 
+      kilToast.danger(err?.response?.data?.message || err?.message || 'Failed to load roles.')
+      roleSel.innerHTML = `<option value="">Select Role</option>`;
+    }
+  });
+
+  // email uniqueness (per-firm)
+  emailEl?.addEventListener('change', async ()=>{
+    const firm_id = firmSel.value || '';
+    const email   = (emailEl.value||'').trim().toLowerCase();
+    if ( !email) { document.getElementById('emailError').textContent=''; return; }
+    try {
+      const { data } = await fx.post('/firmstaff/check_firm_staff_email', { email, firm_id });
+      if (data?.exists) {
+        document.getElementById('emailError').textContent = `Email (${email}) already exists in this firm.`;       
+        kilToast.danger(`Email ${email} already exists.`)
+        emailEl.value = '';
+      } else {
+        document.getElementById('emailError').textContent = '';
+      }
+    } catch (err) {
+      document.getElementById('emailError').textContent = err?.response?.data?.message || 'Email check failed.';
+      console.log("error in checkin firm email ",err )
+      kilToast.danger(err?.response?.data?.message || 'Email check failed.')
+    }
+  });
+
+  // phone uniqueness (per-firm)
+  phoneEl?.addEventListener('change', async ()=>{
+    const firm_id = firmSel.value || '';
+    const phoneNumber = (phoneEl.value||'').trim();
+    if ( !phoneNumber) { document.getElementById('phoneError').textContent=''; return; }
+    try {
+      const { data } = await fx.post('/firmstaff/check_firm_staff_phonenumber', { phoneNumber, firm_id });
+      if (data?.exists) {
+        document.getElementById('phoneError').textContent = `Contact (${phoneNumber}) already exists in this firm.`;
+     
+        kilToast.danger(`Contact ${phoneNumber} already exists.`)
+        phoneEl.value = '';
+      } else {
+        document.getElementById('phoneError').textContent = '';
+      }
+    } catch (err) {
+      document.getElementById('phoneError').textContent = err?.response?.data?.message || 'Phone check failed.';
+       console.log("error in checkin firm phonenumber ",err )
+      kilToast.danger(err?.response?.data?.message || 'Phone check failed.')     
+    }
+  });
+
+  // Submit
+  document.getElementById('kilform')?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    try {
+      const { data } = await fx.post('/firmstaff/add_firm_staff', fd);
+      if (!data?.success) {  kilToast.danger( data?.message || 'Failed to create user.'); return; }
+    kilToast.success( data?.message || 'User created.');
+      location.href = '/firmstaff/staff_list';
+    } catch (err) {
+      console.error(err);
+    kilToast.danger( err?.response?.data?.message || 'Failed to create user.');
+    }
+  });
+})();
+</script>

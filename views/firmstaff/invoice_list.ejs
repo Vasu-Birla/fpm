@@ -1,0 +1,194 @@
+<!-- Header Start -->
+<%- include('firmheader.ejs'); %>
+<!-- Header End -->
+
+<!-- Sidebar -->
+<%- include('firmsidebar.ejs'); %>
+<!-- Sidebar End -->
+
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Invoice List</h5>
+          <a href="/firmstaff/add_invoice" class="btn btn-primary btn-sm">+ New Invoice</a>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <!-- Filters row -->
+            <div class="row mb-3 g-2 align-items-end">
+              <!-- LEFT: Filters -->
+              <div class="col-md-8 d-flex flex-wrap gap-2">
+                <div class="me-2">
+                  <label class="form-label fw-medium small mb-1">Payment Status</label>
+                  <select id="invPaymentFilter" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    <option value="paid">Paid</option>
+                    <option value="partial">Partial</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </div>
+                <div class="mt-3 mt-md-0">
+                  <button type="button" id="invReset" class="btn btn-outline-secondary btn-sm">
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+
+              <!-- RIGHT: Search -->
+              <div class="col-md-4">
+                <div class="text-md-end">
+                  <label class="form-label fw-medium small mb-1">Search</label>
+                  <input
+                    data-ignore-kilvish="Yes"
+                    id="invSearch"
+                    type="text"
+                    class="form-control form-control"
+                    placeholder="Search invoice # or client">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-striped" id="invoiceTable" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Invoice #</th>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Created</th>
+                    <th>Due</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('firmfooter.ejs'); %>
+
+<script>
+  (function($){
+    const fx = window.axiosElaw || window.axios;
+    if (!fx || !$.fn.DataTable) return;
+
+    const $tbl     = $('#invoiceTable');
+    const $pay     = $('#invPaymentFilter');
+    const $search  = $('#invSearch');
+    const $reset   = $('#invReset');
+    let allRows    = [];
+
+    const fmtDate = (d) => d ? new Date(d).toISOString().slice(0,10) : '';
+    const payBadge = (pstat) => {
+      const s = (pstat || '').toLowerCase();
+      if (s === 'paid') return '<span class="badge bg-success-subtle text-success px-2">Paid</span>';
+      if (s.startsWith('partial')) return '<span class="badge bg-warning-subtle text-warning px-2">Partial</span>';
+      return '<span class="badge bg-danger-subtle text-danger px-2">Pending</span>';
+    };
+
+    const dt = $tbl.DataTable({
+      responsive: true,
+      dom:
+        "<'row mb-3'<'col-md-6 d-flex align-items-center'B><'col-md-6 d-flex justify-content-end'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row mt-3'<'col-md-5'i><'col-md-7 d-flex justify-content-end'p>>",
+      buttons: [
+        { extend: 'excelHtml5', className: 'btn btn-primary me-2' },
+        { extend: 'csvHtml5',   className: 'btn btn-primary me-2' },
+        { extend: 'pdfHtml5',   className: 'btn btn-primary me-2' }
+      ],   
+
+      serverSide: false, // lightweight client filtering; backend caps 1000 rows
+      searching: false,  // we use our own search box
+      pageLength: 25,
+      data: [],
+      columns: [
+        { data: 'idx' },
+        { data: 'invoice_number' },
+        { data: 'client' },
+        { data: 'total' },
+        { data: 'payment' },
+        { data: 'created' },
+        { data: 'due' },
+        { data: 'actions', orderable:false, searchable:false }
+      ]
+    });
+
+    // Hide built-in search (we use our own)
+    const $wrapper = $tbl.closest('.dataTables_wrapper');
+    $('.dataTables_filter', $wrapper).hide();
+
+    function applyFilters() {
+      const payVal = ($pay.val() || '').toLowerCase();
+      const q = ($search.val() || '').toLowerCase();
+      const filtered = allRows.filter(r => {
+        const matchesPay = !payVal || (r._pay || '') === payVal;
+        const hay = `${r.invoice_number || ''} ${r.client_plain || ''} ${r.client_email || ''}`.toLowerCase();
+        const matchesQ = !q || hay.includes(q);
+        return matchesPay && matchesQ;
+      });
+      dt.clear().rows.add(filtered).draw();
+    }
+
+    async function loadInvoices() {
+      try {
+        const { data } = await fx.get('/firmstaff/api/invoices');
+        if (!data?.success) throw new Error(data?.message || 'Failed to load invoices');
+        allRows = (data.data || []).map((row, idx) => {
+          const total = `${row.currency || 'USD'} ${Number(row.total || 0).toFixed(2)}`;
+          let pstat = (row.payment_status || '').toLowerCase();
+          if (!pstat) {
+            const st = (row.status || '').toLowerCase();
+            if (st === 'paid') pstat = 'paid';
+            else if (st.startsWith('partial')) pstat = 'partial';
+            else pstat = 'pending';
+          }
+          const viewBtn = row.pdf_key
+            ? `<a class="btn btn-outline-primary" href="/secure/file_stream?s3key=${encodeURIComponent(row.pdf_key)}" target="_blank">View</a>`
+            : `<button class="btn btn-outline-secondary" disabled>View</button>`;
+          const clientPlain = `${row.client_name || ''}`.trim();
+          return {
+            idx: idx + 1,
+            invoice_number: row.invoice_number,
+            client: `${row.client_name}<br/><small class="text-muted">${row.client_email || ''}</small>`,
+            total,
+            payment: payBadge(pstat),
+            created: fmtDate(row.created_at),
+            due: fmtDate(row.due_date),
+            actions: `<div class="btn-group btn-group-sm">${viewBtn}</div>`,
+            _pay: pstat,
+            client_plain: clientPlain,
+            client_email: row.client_email || ''
+          };
+        });
+        applyFilters();
+      } catch (err) {
+        console.error(err);
+        const msg = err?.message || 'Failed to load invoices';
+        window.kilToast?.danger?.(msg) || alert(msg);
+      }
+    }
+
+    $(document).ready(function(){
+      loadInvoices();
+      $pay.on('change', applyFilters);
+      $search.on('input', applyFilters);
+
+      // 🔄 Reset Filters button
+      $reset.on('click', function () {
+        $pay.val('');
+        $search.val('');
+        applyFilters();
+      });
+    });
+  })(jQuery);
+</script>

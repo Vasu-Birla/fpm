@@ -1,0 +1,146 @@
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+<!-- ========================
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- row start -->
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <!-- page header start -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-0 d-flex align-items-center"> <a href="/superadmin/admin_setting" class="text-dark"> <i class="ti ti-chevron-left me-1"></i>System Settings <small class="text-muted">(Editable by Super Admin and Staff)</small></a></h6>
+                </div>
+                <!-- page header end -->
+
+                <form action="#" method="POST">
+
+                    <!-- Payment & Security Settings -->
+                    <div class="card mb-4">
+                        <div class="card-header">Payment & Security</div>
+                        <div class="card-body">
+                            <!-- <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Payment Grace Period (Handled by APM)</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" placeholder="Enter grace period in minutes">
+                                </div>
+                            </div> -->
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">OTP Validity (Minutes)</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" value="60">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Max OTP Resends per Hour</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" value="3">
+                                </div>
+                            </div>
+                            <!-- <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Mandatory 2FA for Admin Roles</label>
+                                <div class="col-sm-8 d-flex align-items-center">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="mandatory2FA" checked>
+                                        <label class="form-check-label" for="mandatory2FA">Enabled</label>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+
+                    <!-- Session Settings -->
+                    <div class="card mb-4">
+                        <div class="card-header">Session Settings</div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Session Timeout (Minutes)</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" value="30">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Remember Me Duration (Days)</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control" value="7">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Ticket SLAs --
+                    <div class="card mb-4">
+                        <div class="card-header">Support Ticket SLAs</div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">High Priority</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" value="1 hour">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Medium Priority</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" value="4 hours">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label class="col-sm-4 col-form-label">Low Priority</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" value="24 hours">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Recipients -->
+                    <div class="card mb-4">
+                        <div class="card-header">Notification Recipients</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Email List for System Alerts <!--(APM outages, auto-refunds, new CNC submissions)--></label>
+                                <!-- <textarea class="form-control" rows="3" placeholder="Enter emails separated by commas"></textarea> -->
+                                <select class="select" id="role_type" name="role_type" required>
+                                    <option value=""> --- Select --- </option>
+                                    <option value="admin1@gmail.com">admin1@gmail.com</option>
+                                    <option value="admin2@gmail.com">admin2@gmail.com</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-4">Save Settings</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        <!-- row end -->            
+
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->

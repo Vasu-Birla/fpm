@@ -1,0 +1,40 @@
+
+/*============================
+  25.incoming-call
+============================*/
+
+.car-max-height {
+    position: relative;
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+    @include respond-below(md) {
+        height: calc(100vh - 100px);
+    }
+}
+.caller-profile {
+    img {
+        width: 150px;
+        height: 150px;
+        animation: ripple 2s infinite;
+        @include respond-below(lg) {
+            width: 120px;
+            height: 120px;
+        }
+        @include respond-below(md) {
+            width: 80px;
+            height: 80px;
+        }
+    }
+}
+@-webkit-keyframes ripple {
+    0% {
+        -webkit-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1);
+        -moz-box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1);
+    }
+    100% {
+        -webkit-box-shadow: 0 0 0 50px rgba(0, 0, 0, 0);
+        -moz-box-shadow: 0 0 0 50px rgba(0, 0, 0, 0);
+        box-shadow: 0 0 0 50px rgba(0, 0, 0, 0);
+    }
+}

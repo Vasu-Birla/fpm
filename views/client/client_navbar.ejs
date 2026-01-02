@@ -1,0 +1,46 @@
+
+<!-- ✅ Mobile Sidebar (sticky on scroll) -->
+<div class="mobile-sidebar" id="mobileSidebar">
+	<ul>
+		<li><a href="/dashboard" class="active"><span>Dashboard</span></a></li> |
+		<li><a href="/profile"><span>Profile</span></a></li> |
+		<li><a href="/cases"><span>Cases</span></a></li> |
+		<li><a href="/notifications"><span>Notifications</span></a></li> |
+		<li><a href="/support"><span>Support</span></a></li> 
+	</ul>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebarLinks = document.querySelectorAll('#mobileSidebar ul li a');
+    const currentPage = window.location.pathname.split("/").pop(); // current file name
+
+    sidebarLinks.forEach(link => {
+        const linkPage = link.getAttribute('href');
+        if (linkPage === currentPage) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	const mobileSidebar = document.getElementById("mobileSidebar");
+	const banner = document.querySelector(".main-inner-banner");
+	
+	if (mobileSidebar && banner) {
+		const stickyPoint = banner.offsetHeight; // when scroll past banner
+
+		window.addEventListener("scroll", function() {
+			if (window.scrollY > stickyPoint) {
+				mobileSidebar.classList.add("sticky");
+			} else {
+				mobileSidebar.classList.remove("sticky");
+			}
+		});
+	}
+});
+</script>

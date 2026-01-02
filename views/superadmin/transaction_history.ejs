@@ -1,0 +1,499 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+
+
+<!-- ========================
+    Start Page Content
+========================= -->
+    
+<div class="page-wrapper">
+
+    <!-- Start Content -->
+    <div class="content">
+
+        <!-- Start Page Header -->
+        <div class="d-flex align-items-sm-center flex-sm-row flex-column gap-2 pb-3 mb-3 border-1 border-bottom">
+            <div class="flex-grow-1">
+                <h4 class="fw-bold mb-0">🔸 Billing & Subscription <span class="badge badge-soft-primary fw-medium border py-1 px-2 border-primary fs-13 ms-1">Manage Stripe/PayPal keys, pricing tiers, transactions, and auto-renewals.</span></h4>
+            </div>
+            <div class="text-end d-flex">
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!-- row start -->
+        <div class="row">
+
+            <!-- col start -->
+            <div class="col-xl-3 col-md-6 d-flex">                       
+                <div class="card shadow-sm flex-fill w-100 z-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="avatar avatar-sm bg-soft-primary border border-primary text-primary rounded-2 flex-shrink-0"><i class="ti ti-calendar-time fs-14"></i></span>
+                            <span class="badge fw-medium bg-soft-success text-success flex-shrink-0 ms-2">+10%<i class="ti ti-arrow-up-right ms-1"></i></span>
+                        </div>  
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1 text-truncate">Total Earnings</p>
+                                <h6 class="mb-0 fw-bold">$5,050</h6>
+                            </div>
+                            <div id="s-col-11" class="chart-set"></div>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            <!-- col end -->
+
+            <!-- col start -->
+            <div class="col-xl-3 col-md-6 d-flex">                       
+                <div class="card shadow-sm flex-fill w-100 z-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="avatar avatar-sm bg-soft-success border border-success text-success rounded-2 flex-shrink-0"><i class="ti ti-calendar-up fs-14"></i></span>
+                            <span class="badge fw-medium bg-soft-success text-success flex-shrink-0 ms-2">+11.5%<i class="ti ti-arrow-up-right ms-1"></i></span>
+                        </div>  
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1 text-truncate">Available for Payout</p>
+                                <h6 class="mb-0 fw-bold">$210</h6>
+                            </div>
+                            <div id="s-col-12" class="chart-set"></div>
+                        </div>  
+                    </div>
+                </div>
+            </div>
+            <!-- col end -->
+
+            <!-- col start -->
+            <div class="col-xl-3 col-md-6 d-flex">                       
+            </div>
+            <!-- col end -->
+
+            <!-- col start -->
+            <div class="col-xl-3 col-md-6 d-flex">                       
+            </div>
+            <!-- col end -->
+
+        </div>
+        <!-- row end -->
+
+        <!-- Filters -->
+        <div class="card mb-4 shadow-sm border">
+            <div class="card-body">
+                <form method="POST" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" id="date" name="date" class="form-control" name="filter_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="transaction_id" class="form-label">Transaction ID</label>
+                        <input type="text" id="transaction_id" name="transaction_id" class="form-control" placeholder="Enter the transaction id">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter_status" class="form-label">Status</label>
+                        <select class="form-select" id="filter_status" name="filter_status">
+                            <option value="">All</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="disputed">Disputed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5"></div>
+                    <div class="col-md-2">
+                        <button type="submit" name="submit" id="submit" class="btn btn-primary btn-md fs-13 fw-medium rounded">Submit</button>
+                    </div>
+                    <div class="col-md-5"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" id="invoiceTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="booking-invoices-tab" data-bs-toggle="tab" href="#booking-invoices" role="tab">Transaction Logs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="custom-invoice-tab" data-bs-toggle="tab" href="#custom-invoice" role="tab">Payment Gateway Keys</a>
+            </li>
+        </ul>
+
+        <!-- Tab Contents -->
+        <div class="tab-content" id="invoiceTabContent">
+
+            <!-- Booking Invoices -->
+            <div class="tab-pane fade show active" id="booking-invoices" role="tabpanel">
+                <div class="card shadow-sm border">
+                 <%- include('partials/view_transactions_table', { transactions }) %>
+                </div>
+            </div>
+
+            <!-- Custom Invoice -->
+            <div class="tab-pane fade" id="custom-invoice" role="tabpanel">
+                <div class="card shadow-sm border">
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="stripe_key" class="form-label">Stripe API Key</label>
+                                <input type="text" id="stripe_key" name="stripe_key" class="form-control" placeholder="Enter Stripe API Key">
+                            </div>
+                            <div class="mb-3">
+                                <label for="paypal_id" class="form-label">PayPal Client ID</label>
+                                <input type="text" id="paypal_id" name="paypal_id" class="form-control" placeholder="Enter PayPal Client ID">
+                            </div>
+                            <button name="submit" id="submit" class="btn btn-primary">Save Keys</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- End Content -->
+
+</div>
+
+<!-- ========================
+    End Page Content
+========================= -->
+
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+    <script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'elaw_transaction'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'elaw_transaction'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'elaw_transaction_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+
+    let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // ✅ Do the deletion logic here (e.g., AJAX, remove row, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // ❌ Cancelled
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+  });
+</script>
+
+  </body>
+</html>
+
+<script>
+
+
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.slideshow-trigger').forEach(el => {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        const imagesString = this.dataset.images;
+        openImageSlideshow(imagesString);
+      });
+    });
+  });
+
+
+function openImageSlideshow(imagesString) {
+    const images = imagesString.split(','); // Split the images by comma
+    let currentIndex = 0;
+
+    // Function to update the content inside SweetAlert
+    function updateImage(index) {
+        const totalImages = images.length;
+        const imgSrc = `${images[index].trim()}`;
+        const imageTag = `<img src="${imgSrc}" style="width:100%; height:auto;" />`;
+        const navigationText = `${index + 1} of ${totalImages} Images`;
+
+        // Display SweetAlert
+        Swal.fire({
+            title: navigationText, // Display image count
+            html: imageTag,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Next',
+            cancelButtonText: 'Previous',
+            allowOutsideClick: false,
+            showCloseButton: true,
+            preConfirm: () => {
+                if (currentIndex < totalImages - 1) {
+                    currentIndex++;
+                    updateImage(currentIndex); // Go to next image
+                }
+            },
+            preCancel: () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateImage(currentIndex); // Go to previous image
+                }
+            }
+        });
+    }
+
+    // Start slideshow with the first image
+    updateImage(currentIndex);
+}
+
+
+
+
+
+
+
+
+//==========================  Edit Transaction / Make Disable Transaction  ( Inactive /delete) ======================
+document.addEventListener('click', (e) => {
+  const edit = e.target.closest('.transaction-edit');
+  if (edit) {
+    const id = edit.dataset.transactionId;
+    document.cookie = `elaw_transaction_id=${id}`;
+    window.location.href = '/superadmin/edit_transaction';
+    return;
+  }
+
+  const toggle = e.target.closest('.transaction-status-toggle');
+  if (toggle) {
+    update_transaction_status(
+      toggle.dataset.transactionId,
+      toggle.dataset.newStatus,
+      toggle.dataset.transactionName
+    );
+    return;
+  }
+
+  const del = e.target.closest('.transaction-delete');
+  if (del) {
+    deleteTransaction(del.dataset.transactionId, del.dataset.transactionName);
+  }
+});
+
+
+  function deleteTransaction(transactionId, transactionName) {
+    var msg = `deleteting ${transactionId } ----  ${transactionName }`
+  
+    // You can add your SweetAlert confirmation here if needed
+    console.log(`Delete transaction ${transactionName} (${transactionId})`);
+
+    // NOTE -> Make inactive or diable User can be consider as SOFT delete of user so am not developing it 
+ 
+  }
+
+
+
+
+function update_transaction_status(transaction_id, newStatus,username ) {
+   
+    var msg = `updateing  ${transaction_id } ----  ${newStatus }`
+ 
+
+  event.preventDefault(); 
+  var action;
+if(newStatus== 'admin_disabled'){
+  action = 'Inactived'
+}else{
+  action = 'approved '
+}
+ 
+
+  const userStatusElement = document.getElementById(`userStatus${transaction_id}`);
+  const pmsgElement  = document.getElementById(`msg${transaction_id}`);
+
+    $.ajax({
+        url: '/superadmin/update_transaction_status',
+        type: 'POST',
+        data: { id: transaction_id, status: newStatus,  _csrf: csrfToken  },
+        beforeSend: function() {
+            // Hide the kilstatus paragraph before the request
+            $('.kilstatus').hide();
+        },
+        success: function(response) {  
+           console.log(response)       
+           
+                    if (response.success == true) {
+               
+                                                      $('[data-user-id="' + transaction_id + '"]').attr('data-user-status', newStatus);
+
+                                // Update image source and tooltip based on new status
+                                var imgSrc = (newStatus === 'active') ? '../images/icons/active.png' : '../images/icons/inactive.png';
+                                $('[data-user-id="' + transaction_id + '"] .status-image').attr('src', imgSrc);
+                                $('[data-user-id="' + transaction_id + '"] .status-tooltip').attr('title', (newStatus === 'active') ? 'deactive' : 'active');
+
+                                // Add fade in overlay and change background color based on new status
+                                var bgColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+
+                                var textColor = (newStatus === 'active') ? '#3c763d' : '#ffffff'; // White font for non-Approve status
+                                // var textColor = (newStatus === 'active') ? 'rgba(163,209,121,0.5)' : 'rgba(227 99 99 / 50%)';
+                                // $('[data-user-id="' + transaction_id + '"] .status-overlay').css('background-color', bgColor).fadeIn();
+
+
+
+                                $('[data-user-id="' + transaction_id + '"] .status-overlay').css({
+                                    'background-color': bgColor,
+                                    'color': textColor + ' !important', // Force the font color change
+                                  
+                                }).fadeIn();
+
+
+                                pmsgElement.innerHTML = response.msg;
+                                var msg = 'Transaction ('+username+') '+action+' successfully'
+                                document.cookie = `elaw_msg=${msg}`;
+
+                                // Fade out the overlay after a delay
+                                setTimeout(function() {
+                                 
+                                    $('[data-user-id="' + transaction_id + '"] .status-overlay').fadeOut();
+                                    window.location.href = '/superadmin/view_transactions'
+                                }, 1500);
+
+                                // $('.kilstatus').show();
+
+
+              } else {
+                  console.error('Error:', response.msg);
+                  $("#errorMessage").removeClass("d-none");
+                  $("#successMessage").addClass("d-none");
+              }
+
+
+        },
+        error: function(error) { alert("ajax error")
+          console.error('Error:', error);
+          $("#errorMessage").text('Ajax Error');
+    $("#errorMessage").removeClass("d-none");
+    $("#successMessage").addClass("d-none");
+        }
+    });
+}
+
+
+
+
+
+//============================= Make Disable transaction End =============================
+
+
+</script>
+
+
+
+
+
+<script>
+
+function showSweetLogs(logs ,total) {
+  if (!logs || logs.length === 0) {
+    return Swal.fire('No Logs Found', 'There are no audit logs available for this user.', 'info');
+  }
+
+  const logHtml = logs.map((log, index) => {
+    const date = log.timestamp || 'Invalid Date';
+    const resultColor = (log.result || '').toLowerCase().includes('success') ? 'green' : 'red';
+        //const displayIndex1 = logs.length - index; // latest gets highest #
+        const displayIndex = parseInt(total)  - index;  // Real database index
+
+    return `
+      <div style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; padding: 15px; box-shadow: 2px 2px 8px rgba(0,0,0,0.05); font-size: 14px;">
+        <div style="margin-bottom: 5px; font-weight: bold; color: #444;">#${displayIndex} | <span style="color: #555;">${log.action}</span></div>
+        
+        <div style="margin-bottom: 6px;"><strong>Actor:</strong> ${log.actor}</div>
+        <div style="margin-bottom: 6px;"><strong>Transaction ID:</strong> ${log.transaction_id || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Candidate ID:</strong> ${log.candidate_id || '-'}</div>
+        <div style="margin-bottom: 6px;"><strong>Timestamp:</strong> ${date}</div>
+        
+        <div style="margin: 8px 0;"><strong>Description:</strong><br>
+          <div style="white-space: pre-wrap; padding-left: 10px; margin-top: 3px; color: #333;">
+            ${log.description}
+          </div>
+        </div>
+
+        <div style="margin: 6px 0;"><strong>URL:</strong><br>
+          <code style="white-space: break-spaces; background: #f4f4f4; padding: 4px 6px; border-radius: 4px; display: inline-block;">${log.url}</code>
+        </div>
+
+        <div style="margin-top: 10px;"><strong>Result:</strong> 
+          <span style="color: ${resultColor}; font-weight: bold;">${log.result}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  Swal.fire({
+    title: 'Audit Logs',   
+    html: `
+      <div style="max-height: 600px; overflow-y: auto;">
+        ${logHtml}
+      </div>
+    `,
+    showCloseButton: true,
+    confirmButtonText: 'Close',
+    scrollbarPadding: false
+  });
+}
+
+  $(document).on('click', '.view-logs-btn', function () {
+  const candidateId = $(this).data('candidate-id') || null;
+  const transactionId = $(this).data('transaction-id') || null;
+
+  $.ajax({
+    url: '/superadmin/get_logs',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ candidate_id: candidateId, transaction_id: transactionId, _csrf: csrfToken }),
+    success: function (res) {
+      if (res.success) {
+        showSweetLogs(res.logs,res.total); // custom function to show logs in SweetAlert2
+      } else {
+        Swal.fire('Error', res.message || 'Something went wrong', 'error');
+      }
+    },
+    error: function () {
+      Swal.fire('Error', 'Server error occurred.', 'error');
+    }
+  });
+});
+
+</script>
+
+

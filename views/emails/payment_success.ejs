@@ -1,0 +1,132 @@
+<%- include('_email_header', {
+  org,
+  logoSrc,
+  title: 'Payment successful',
+  subtitle: 'Subscription payment confirmed',
+  badge: 'PAYMENT RECEIPT',
+  preheader:
+    'Your payment of ' +
+    (receipt?.amountFmt || ((receipt?.currencyLabel || 'J$') + ' ' + Number(total || 0).toFixed(2))) +
+    ' for ' +
+    (receipt?.planName || 'your subscription') +
+    ' was successful.'
+}) %>
+
+<p class="email-title">Subscription payment successful</p>
+
+<p class="email-lead">
+  Thank you, <strong><%= username %></strong>.
+</p>
+
+<p class="text">
+  Your subscription payment to
+  <strong><%= receipt?.firmName || ((org && org.name) || 'our service') %></strong>
+  was completed successfully. A copy of your receipt is attached to this email and
+  the key details are summarised below.
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="border-collapse:collapse;margin:18px 0 12px 0;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
+  <tr>
+    <td style="padding:16px 18px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Receipt No.
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= receipt?.receiptNo || orderId %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Amount
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= receipt?.amountFmt || ((receipt?.currencyLabel || 'J$') + ' ' + Number(total || 0).toFixed(2)) %>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Firm
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= receipt?.firmName || '—' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Plan
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= receipt?.planName || '—' %>
+              <span style="color:#6b7280;font-weight:500;">
+                (<%= receipt?.billingPeriod || 'monthly' %>)
+              </span>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td width="50%" style="padding:6px 6px 10px 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Payment Ref
+            </div>
+            <div style="font:600 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono','Courier New', monospace;">
+              <%= receipt?.paymentRef || '—' %>
+            </div>
+          </td>
+          <td width="50%" style="padding:6px 0 10px 6px;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Transaction ID
+            </div>
+            <div style="font:600 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono','Courier New', monospace;">
+              <%= receipt?.transactionId || '—' %>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" style="padding:6px 0 0 0;vertical-align:top;">
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">
+              Paid at
+            </div>
+            <div style="font-size:14px;font-weight:600;">
+              <%= receipt?.paidAt || '—' %>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<div style="margin:14px 0 4px 0;">
+  <% if (receipt?.pdfLink) { %>
+    <a href="<%= receipt.pdfLink %>" target="_blank" rel="noopener"
+       style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;
+              padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;">
+      Open PDF receipt
+    </a>
+  <% } %>
+
+  <% if (baseUrl) { %>
+    <a href="<%= baseUrl.replace(/\/+$/,'') %>/firmstaff" target="_blank" rel="noopener"
+       style="display:inline-block;margin-left:8px;background:#ffffff;border:1px solid #d1d5db;
+              color:#111827;text-decoration:none;padding:10px 18px;border-radius:999px;
+              font-weight:600;font-size:14px;">
+      Go to dashboard
+    </a>
+  <% } %>
+</div>
+
+<div class="info-box" style="margin-top:18px;">
+  <strong>If you didn’t authorise this payment,</strong>
+  please contact our support team immediately so we can review the activity on your account.
+</div>
+
+<%- include('_email_footer', { org }) %>

@@ -1,0 +1,117 @@
+
+<!-- Header Start -->
+<%- include('superheader.ejs'); %>
+<!-- Header End -->
+
+
+
+        <!-- Sidebar scroll-->
+         <%- include('supersidebar.ejs'); %>
+        <!-- End Sidebar scroll-->
+
+
+        <div class="container">
+          <div class="page-inner">
+            <div class="page-header">
+              <h3 class="fw-bold mb-3">Role</h3>
+              <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                  <a href="/superadmin">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Edit Role</a>
+                </li>
+              </ul>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h4 class="card-title">Edit Role</h4>
+                  </div>
+                  <div class="card-body">
+ 
+     <form id="kilform" action="/superadmin/edit_role" method="post">
+                      <div class="row align-items-end g-3">
+                        <div class="col-lg-12 col-md-12 col-sm-12">
+                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <div class="form-group mb-0">
+                            <label for="role_name" class="form-label">Add Role</label>
+                            <input type="text" name="role_name" class="form-control" value="<%= roledata.role_name %>"  required>
+                          </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12"></div>
+                        <div class="col-lg-4 col-md-4 col-sm-12">
+                          <center><div class="form-group mb-0">
+                            <button type="submit" class="btn btn-secondary">Save</button>
+                            <button type="reset" class="btn btn-danger">
+                            <i class="fas fa-redo me-2"></i>Reset
+                          </button></center>
+                          </div>
+                          
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-12"></div>
+                      </div>
+                    </form>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+<!-- Footer Start -->
+<%- include('superfooter.ejs'); %>
+<!-- Footer End -->
+
+<script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_msg'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            document.cookie = 'sscl_client'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            
+            document.cookie = 'sscl_client_id'+'=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+       
+    }); 
+
+    let csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "Do you really want to delete this record?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // ✅ Do the deletion logic here (e.g., AJAX, remove row, etc.)
+            Swal.fire("Deleted!", "The record has been deleted.", "success");
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // ❌ Cancelled
+            Swal.fire("Cancelled", "The record is safe.", "info");
+          }
+        });
+      });
+    });
+  });
+</script>
