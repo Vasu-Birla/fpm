@@ -405,7 +405,7 @@
       });
 
       // Active-session hint (optional)
-      $('#ad_email').on('change', async function(){
+      if (email) email.addEventListener('change', async function(){
         const v = (this.value||'').trim(); if (!v) return;
         try{
           const res = await kFetch('/superadmin/check_session', {
@@ -434,6 +434,8 @@
         // 🔐 RSA encrypt credentials
         const encEmail = await rsaEncrypt(em);
         const encPass  = await rsaEncrypt(pw);
+
+        
 
         try{
           btn.disabled=true; showLoader();

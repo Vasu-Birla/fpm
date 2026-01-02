@@ -291,6 +291,7 @@ const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
 
 
 export const loginPasswordPost = async (req, res) => {
+  console.log('Starting login...', req.body)
   let t;
   try {
     let { email, password, timezone } = req.body || {};

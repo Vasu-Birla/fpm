@@ -56,6 +56,8 @@ export const sendTokenAdminBrowser = async (admin, statusCode = 200, res, req) =
     // Issue token
     const token = getJWTToken(admin.admin_id, { typ: 'admin' });
 
+    console.log("TOKENNNNNNNNNN ", token)
+
     // Persist session atomically
     await persistSession({
       model: ActiveSessionAdmin,
